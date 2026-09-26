@@ -1,0 +1,11 @@
+project:
+  name: HEATSENSE AI
+  phase: day_1
+  study_area: Surat, Gujarat, India
+  status: infrastructure_skeleton
+
+architecture:
+  backend: FastAPI
+  database: PostgreSQL + PostGIS
+  frontend: React + Vite + TypeScript
+  mapping: Leaflet

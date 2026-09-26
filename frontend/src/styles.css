@@ -1,0 +1,50 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #eef2f6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button { font: inherit; }
+
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.app-header {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #dce2ea;
+}
+.eyebrow { margin: 0 0 4px; font-size: 11px; font-weight: 700; letter-spacing: .12em; color: #64748b; }
+h1, h2, p { margin-top: 0; }
+h1 { margin-bottom: 0; font-size: 22px; }
+.status-pill { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #475569; }
+.status-dot { width: 9px; height: 9px; border-radius: 50%; background: #16a34a; }
+
+.app-main { flex: 1; display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 0; }
+.sidebar { padding: 22px 16px; background: #f8fafc; border-right: 1px solid #dce2ea; }
+.sidebar h2 { margin: 0 8px 14px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: #64748b; }
+nav { display: grid; gap: 5px; }
+.nav-item { width: 100%; border: 0; border-radius: 8px; padding: 10px 12px; text-align: left; background: transparent; color: #475569; cursor: not-allowed; }
+.nav-item.active { background: #e2e8f0; color: #0f172a; font-weight: 650; cursor: default; }
+.scope-note { margin: 24px 8px 0; font-size: 12px; line-height: 1.55; color: #64748b; }
+
+.workspace { min-width: 0; display: flex; flex-direction: column; padding: 20px; gap: 14px; }
+.workspace-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
+.workspace-heading h2 { margin: 0; font-size: 22px; }
+.muted { margin: 0; color: #64748b; font-size: 13px; }
+.map-frame { position: relative; min-height: 520px; flex: 1; overflow: hidden; border: 1px solid #dce2ea; border-radius: 12px; background: #dbe4ea; box-shadow: 0 8px 24px rgba(15, 23, 42, .06); }
+.leaflet-map { width: 100%; height: 100%; min-height: 520px; }
+.map-badge { position: absolute; z-index: 1000; right: 12px; top: 12px; padding: 7px 10px; border-radius: 7px; background: rgba(255,255,255,.92); box-shadow: 0 2px 8px rgba(15,23,42,.12); font-size: 12px; color: #475569; }
+
+@media (max-width: 800px) {
+  .app-main { grid-template-columns: 1fr; }
+  .sidebar { border-right: 0; border-bottom: 1px solid #dce2ea; }
+  nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-heading { align-items: start; flex-direction: column; }
+}
