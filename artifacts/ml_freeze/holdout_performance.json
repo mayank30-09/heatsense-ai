@@ -1,0 +1,14 @@
+{
+  "holdout_type": "independent_spatial_blocks_20pct",
+  "development_blocks": 132,
+  "test_blocks": 33,
+  "evaluation_count": 1,
+  "development_rows": 720973,
+  "test_rows": 203758,
+  "MAE": 1.2726,
+  "RMSE": 1.7524,
+  "R2": 0.9006,
+  "training_time_seconds": 37.74,
+  "inference_time_seconds": 1.093,
+  "timestamp_utc": "2026-09-27T19:42:20Z"
+}

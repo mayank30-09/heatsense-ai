@@ -1,0 +1,54 @@
+{
+  "model_id": "xgb_tuned_policy_d_v1",
+  "status": "frozen",
+  "target": "LST_C",
+  "features": [
+    "NDVI",
+    "NDBI",
+    "NDWI",
+    "LST_OBS_COUNT",
+    "LST_QA_MEDIAN_K"
+  ],
+  "quality_policy": "D",
+  "dataset_rows": 924731,
+  "development_rows": 720973,
+  "test_rows": 203758,
+  "total_spatial_blocks": 165,
+  "development_blocks": 132,
+  "test_blocks": 33,
+  "spatial_block_size": "2km",
+  "random_state": 42,
+  "optuna_trials": 30,
+  "best_development_cv_rmse": 1.8478,
+  "best_parameters": {
+    "n_estimators": 900,
+    "max_depth": 9,
+    "learning_rate": 0.03662937937931856,
+    "min_child_weight": 3.253330265581497,
+    "subsample": 0.6539539403049981,
+    "colsample_bytree": 0.6285481356546664,
+    "gamma": 1.2827623793054954,
+    "reg_alpha": 6.448517630611331e-06,
+    "reg_lambda": 12.086733674708716
+  },
+  "fixed_parameters": {
+    "objective": "reg:squarederror",
+    "tree_method": "hist",
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "holdout_evaluation": {
+    "evaluation_count": 1,
+    "MAE": 1.2726,
+    "RMSE": 1.7524,
+    "R2": 0.9006
+  },
+  "environment": {
+    "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.22631-SP0",
+    "xgboost_version": "3.4.1",
+    "sklearn_version": "1.9.1"
+  },
+  "git_commit": "06a4c850893cb2656f9687c9ac3bc52cb03cdc3d",
+  "timestamp_utc": "2026-09-27T19:42:20Z"
+}

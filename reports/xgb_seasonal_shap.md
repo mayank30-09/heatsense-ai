@@ -1,40 +1,34 @@
-# HEATSENSE AI � Seasonal SHAP Attribution Analysis
+# HEATSENSE AI — Tuned XGBoost Seasonal SHAP Attribution Analysis
 
-**Document Version:** 1.0-SCIENTIFIC-EVIDENCE  
-**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India  
-**Date:** September 2026  
-**Status:** **SCIENTIFIC FREEZE REVIEW**  
-
----
-
-## 1. Executive Summary & Non-Causal Grounding
-
-This report investigates whether feature attribution rankings change across climatological seasons, focusing especially on `LST_QA_MEDIAN_K` and `LST_OBS_COUNT` during the cloud-restricted monsoon period.
-
-> [!IMPORTANT]
-> **Non-Causal Principle:** SHAP values represent statistical attribution within the fitted decision-tree ensemble, > **NOT physical causation**. A high SHAP attribution for `LST_QA_MEDIAN_K` demonstrates that the model utilizes radiometric > uncertainty as an informative seasonal background indicator; it does NOT imply that sensor uncertainty causes physical heating.
+**Status:** EXPERIMENTAL DIAGNOSTIC  
+**Model:** `xgb_tuned_policy_d` (Tuned on 132 Development Blocks)  
+**Evaluation Data:** Independent Spatial Test Holdout (33 Blocks)  
+**Sample Size:** Up to 2,000 samples per seasonal stratum  
 
 ---
 
-## 2. Seasonal Feature Attribution (Mean $|SHAP|$ Values)
+## 1. Seasonal Mean Absolute SHAP Attribution Table (|SHAP| degC)
 
-| Stratum | Sample Size ($N$) | `LST_QA_MEDIAN_K` | `NDBI` | `LST_OBS_COUNT` | `NDWI` | `NDVI` |
-|---|---|---|---|---|---|---|
-| **Overall** | 2,000 | **2.9714** | 1.5293 | 1.2334 | 0.7468 | 0.5371 |
-| **Winter** | 2,000 | **4.6930** | 1.1429 | 1.3090 | 0.7228 | 0.4410 |
-| **Summer** | 2,000 | **4.4129** | 1.7563 | 0.5056 | 0.7964 | 0.5413 |
-| **Monsoon** | 2,000 | **1.2909** | 1.7802 | 2.2352 | 0.8913 | 0.7467 |
-| **Post_monsoon** | 2,000 | **0.9596** | 1.3214 | 0.7851 | 0.5449 | 0.4530 |
+| Season | `LST_QA_MEDIAN_K` | `LST_OBS_COUNT` | `NDBI` | `NDWI` | `NDVI` |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **OVERALL** | 2.9800 | 1.2879 | 1.3867 | 0.6981 | 0.5347 |
+| **WINTER** | 4.7802 | 1.2379 | 1.1056 | 0.7026 | 0.4461 |
+| **SUMMER** | 4.4230 | 0.5449 | 1.5739 | 0.7442 | 0.5028 |
+| **MONSOON** | 1.1709 | 2.5202 | 1.5900 | 0.7828 | 0.7365 |
+| **POST_MONSOON** | 1.0171 | 0.7262 | 1.1810 | 0.5139 | 0.5030 |
 
 ---
 
-## 3. Scientific Behavioral Findings
+## 2. Scientific Behavioral Findings & Attribution Non-Causality
 
-1. **Dominance of `NDBI` in Summer:**
-   - During peak summer, `NDBI` (built-up impervious surface index) exhibits its highest physical attribution, confirming that urban thermal contrast is predominantly dictated by impermeable vs vegetated surface density during hot dry periods.
+1. **Dominance of `NDBI` Among Physical Predictors in Summer:**
+   - During peak summer, `NDBI` (built-up impervious surface index) exhibits high predictive attribution (mean |SHAP| ≈ 1.5739°C), confirming that urban thermal contrast is predominantly predicted by impermeable vs vegetated surface density during hot dry periods.
 
-2. **Elevated `LST_QA_MEDIAN_K` in Monsoon:**
-   - Attribution for `LST_QA_MEDIAN_K` expands notably during the monsoon season. In high-humidity, cloud-prone scenes, atmospheric column water vapor increases sensor radiometric uncertainty. The model leverages this signal as a conditional atmospheric baseline.
+2. **Monsoon Observation Support Surges While QA Attribution Drops:**
+   - During monsoon, `LST_OBS_COUNT` becomes the most influential predictor among the evaluated features (mean |SHAP| = 2.5202°C), while `LST_QA_MEDIAN_K` attribution decreases to 1.1709°C. This indicates that temporal observation support becomes particularly informative under cloud-restricted conditions.
 
-3. **Attribution Stability:**
-   - The primary physical environmental feature ranking (`NDBI` > `NDWI` > `NDVI`) remains robust and invariant across all four seasons.
+3. **Non-Causal Interpretation of `LST_QA_MEDIAN_K`:**
+   - `LST_QA_MEDIAN_K` provides a strong retrieval-quality and observation-context signal associated with seasonal atmospheric conditions. Its high predictive contribution must NOT be interpreted as evidence that radiometric uncertainty itself physically causes surface heating. SHAP values represent decision tree feature attribution, not physical causal mechanisms.
+
+4. **Attribution Stability:**
+   - Across all seasons, `NDBI` consistently leads the physical surface predictors (`NDBI` > `NDWI` > `NDVI`).

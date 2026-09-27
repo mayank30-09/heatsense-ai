@@ -50,6 +50,14 @@ from gis.ml.xgb_tuning import (
     TARGET_COLUMN,
     validate_dataset_schema,
 )
+from gis.quality.hotspot_definitions import (
+    CHRONIC_HOTSPOT_FREQ_THRESHOLD,
+    PERSISTENT_HOTSPOT_FREQ_THRESHOLD,
+    is_active_hotspot,
+    is_chronic_hotspot,
+    is_non_hotspot,
+    is_persistent_hotspot,
+)
 
 DEFAULT_INPUT = PROJECT_ROOT / "data" / "processed" / "sensitivity" / "policy_d" / "analysis.parquet"
 DEFAULT_PARAMS = PROJECT_ROOT / "artifacts" / "xgb_tuning" / "xgb_best_params.json"
@@ -326,38 +334,53 @@ def main() -> None:
         print(f"  {r['season']:14s} | n={r['n_samples']:,} | MAE: {r['MAE']:.3f} degC | RMSE: {r['RMSE']:.3f} degC | R2: {r['R2']:.3f}")
     print(f"Saved seasonal errors to: {season_csv_path}")
 
-    # 7. Hotspot-Specific Analysis
+    # 7. Hotspot-Specific Analysis (Canonical 4 Tiers)
     hotspot_records = []
-    # Non-hotspot (freq == 0)
-    mask_non = df_residuals["hotspot_frequency"] == 0
+    # 1. Non-hotspot (freq == 0.0)
+    mask_non = is_non_hotspot(df_residuals["hotspot_frequency"]).to_numpy()
     met_non = compute_regression_metrics(df_residuals.loc[mask_non, "LST_C"], df_residuals.loc[mask_non, "prediction"])
     hotspot_records.append({
         "hotspot_category": "non_hotspot",
-        "definition": "hotspot_frequency == 0",
+        "definition": "hotspot_frequency == 0.0",
         "n_samples": met_non["n_samples"],
         "MAE": met_non["MAE"],
         "RMSE": met_non["RMSE"],
         "R2": met_non["R2"],
     })
 
-    # Active hotspot (freq > 0)
-    mask_active = df_residuals["hotspot_frequency"] > 0
+    # 2. Active hotspot (freq > 0.0)
+    mask_active = is_active_hotspot(df_residuals["hotspot_frequency"]).to_numpy()
     met_active = compute_regression_metrics(df_residuals.loc[mask_active, "LST_C"], df_residuals.loc[mask_active, "prediction"])
     hotspot_records.append({
         "hotspot_category": "active_hotspot",
-        "definition": "hotspot_frequency > 0",
+        "definition": "hotspot_frequency > 0.0",
         "n_samples": met_active["n_samples"],
         "MAE": met_active["MAE"],
         "RMSE": met_active["RMSE"],
         "R2": met_active["R2"],
     })
 
-    # Chronic hotspot (freq >= 6 or is_persistent_hotspot)
-    mask_chronic = (df_residuals["hotspot_frequency"] >= 6) | (df_residuals["is_persistent_hotspot"] == True)
+    # 3. Persistent hotspot (freq >= 0.25 or is_persistent_hotspot)
+    mask_pers = (
+        is_persistent_hotspot(df_residuals["hotspot_frequency"], threshold=PERSISTENT_HOTSPOT_FREQ_THRESHOLD).to_numpy()
+        | (df_residuals.get("is_persistent_hotspot", pd.Series([False] * len(df_residuals))) == True).to_numpy()
+    )
+    met_pers = compute_regression_metrics(df_residuals.loc[mask_pers, "LST_C"], df_residuals.loc[mask_pers, "prediction"])
+    hotspot_records.append({
+        "hotspot_category": "persistent_hotspot",
+        "definition": "hotspot_frequency >= 0.25 or is_persistent_hotspot",
+        "n_samples": met_pers["n_samples"],
+        "MAE": met_pers["MAE"],
+        "RMSE": met_pers["RMSE"],
+        "R2": met_pers["R2"],
+    })
+
+    # 4. Chronic hotspot (freq >= 0.50)
+    mask_chronic = is_chronic_hotspot(df_residuals["hotspot_frequency"], threshold=CHRONIC_HOTSPOT_FREQ_THRESHOLD).to_numpy()
     met_chronic = compute_regression_metrics(df_residuals.loc[mask_chronic, "LST_C"], df_residuals.loc[mask_chronic, "prediction"])
     hotspot_records.append({
         "hotspot_category": "chronic_hotspot",
-        "definition": "hotspot_frequency >= 6 or is_persistent_hotspot",
+        "definition": "hotspot_frequency >= 0.50",
         "n_samples": met_chronic["n_samples"],
         "MAE": met_chronic["MAE"],
         "RMSE": met_chronic["RMSE"],

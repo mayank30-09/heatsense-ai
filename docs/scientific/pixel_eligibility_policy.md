@@ -12,7 +12,7 @@
 
 The objective of the HEATSENSE AI Pixel Eligibility Policy is to establish a rigorous quality-control gate between raw satellite observations and downstream machine learning and spatial optimization pipelines. 
 
-In urban heat island (UHI) analytics, satellite thermal observations frequently suffer from localized radiative transfer distortions, unflagged cloud-edge artifacts, and atmospheric water vapor over-corrections. A naive filter that simply deletes all extreme values (e.g. clipping $LST > 50^\circ\text{C}$ or enforcing universal $OBS \ge 2$) purges critical real-world industrial heat generators and starves the model of 40% of Surat's landmass during monsoon seasons. Conversely, an unfiltered dataset permits erroneous cloud-shadow anomalies (such as single-observation $6.47^\circ\text{C}$ minimums) to corrupt baseline training data.
+In urban heat island (UHI) analytics, satellite thermal observations frequently suffer from localized radiative transfer distortions, unflagged cloud-edge artifacts, and retrieval uncertainties under high atmospheric moisture conditions. A naive filter that simply deletes all extreme values (e.g. clipping $LST > 50^\circ\text{C}$ or enforcing universal $OBS \ge 2$) purges critical real-world industrial heat generators and starves the model of 40% of Surat's landmass during monsoon seasons. Conversely, an unfiltered dataset permits erroneous cold-edge anomalies (such as single-observation $6.47^\circ\text{C}$ minimums) to enter baseline training data.
 
 This policy establishes an evidence-based, tripartite classification:
 - **ACCEPT:** Uncompromised pixel with sufficient multi-temporal support and spatial consistency.
@@ -97,13 +97,13 @@ Four candidate policies were systematically tested across all 19 seasons (2022�
 | **Policy A** | $OBS \ge 1$ (Unconstrained baseline) | 100.00% | 90.01% | 100.00% | 40.00% (Retains severe cloud artifacts) |
 | **Policy B** | $OBS \ge 2$ (Strict multi-observation cutoff) | 64.68% | 59.40% | 37.73% (Loses 62.3% of hotspots) | 100.00% |
 | **Policy C** | $OBS \ge 2$ OR Chronic Persistent Hotspot | 65.16% | 59.82% | 61.39% (Rescues chronic hotspots) | 100.00% |
-| **Policy D** | $OBS \ge 1$ with Selective Anomaly Exclusion | **99.95%** | **89.96%** | **99.18%** (Preserves urban heat islands) | **100.00%** (Purges cloud shadows) |
+| **Policy D** | $OBS \ge 1$ with Selective Anomaly Exclusion | **99.95%** | **89.96%** | **99.18%** (Preserves urban heat islands) | **100.00%** (Purges extreme spatial anomalies) |
 
 ### 6.1 Policy Tradeoff Evaluation
-- **Policy A** fails because it permits unflagged cloud-top shadows (e.g. 6.47°C) into the downstream dataset.
+- **Policy A** fails because it permits unflagged severe cold outliers (e.g. 6.47°C) into the downstream dataset.
 - **Policy B** creates severe spatial and thematic starvation, discarding 40.6% of Surat's land area and 62.3% of its monsoon urban heat islands.
 - **Policy C** successfully protects verified multi-season hotspots (e.g. Pandesara 70.23°C hotspot), but still suffers from 40% spatial data loss across non-hotspot residential/commercial wards.
-- **Policy D** represents the most balanced **EVIDENCE-SUPPORTED CANDIDATE**: it purges 100% of severe single-observation cloud-shadow anomalies while preserving 99.18% of urban heat islands and 89.96% of city-wide spatial coverage.
+- **Policy D** represents the most balanced **EVIDENCE-SUPPORTED CANDIDATE**: it satisfies the single-observation spatial-anomaly exclusion rule, purging 123 severe single-observation anomalies (including cloud-edge/cloud-shadow-like depressions) while preserving 99.18% of urban heat islands and 89.96% of city-wide spatial coverage.
 
 ---
 

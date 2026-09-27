@@ -30,6 +30,10 @@ from gis.ml.spatial_validation import spatial_block_folds, validate_fold_separat
 from gis.ml.rf_model import compute_regression_metrics, DEFAULT_FEATURES, TARGET_COL
 from gis.ml.xgb_model import train_xgb_regressor
 from gis.ml.explainability import compute_tree_shap_values, compare_shap_stability
+from gis.quality.hotspot_definitions import (
+    CHRONIC_HOTSPOT_FREQ_THRESHOLD,
+    is_chronic_hotspot,
+)
 
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "diagnostics" / "ml"
 
@@ -269,8 +273,8 @@ def run_xgb_pipeline(
         "R2": non_hotspot_met["R2"],
     })
 
-    # 4. Chronic Hotspots (freq >= 6)
-    is_chronic = df_residuals["hotspot_frequency"] >= 6
+    # 4. Chronic Hotspots (freq >= 0.50)
+    is_chronic = is_chronic_hotspot(df_residuals["hotspot_frequency"], threshold=CHRONIC_HOTSPOT_FREQ_THRESHOLD).to_numpy()
     if is_chronic.sum() > 0:
         chronic_met = compute_regression_metrics(
             df_residuals.loc[is_chronic, "LST_C"],
@@ -278,7 +282,7 @@ def run_xgb_pipeline(
         )
         error_summary.append({
             "stratum": "Hotspot_Status",
-            "category": "Chronic Hotspot (freq >= 6)",
+            "category": "Chronic Hotspot (freq >= 0.50)",
             "n_samples": chronic_met["n_samples"],
             "MAE": chronic_met["MAE"],
             "RMSE": chronic_met["RMSE"],

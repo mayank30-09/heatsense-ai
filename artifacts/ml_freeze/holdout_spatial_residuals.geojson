@@ -1,0 +1,633 @@
+{
+  "type": "FeatureCollection",
+  "description": "HEATSENSE AI Holdout Spatial Residuals aggregated by 2km block",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_01_11",
+        "n_samples": 7461,
+        "mae": 1.3056,
+        "rmse": 1.7635,
+        "mean_residual": -0.4309,
+        "mean_obs_lst": 38.54,
+        "mean_pred_lst": 38.11
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_01_14",
+        "n_samples": 6239,
+        "mae": 1.2486,
+        "rmse": 1.7026,
+        "mean_residual": -0.4169,
+        "mean_obs_lst": 38.1,
+        "mean_pred_lst": 37.68
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_02_08",
+        "n_samples": 7600,
+        "mae": 1.3487,
+        "rmse": 1.844,
+        "mean_residual": -0.2617,
+        "mean_obs_lst": 37.32,
+        "mean_pred_lst": 37.06
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_02_09",
+        "n_samples": 7559,
+        "mae": 1.2952,
+        "rmse": 1.7703,
+        "mean_residual": -0.1997,
+        "mean_obs_lst": 37.69,
+        "mean_pred_lst": 37.49
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_02_11",
+        "n_samples": 7371,
+        "mae": 1.2453,
+        "rmse": 1.6569,
+        "mean_residual": 0.2027,
+        "mean_obs_lst": 37.13,
+        "mean_pred_lst": 37.33
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_02_12",
+        "n_samples": 7369,
+        "mae": 1.3366,
+        "rmse": 1.901,
+        "mean_residual": 0.1353,
+        "mean_obs_lst": 36.61,
+        "mean_pred_lst": 36.75
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_03_05",
+        "n_samples": 1116,
+        "mae": 1.2942,
+        "rmse": 1.6763,
+        "mean_residual": 0.8821,
+        "mean_obs_lst": 35.36,
+        "mean_pred_lst": 36.24
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_03_10",
+        "n_samples": 7412,
+        "mae": 1.2195,
+        "rmse": 1.6354,
+        "mean_residual": -0.6663,
+        "mean_obs_lst": 38.36,
+        "mean_pred_lst": 37.69
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_03_11",
+        "n_samples": 7349,
+        "mae": 1.2493,
+        "rmse": 1.7057,
+        "mean_residual": -0.2362,
+        "mean_obs_lst": 37.72,
+        "mean_pred_lst": 37.49
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_03_12",
+        "n_samples": 7307,
+        "mae": 1.2883,
+        "rmse": 1.727,
+        "mean_residual": 0.2389,
+        "mean_obs_lst": 34.82,
+        "mean_pred_lst": 35.06
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_05_08",
+        "n_samples": 7352,
+        "mae": 1.3185,
+        "rmse": 1.8605,
+        "mean_residual": -0.1485,
+        "mean_obs_lst": 39.03,
+        "mean_pred_lst": 38.88
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_05_12",
+        "n_samples": 6502,
+        "mae": 1.1762,
+        "rmse": 1.5494,
+        "mean_residual": -0.0932,
+        "mean_obs_lst": 38.77,
+        "mean_pred_lst": 38.68
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_05_13",
+        "n_samples": 5864,
+        "mae": 1.1733,
+        "rmse": 1.5427,
+        "mean_residual": -0.0985,
+        "mean_obs_lst": 38.12,
+        "mean_pred_lst": 38.02
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_06_03",
+        "n_samples": 6253,
+        "mae": 1.3994,
+        "rmse": 1.8183,
+        "mean_residual": 0.6047,
+        "mean_obs_lst": 36.7,
+        "mean_pred_lst": 37.3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_06_09",
+        "n_samples": 7385,
+        "mae": 1.0222,
+        "rmse": 1.442,
+        "mean_residual": -0.0356,
+        "mean_obs_lst": 39.33,
+        "mean_pred_lst": 39.29
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_07_05",
+        "n_samples": 7321,
+        "mae": 1.0562,
+        "rmse": 1.3746,
+        "mean_residual": -0.0224,
+        "mean_obs_lst": 39.04,
+        "mean_pred_lst": 39.01
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_07_08",
+        "n_samples": 7199,
+        "mae": 1.1936,
+        "rmse": 1.5462,
+        "mean_residual": -0.6817,
+        "mean_obs_lst": 40.35,
+        "mean_pred_lst": 39.67
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_08_05",
+        "n_samples": 7362,
+        "mae": 1.1548,
+        "rmse": 1.4883,
+        "mean_residual": 0.6013,
+        "mean_obs_lst": 36.81,
+        "mean_pred_lst": 37.41
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_09_04",
+        "n_samples": 7355,
+        "mae": 1.195,
+        "rmse": 1.5961,
+        "mean_residual": 0.109,
+        "mean_obs_lst": 37.6,
+        "mean_pred_lst": 37.71
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_09_07",
+        "n_samples": 7570,
+        "mae": 1.126,
+        "rmse": 1.5666,
+        "mean_residual": -0.3582,
+        "mean_obs_lst": 40.02,
+        "mean_pred_lst": 39.66
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_09_10",
+        "n_samples": 7354,
+        "mae": 1.1276,
+        "rmse": 1.7636,
+        "mean_residual": -0.027,
+        "mean_obs_lst": 39.19,
+        "mean_pred_lst": 39.17
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_10_02",
+        "n_samples": 6488,
+        "mae": 1.2751,
+        "rmse": 1.7987,
+        "mean_residual": 0.5088,
+        "mean_obs_lst": 35.68,
+        "mean_pred_lst": 36.19
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_11_00",
+        "n_samples": 2962,
+        "mae": 1.5199,
+        "rmse": 2.0823,
+        "mean_residual": 0.792,
+        "mean_obs_lst": 34.2,
+        "mean_pred_lst": 35.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_12_05",
+        "n_samples": 7599,
+        "mae": 1.1642,
+        "rmse": 1.7292,
+        "mean_residual": 0.261,
+        "mean_obs_lst": 37.19,
+        "mean_pred_lst": 37.45
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_12_06",
+        "n_samples": 7540,
+        "mae": 1.4951,
+        "rmse": 2.1766,
+        "mean_residual": 0.0433,
+        "mean_obs_lst": 37.42,
+        "mean_pred_lst": 37.46
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_12_08",
+        "n_samples": 7398,
+        "mae": 1.4249,
+        "rmse": 1.9868,
+        "mean_residual": -0.435,
+        "mean_obs_lst": 37.75,
+        "mean_pred_lst": 37.32
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_12_09",
+        "n_samples": 2741,
+        "mae": 2.0727,
+        "rmse": 2.736,
+        "mean_residual": -1.2842,
+        "mean_obs_lst": 40.06,
+        "mean_pred_lst": 38.77
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_13_01",
+        "n_samples": 3990,
+        "mae": 1.3789,
+        "rmse": 1.7922,
+        "mean_residual": 0.5829,
+        "mean_obs_lst": 35.31,
+        "mean_pred_lst": 35.89
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_13_07",
+        "n_samples": 5858,
+        "mae": 1.3877,
+        "rmse": 1.8341,
+        "mean_residual": 0.5303,
+        "mean_obs_lst": 34.95,
+        "mean_pred_lst": 35.48
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_14_06",
+        "n_samples": 1568,
+        "mae": 1.3094,
+        "rmse": 1.7062,
+        "mean_residual": 0.7556,
+        "mean_obs_lst": 34.0,
+        "mean_pred_lst": 34.76
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_14_09",
+        "n_samples": 7372,
+        "mae": 1.3106,
+        "rmse": 1.7206,
+        "mean_residual": -0.6207,
+        "mean_obs_lst": 37.63,
+        "mean_pred_lst": 37.01
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_14_11",
+        "n_samples": 1482,
+        "mae": 1.0414,
+        "rmse": 1.4082,
+        "mean_residual": 0.0697,
+        "mean_obs_lst": 36.43,
+        "mean_pred_lst": 36.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0,
+          0.0
+        ]
+      },
+      "properties": {
+        "block_id": "B_15_09",
+        "n_samples": 4460,
+        "mae": 1.4936,
+        "rmse": 2.0894,
+        "mean_residual": -0.3825,
+        "mean_obs_lst": 36.66,
+        "mean_pred_lst": 36.27
+      }
+    }
+  ]
+}

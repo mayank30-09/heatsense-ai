@@ -166,9 +166,9 @@ Out of 30 evaluated trials, **Trial #23** achieved the lowest mean spatial CV RM
 
 ---
 
-## 9. Full-Data Spatial Confirmation
+## 9. Full-Data Spatial Re-Evaluation of the Selected Configuration
 
-The candidate hyperparameters discovered in Trial #23 were confirmed on the **complete 924,731 observation Policy D dataset** across the authoritative 5 spatial folds.
+The candidate hyperparameters discovered in Trial #23 were evaluated on the **complete 924,731 observation Policy D dataset** across the development 5 spatial folds. As identified in the scientific audit, because this evaluation was performed within the same spatial fold framework used during exploratory development, this result represents a full-data spatial re-evaluation rather than an untouched independent final test.
 
 ### Individual Spatial Fold Results:
 | Fold ID | Validation Block Count | Validation Sample Count ($N$) | MAE ($^\circ\text{C}$) | RMSE ($^\circ\text{C}$) | $R^2$ | Training Time |
@@ -244,12 +244,12 @@ Evaluation across urban heat island sub-populations confirms performance in crit
 |---|---|---|---|---|---|---|---|
 | **Non-Hotspot** | $hotspot\_frequency = 0$ | 859,111 | 1.2284 | 1.6790 | 0.9119 | 1.7200 | **-0.0410** |
 | **Active Hotspot** | $hotspot\_frequency > 0$ | 65,620 | 2.0386 | 2.8222 | 0.7943 | 2.8940 | **-0.0718** |
-| **Chronic Hotspot** | $hotspot\_frequency \ge 6 \lor persistent$ | 11,851 | 3.3601 | 4.3494 | 0.5122 | 4.4120 | **-0.0626** |
+| **Persistent Hotspot** | $hotspot\_frequency \ge 0.25 \lor persistent$ | 11,851 | 3.3601 | 4.3494 | 0.5122 | 4.4120 | **-0.0626** |
 
 ### Key Hotspot Findings:
 1. **Substantial Error Reduction in Active Hotspots:** In active hotspots, tuned XGBoost reduced RMSE by $-0.072^\circ\text{C}$ (from $2.894^\circ\text{C}$ to $2.822^\circ\text{C}$), demonstrating that deeper trees (`max_depth=8`) better capture steep urban thermal gradients.
-2. **Persistence of Chronic Hotspot Under-Prediction:** In chronic industrial hotspots (e.g., Pandesara GIDC metal fabricators, Sachin GIDC chemical plants), mean absolute error remains elevated ($MAE = 3.360^\circ\text{C}$, $RMSE = 4.349^\circ\text{C}$).
-3. **Physical Explanation:** This residual error is not an algorithmic defect; it is a direct consequence of spatial scale. Corrugated industrial roofs reach skin temperatures exceeding $65^\circ\text{C}$ over $20\text{ m} \times 20\text{ m}$ footprints. When integrated into 100m grid cells with surrounding roads and vegetation, optical indices (`NDBI`, `NDVI`) reach asymptotic saturation, bounding the model's capacity to predict extreme local peaks.
+2. **Persistence of Hotspot Under-Prediction:** In persistent and chronic industrial hotspots (e.g., Pandesara GIDC, Sachin GIDC), mean absolute error remains elevated ($MAE = 3.360^\circ\text{C}$, $RMSE = 4.349^\circ\text{C}$).
+3. **Scale and Heterogeneity Context:** Fine-scale industrial roof materials may occupy only a fraction of the available 100m thermal observation footprint, potentially limiting the ability of the current predictors to reproduce localized extremes. The elevated residuals in chronic hotspot regions are consistent with the possibility that the available 100m predictors do not fully represent fine-scale industrial or built-surface heterogeneity. High-resolution material and building information represent important potential future hypotheses.
 
 ---
 
@@ -309,8 +309,8 @@ Fold 3 exhibits slightly higher RMSE ($1.8801^\circ\text{C}$) because its spatia
 
 ### 16.2 Interpretation of `LST_QA_MEDIAN_K`
 - `LST_QA_MEDIAN_K` exhibits the largest mean absolute SHAP value ($3.0481$).
-- **Scientific Context:** USGS Level-2 `ST_QA` reports radiometric uncertainty derived from atmospheric transmission and water vapor models. In coastal, sub-tropical Surat, atmospheric column water vapor varies dramatically between hot dry summers and humid monsoons.
-- **Role:** Rather than acting as a direct physical cause of surface heat, `LST_QA_MEDIAN_K` provides the decision trees with a powerful proxy for atmospheric background state, allowing the trees to conditionally shift the seasonal baseline temperature before applying optical corrections (`NDBI`, `NDVI`).
+- **Scientific Context & Attribution Boundaries:** USGS Level-2 `ST_QA` reports radiometric uncertainty derived from atmospheric transmission and water vapor models. In coastal, sub-tropical Surat, atmospheric column water vapor varies dramatically between hot dry summers and humid monsoons.
+- **Context Signal vs Physical Cause:** Rather than acting as a direct physical cause of surface heat, `LST_QA_MEDIAN_K` provides the decision trees with a strong retrieval-quality and observation-context signal associated with observation conditions. Its high predictive contribution should not be interpreted as evidence that radiometric uncertainty itself causes surface heating. SHAP represents decision tree model attribution, not physical causal mechanism.
 
 ---
 
@@ -332,13 +332,10 @@ The following scientific, sensor, and operational limitations must be preserved 
 ## 18. Model Configuration Status
 
 ### Scientific Decision:
-1. **Tuned XGBoost is Confirmed as the Primary Gradient Boosted Architecture:**
-   The tuned configuration ($1300\text{ trees}, max\_depth=8, lr=0.0328$) is confirmed to be stable, reproducible, and superior to the XGBoost baseline across all metrics ($-0.044^\circ\text{C}$ RMSE reduction).
+1. **Tuned XGBoost is the current primary model candidate, subject to independent spatial holdout evaluation and final ML/QC freeze review.**
+   The tuned configuration provides the best observed spatial-CV predictive metrics among the evaluated RF/XGBoost configurations.
 2. **Comparison with Random Forest Baseline:**
-   Tuned XGBoost marginally outperforms Random Forest ($RMSE = 1.784^\circ\text{C}$ vs $1.802^\circ\text{C}$, $R^2 = 0.903$ vs $0.901$). Because both models demonstrate near-identical spatial generalization skill, Tuned XGBoost is selected as the operational model due to:
-   - Faster vectorized batch inference on full rasters via `tree_method='hist'`.
-   - Direct, native integration with fast C++ TreeExplainer for spatial SHAP generation.
-   - Compact memory footprint for deployment in FastAPI backend services.
+   Tuned XGBoost provides modestly better spatial predictive metrics ($RMSE = 1.784^\circ\text{C}$ vs $1.802^\circ\text{C}$, $R^2 = 0.903$ vs $0.901$). The improvement over Random Forest is modest ($0.0184^\circ\text{C}$ RMSE), and empirical benchmarking shows Random Forest is approximately 3.1x faster for CPU batch inference (2.11s vs 6.55s on 924k rows). Model selection is therefore based on predictive accuracy and native C++ TreeExplainer integration for explainability rather than inference speed.
 3. **Policy D Status:**
    Policy D remains **DRAFT / NOT FROZEN**. Model hyperparameter tuning establishes that the ML architecture is sound and stable under Policy D, but the formal policy freeze will be documented in the final QC configuration milestone.
 

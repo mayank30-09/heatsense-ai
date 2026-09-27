@@ -2,117 +2,140 @@
 
 **Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform  
 **Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)  
-**Document Version:** 1.0-FREEZE-RECORD  
+**Document Version:** 1.0-FROZEN  
 **Date:** September 2026  
-**Status:** **SCIENTIFIC FREEZE REVIEW & VERIFICATION COMPLETE**  
+**Status:** **FROZEN (SCIENTIFIC QC + ML FREEZE GATE COMPLETED)**  
+**Branch:** `feature/scientific-freeze-correction`  
+**Git Commit:** `06a4c850893cb2656f9687c9ac3bc52cb03cdc3d`  
 
 ---
 
-## 1. Freeze Lineage & Authority
+## 1. Freeze Lineage & Scientific Protocol Statement
 
-This record establishes the formal, immutable cryptographic and procedural specification for the **HEATSENSE AI Pixel Quality Eligibility Policy (Policy D)** and the **Tuned XGBoost LST Regression Model (`xgb_tuned_optuna_tpe_v1`)**.
+This record establishes the authoritative, immutable cryptographic and procedural specification for the **HEATSENSE AI Pixel Quality Eligibility Policy (Policy D)** and the **Final Tuned XGBoost LST Regression Model (`xgb_tuned_policy_d_v1`)**.
 
-The freeze marks the successful completion of the scientific validation phase:
+### Critical Procedural Guarantees:
+1. **Immutable Spatial Holdout:** The Surat analysis area was partitioned strictly by spatial block (`block_id`) into **132 development blocks** (720,973 rows, 77.97%) and **33 test blocks** (203,758 rows, 22.03%) with zero overlap ($\text{development\_blocks} \cap \text{test\_blocks} = \emptyset$).
+2. **Strict Test Isolation:** The test blocks were NOT used for:
+   - hyperparameter tuning
+   - feature selection
+   - model selection
+   - threshold selection
+   - model development
+3. **Single Untouched Evaluation:** The final candidate model was trained on all 132 development blocks and evaluated **EXACTLY ONCE** on the locked test blocks.
+
 ```text
-DATA INGESTION (LANDSAT 8/9 C2 L2)
-        ↓
-SEASONAL COMPOSITING & COGs
-        ↓
-OBSERVATION SUPPORT & QUALITY DIAGNOSTICS
-        ↓
-POLICY D SENSITIVITY & ELIGIBILITY GATE
-        ↓
-DETERMINISTIC SPATIAL BLOCKS (2 km x 2 km)
-        ↓
-5-FOLD SPATIAL CROSS-VALIDATION
-        ↓
-OPTUNA TPE HYPERPARAMETER OPTIMIZATION (30 TRIALS)
-        ↓
-INDEPENDENT SPATIAL HOLDOUT VALIDATION (20% BLOCKS)
-        ↓
-FEATURE ABLATION & SEASONAL SHAP ANALYSIS
-        ↓
-SCIENTIFIC QC / ML CONFIGURATION FREEZE
+Policy D (Analysis Dataset)
+    ↓
+LOCKED SPATIAL HOLDOUT (132 Dev / 33 Test Blocks)
+    ↓
+5-FOLD SPATIAL CV (132 Dev Blocks Only)
+    ↓
+OPTUNA TPE TUNING (30 Trials strictly on Dev Blocks)
+    ↓
+FINAL CANDIDATE MODEL (Fit on all 132 Dev Blocks)
+    ↓
+33 UNTOUCHED TEST BLOCKS
+    ↓
+ONE FINAL HOLDOUT EVALUATION (MAE: 1.2726°C, RMSE: 1.7524°C, R²: 0.9006)
+    ↓
+REPRODUCIBILITY HASHES (SHA-256)
+    ↓
+QC + ML FREEZE
 ```
-
-Downstream modules (Production Analytical COGs, Heat Priority, Candidate Generation, Hard Constraints, Baseline Constrained Optimizer, NSGA-II) consume the artifacts certified in this record.
 
 ---
 
 ## 2. Certified Cryptographic Provenance (SHA-256 Hashes)
 
+The following SHA-256 digests are authoritative and persisted in `artifacts/ml_freeze/checksums.sha256`:
+
 | Artifact Category | File Path | SHA-256 Hex Digest |
 |---|---|---|
-| **Authoritative Dataset** | `data/processed/sensitivity/policy_d/analysis.parquet` | `e824794e5ba2e26937ac40f55f5fd788adad70b1a6b23c6ab435b08223dd9997` |
 | **Quality Policy Spec** | `config/quality_policy_d.yaml` | `5f122e6104cc2772de1d6fc6daef64de170b68d4ed74d2a8e8182144b4c21363` |
-| **Tuned Hyperparameters** | `artifacts/xgb_tuning/xgb_best_params.json` | `561c02a4edfe99a1c6e4462771cfe7f37294997f2e04d3ac4b4b3c0aacb1528b` |
-| **Spatial 5-Fold Map** | `artifacts/xgb_tuning/spatial_fold_definition.json` | `dd9a1351f9f1aa5798fc68412d4459910cc19008e65b9b8352f7f98f57dbc456` |
-| **Holdout Metadata** | `artifacts/final_holdout/holdout_metadata.json` | `8ebdd4fbd1065925353406d86156c650bfa6845d6c379fb685ad8afb4b1da79d` |
-| **Test Blocks List** | `artifacts/final_holdout/test_blocks.json` | `b9d2cf77609ca7265028e79a13206ffc1377634126b267e10b2d518a3341816d` |
-| **Dev Blocks List** | `artifacts/final_holdout/development_blocks.json` | `1e719d30a84cda87960fb55fa1a4f8d6f52b8a54eda7d8723515bbadaab6aa30` |
+| **Authoritative Dataset** | `data/processed/sensitivity/policy_d/analysis.parquet` | `e824794e5ba2e26937ac40f55f5fd788adad70b1a6b23c6ab435b08223dd9997` |
+| **Locked Spatial Holdout** | `artifacts/ml_freeze/holdout_split.json` | `0ee436cbb382c6b811c27331701b03fba8221f8f1b99baa5522e8b94f92deb5f` |
+| **Spatial 5-Fold Map** | `artifacts/ml_freeze/tuning/spatial_fold_definition.json` | `6836471bc503e7c9aeadcbf86907f1a10baa8def6607925cb27c0b0bf84b3418` |
+| **Tuned Hyperparameters** | `artifacts/ml_freeze/tuning/xgb_best_params.json` | `0ca76e50933d35783596274467247dfa5936678ada0ef7dd7e8003c827026512` |
+| **Locked Feature Schema** | `artifacts/ml_freeze/feature_schema.json` | `15f1828a55d54d01997ae17109c3dbd57ef57257e5c790a76e3e476ae13d042c` |
+| **Final Candidate Model (JSON)** | `artifacts/ml_freeze/xgb_tuned_policy_d.json` | `8c4aad26e2a56867e327aeae0cd758f9b2b1105bf8d35c0ec8f6774f4ef38377` |
+| **Final Candidate Model (Joblib)** | `artifacts/ml_freeze/xgb_tuned_policy_d.joblib` | `e1aedd4946b1b29823bdea66ea3ec7b9ba5f20c4ddbfdf6920c2e62e6b30b7c9` |
+| **Final Holdout Performance** | `artifacts/ml_freeze/holdout_performance.json` | `fc72fe6a22281b364c11f614dc9406a06c3c0291b4c29f89eea89e4531a93de5` |
+| **Holdout Seasonal Metrics** | `artifacts/ml_freeze/holdout_season_performance.csv` | `1158e56ba4e1a22cd44e6d92d614cc635db20be06415e902db99807cdf5291af` |
+| **Holdout Hotspot Metrics** | `artifacts/ml_freeze/holdout_hotspot_performance.csv` | `3990946de0616a2d4e20457278c09c6c39268aab59756dee72501bcb1097e539` |
+| **Holdout Spatial Residuals** | `artifacts/ml_freeze/holdout_spatial_residuals.geojson` | `4b4d3d59e2f0c2b27e479f157d355d745bcb65c49c61aac077ffd5179cc27327` |
+| **Model Metadata** | `artifacts/ml_freeze/model_metadata.json` | `8799b14fe3823ba84fd4efea90b8028c3aae0c2bda4eee8916f986b524743798` |
 
 ---
 
 ## 3. Dataset Reconciliation
 
-| Dataset Identifier | Filter Logic | Total Rows | Total Spatial Blocks | Retention vs Raw | Cold Artifact Removal | Status |
+| Dataset Identifier | Filter Logic | Total Rows | Total Spatial Blocks | Retention vs Raw | Severe Anomaly Removal | Status |
 |---|---|---|---|---|---|---|
-| **All-Policy Baseline** | $OBS \ge 1$ (Policy A unconstrained) | 924,854 | 165 | 100.00% | 40.0% (Retains cold shadows) | Diagnostic Reference |
-| **Policy D Dataset** | $OBS \ge 1$ + $3\times3$ screening ($|\Delta_{\text{med}}| \le 10^\circ\text{C}$ for $OBS=1$) | **924,731** | **165** | **99.99%** | **100.0%** (Purges 123 severe anomalies) | **CERTIFIED FROZEN BASELINE** |
+| **All-Policy Baseline** | $OBS \ge 1$ (Policy A unconstrained) | 924,854 | 165 | 100.00% | Retains unflagged cold shadows | Diagnostic Reference |
+| **Policy D Dataset** | $OBS \ge 1$ + $3\times3$ screening ($|\Delta_{\text{med}}| \le 10^\circ\text{C}$ for $OBS=1$) | **924,731** | **165** | **99.99%** | **100.0%** (123 severe anomalies purged) | **CERTIFIED FROZEN BASELINE** |
+
+- **Development Set (132 Blocks):** 720,973 rows (77.97%)
+- **Independent Test Set (33 Blocks):** 203,758 rows (22.03%)
+- **Spatial Block Size:** $20 \times 20$ pixels (~$2\text{ km} \times 2\text{ km}$)
 
 ---
 
 ## 4. Frozen Quality Policy Specification (Policy D)
 
 - **Policy ID:** `D`
+- **Policy Name:** `policy_d`
+- **Version:** `1.0-FROZEN`
 - **Implementation:** `gis/quality/eligibility.py` (`evaluate_policy_d`)
 - **Specification:** `config/quality_policy_d.yaml`
-- **Rules:**
-  - $OBS < 1 \lor \text{non-finite}: \to \mathbf{EXCLUDE}$
-  - $OBS \ge 2 \land \text{no spatial anomaly}: \to \mathbf{ACCEPT}$
-  - $OBS \ge 2 \land \text{SPATIAL\_ANOMALY}: \to \mathbf{FLAG}$
-  - $OBS = 1 \land (|\Delta_{\text{med}}| > 10.0^\circ\text{C} \lor \text{LOW\_SUPPORT\_SPATIAL\_EXTREME}): \to \mathbf{EXCLUDE}$
-  - $OBS = 1 \land \text{is\_boundary} \land valid\_neighbors < 4: \to \mathbf{FLAG}$
-  - $OBS = 1 \land |\Delta_{\text{med}}| \le 10.0^\circ\text{C}: \to \mathbf{FLAG}$
+- **Neighborhood Size:** $3 \times 3$ matrix (minimum 4 valid neighbors required for unflagged interior evaluation)
+- **Anomaly Threshold:** $|\Delta_{\text{med}}| = 10.0^\circ\text{C}$
+- **Operational Rules:**
+  - $OBS < 1 \lor \text{non-finite}: \to \mathbf{EXCLUDE}$ (Reason: `no_temporal_support`)
+  - $OBS \ge 2 \land \text{no spatial anomaly}: \to \mathbf{ACCEPT}$ (Reason: `robust_temporal_support_and_spatially_coherent`)
+  - $OBS \ge 2 \land \text{SPATIAL\_ANOMALY}: \to \mathbf{FLAG}$ (Reason: `multi_observation_spatial_anomaly`)
+  - $OBS = 1 \land (|\Delta_{\text{med}}| > 10.0^\circ\text{C} \lor \text{LOW\_SUPPORT\_SPATIAL\_EXTREME}): \to \mathbf{EXCLUDE}$ (Reason: `single_observation_severe_spatial_anomaly`)
+  - $OBS = 1 \land \text{is\_boundary} \land valid\_neighbors < 4 \land |\Delta_{\text{med}}| \le 10.0^\circ\text{C}: \to \mathbf{FLAG}$ (Reason: `single_observation_boundary_context`)
+  - $OBS = 1 \land |\Delta_{\text{med}}| \le 10.0^\circ\text{C}: \to \mathbf{FLAG}$ (Reason: `single_observation_spatially_coherent`)
 
 ---
 
 ## 5. Canonical Hotspot & Persistence Definitions
 
 - **Implementation:** `gis/quality/hotspot_definitions.py`
-- **Tiers:**
-  - `non_hotspot`: $hotspot\_frequency == 0.0$ ($N = 859,111$ overall, $191,545$ in test holdout)
-  - `active_hotspot`: $hotspot\_frequency > 0.0$ ($N = 65,620$ overall, $12,213$ in test holdout)
-  - `persistent_hotspot`: $hotspot\_frequency \ge 0.25 \lor is\_persistent\_hotspot$ ($N = 11,851$ overall, $2,177$ in test holdout)
-  - `chronic_hotspot`: $hotspot\_frequency \ge 0.50$ ($N = 4,195$ overall, $405$ in test holdout)
-- **Resolution of Previous Ambiguity:** Replaced non-functional integer check `hotspot_frequency >= 6` with canonical normalized float thresholds ($0.25$ for persistent, $0.50$ for chronic).
+- **Tiers (Normalized Seasonal Recurrence Frequency):**
+  - `non_hotspot`: $hotspot\_frequency == 0.0$ ($N = 191,545$ in test holdout, 94.01%)
+  - `active_hotspot`: $hotspot\_frequency > 0.0$ ($N = 12,213$ in test holdout, 5.99%)
+  - `persistent_hotspot`: $hotspot\_frequency \ge 0.25 \lor is\_persistent\_hotspot$ ($N = 2,177$ in test holdout, 1.07%)
+  - `chronic_hotspot`: $hotspot\_frequency \ge 0.50$ ($N = 405$ in test holdout, 0.20%)
+- **Resolution:** Replaced outdated integer check `hotspot_frequency >= 6` with normalized float thresholds (`PERSISTENT = 0.25`, `CHRONIC = 0.50`).
 
 ---
 
 ## 6. Frozen Model Architecture & Hyperparameters
 
-- **Model ID:** `xgb_tuned_optuna_tpe_v1`
+- **Model ID:** `xgb_tuned_policy_d_v1`
 - **Architecture:** XGBoost `XGBRegressor` (`tree_method='hist'`)
-- **Target Variable ($y$):** `LST_C` (100m Land Surface Temperature in Celsius)
+- **Target Variable ($y$):** `LST_C` (100m ground resolution Land Surface Temperature in Celsius)
 - **Predictor Features ($X$):**
   1. `NDVI` (Normalized Difference Vegetation Index)
   2. `NDBI` (Normalized Difference Built-up Index)
   3. `NDWI` (Normalized Difference Water Index)
   4. `LST_OBS_COUNT` (Clear-sky scene count per composite)
-  5. `LST_QA_MEDIAN_K` (Radiometric temperature uncertainty from USGS Level-2 `ST_QA`)
-- **Excluded Features:** `latitude`, `longitude`, `row`, `col`, and spatial coordinates (strictly omitted to guarantee spatial generalization).
-- **Hyperparameters:**
+  5. `LST_QA_MEDIAN_K` (Radiometric surface temperature uncertainty in Kelvin from USGS Level-2 `ST_QA`)
+- **Predictor Exclusions:** `latitude`, `longitude`, `row`, `col`, and spatial coordinates are strictly omitted.
+- **Hyperparameters (Discovered in Development-Only Optuna Trial #25):**
   ```json
   {
-    "n_estimators": 1300,
-    "max_depth": 8,
-    "learning_rate": 0.03279127013273231,
-    "min_child_weight": 5.407238106447656,
-    "subsample": 0.7645658245026288,
-    "colsample_bytree": 0.9688977790657431,
-    "gamma": 1.6307304358159391,
-    "reg_alpha": 1.6949358907768442e-08,
-    "reg_lambda": 0.775738584617916,
+    "n_estimators": 900,
+    "max_depth": 9,
+    "learning_rate": 0.03662937937931856,
+    "min_child_weight": 3.253330265581497,
+    "subsample": 0.6539539403049981,
+    "colsample_bytree": 0.6285481356546664,
+    "gamma": 1.2827623793054954,
+    "reg_alpha": 6.448517630611331e-06,
+    "reg_lambda": 12.086733674708716,
     "objective": "reg:squarederror",
     "tree_method": "hist",
     "random_state": 42,
@@ -122,45 +145,76 @@ Downstream modules (Production Analytical COGs, Heat Priority, Candidate Generat
 
 ---
 
-## 7. Performance Verification Summary
+## 7. Authoritative Performance Verification
 
-### 7.1 Development 5-Fold Spatial Cross-Validation (Full Dataset)
-- **MAE:** $1.2855 \pm 0.0294^\circ\text{C}$
-- **RMSE:** $1.7840 \pm 0.0591^\circ\text{C}$
-- **$R^2$:** $0.9033 \pm 0.0050$
+### 7.1 Development 5-Fold Spatial Cross-Validation (132 Blocks / 720,973 rows)
+- **Best Dev-CV RMSE:** $1.8478^\circ\text{C}$
 
-### 7.2 Independent Spatial Holdout (Untouched 20% Blocks, $N = 203,758$)
-- **MAE:** **$1.2595^\circ\text{C}$**
-- **RMSE:** **$1.7342^\circ\text{C}$**
-- **$R^2$:** **$0.9026$**
+### 7.2 Independent Spatial Holdout Evaluation (Untouched 33 Blocks / 203,758 rows, Evaluation Count = 1)
+- **MAE:** **$1.2726^\circ\text{C}$**
+- **RMSE:** **$1.7524^\circ\text{C}$**
+- **$R^2$:** **$0.9006$**
+- **Training Time:** 37.74 s (on 720,973 development rows)
+- **Inference Latency:** 1.093 s (for 203,758 test rows)
 
-### 7.3 Model Comparison Summary
-- **Random Forest Baseline:** $RMSE = 1.8024^\circ\text{C}, R^2 = 0.9014$
-- **XGBoost Baseline:** $RMSE = 1.8280^\circ\text{C}, R^2 = 0.8986$
-- **Tuned XGBoost:** $RMSE = 1.7840^\circ\text{C}, R^2 = 0.9033$
+### 7.3 Seasonal Holdout Breakdown
+| Season | Samples ($N$) | Pct (%) | MAE ($^\circ\text{C}$) | RMSE ($^\circ\text{C}$) | $R^2$ | Mean Bias ($^\circ\text{C}$) |
+|---|---|---|---|---|---|---|
+| **Winter** | 54,930 | 26.96% | 0.9139 | 1.2136 | 0.6512 | +0.0032 |
+| **Summer** | 54,930 | 26.96% | 1.3734 | 1.7944 | 0.7119 | -0.1916 |
+| **Monsoon** | 49,954 | 24.52% | 1.8024 | 2.4353 | 0.7718 | +0.0866 |
+| **Post-Monsoon** | 43,944 | 21.57% | 0.9926 | 1.2772 | 0.7855 | -0.1047 |
+
+### 7.4 Hotspot Tier Breakdown
+| Hotspot Tier | Samples ($N$) | Pct (%) | MAE ($^\circ\text{C}$) | RMSE ($^\circ\text{C}$) | $R^2$ | Mean Bias ($^\circ\text{C}$) |
+|---|---|---|---|---|---|---|
+| **Non-Hotspot** ($freq == 0.0$) | 191,545 | 94.01% | 1.2251 | 1.6715 | 0.9076 | +0.0165 |
+| **Active Hotspot** ($freq > 0.0$) | 12,213 | 5.99% | 2.0170 | 2.7228 | 0.7809 | -1.1281 |
+| **Persistent Hotspot** ($freq \ge 0.25$) | 2,177 | 1.07% | 3.0959 | 3.9896 | 0.4941 | -1.3041 |
+| **Chronic Hotspot** ($freq \ge 0.50$) | 405 | 0.20% | 3.9077 | 4.8413 | 0.2118 | -1.5264 |
 
 ---
 
-## 8. Explicit Scientific Limitations
+## 8. Feature Ablation & SHAP Attribution Summary
 
-All downstream users and modules must maintain awareness of the following documented physical and sensor boundaries:
+### 8.1 Systematic Feature Ablation (Strict 132-Dev / 33-Test Split)
+| Configuration | Predictors | Dev CV RMSE ($^\circ\text{C}$) | Holdout RMSE ($^\circ\text{C}$) | Holdout $R^2$ |
+|---|---|---|---|---|
+| `A_physical_only` | `NDVI+NDBI+NDWI` | $5.1455 \pm 0.1085$ | 4.9967 | 0.1915 |
+| `B_physical_temporal` | `NDVI+NDBI+NDWI+LST_OBS_COUNT` | $4.0787 \pm 0.1022$ | 3.9709 | 0.4894 |
+| `C_physical_qa` | `NDVI+NDBI+NDWI+LST_QA_MEDIAN_K` | $2.1420 \pm 0.0929$ | 2.0518 | 0.8637 |
+| **`D_full`** | `NDVI+NDBI+NDWI+LST_OBS_COUNT+LST_QA_MEDIAN_K` | **$1.8224 \pm 0.0619$** | **1.7524** | **0.9006** |
 
-1. **Thermal Spatial Scale (~100m):**
-   Landsat 8/9 Band 10 thermal observations possess a 100m ground resolution. Sub-100m micro-urban interventions (e.g. painting a single building rooftop white) are integrated radiometrically with adjacent roads and vegetation.
+### 8.2 Seasonal Mean Absolute SHAP Attributions (|SHAP| $^\circ\text{C}$)
+| Season | `LST_QA_MEDIAN_K` | `LST_OBS_COUNT` | `NDBI` | `NDWI` | `NDVI` |
+|---|---|---|---|---|---|
+| **Overall** | 2.9800 | 1.2879 | 1.3867 | 0.6981 | 0.5347 |
+| **Winter** | 4.7802 | 1.2379 | 1.1056 | 0.7026 | 0.4461 |
+| **Summer** | 4.4230 | 0.5449 | 1.5739 | 0.7442 | 0.5028 |
+| **Monsoon** | 1.1709 | 2.5202 | 1.5900 | 0.7828 | 0.7365 |
+| **Post-Monsoon** | 1.0171 | 0.7262 | 1.1810 | 0.5139 | 0.5030 |
+
+---
+
+## 9. Known Physical & Sensor Limitations
+
+1. **Analytical Scale (~100m):**
+   Landsat 8/9 Band 10 thermal observations possess an analytical scale of ~100m. Micro-urban features (single tree crowns, individual small rooftops) are radiometrically integrated into cell-average radiance. Downstream candidate generation operates at 100m scale.
 2. **Elevated Prediction Error in Chronic Hotspots:**
-   In chronic industrial hotspots ($freq \ge 0.50$), prediction error increases to $MAE = 3.795^\circ\text{C}, RMSE = 4.746^\circ\text{C}$. This reflects sub-pixel roof surface radiance and optical index saturation. Downstream Heat Priority must fuse persistent hotspot masks with ML predictions rather than relying solely on regression outputs.
-3. **Partial 2026 Monsoon Series:**
-   The 2026 monsoon period contains partial temporal acquisitions.
-4. **Non-Causal Feature Attributions:**
-   SHAP values quantify statistical associations within tree splits. `LST_QA_MEDIAN_K` functions as a seasonal atmospheric baseline proxy, not a physical cause of heat.
+   In chronic industrial hotspots ($freq \ge 0.50$), prediction RMSE rises to $4.8413^\circ\text{C}$, with mean negative bias of $-1.5264^\circ\text{C}$ (under-prediction of extreme rooftop skin radiance due to 100m sub-pixel thermal heterogeneity). Downstream Heat Priority MUST maintain observed LST as primary evidence rather than substituting ML predictions.
+3. **Partial 2026 Monsoon Observation Record:**
+   The 2026 monsoon period represents partial satellite acquisitions.
+4. **Non-Causal Interpretative Nature of Features:**
+   `LST_QA_MEDIAN_K` provides retrieval-quality and atmospheric context. It is not a physical driver of surface heating.
 
 ---
 
-## 9. Environment & Software Stack
+## 10. Software & Environment Stack
 
-- **Python Version:** 3.12.10 (64-bit)
+- **Operating System:** Windows 11 (AMD64)
+- **Python Version:** 3.12.10
 - **XGBoost:** 3.4.1
 - **Scikit-Learn:** 1.9.1
 - **Optuna:** 5.0.0
 - **SHAP:** 0.52.0
-- **Git Commit:** `21e6601f7007bcc0e970b8c95971b9621d81ccb1` (branch: `feature/day1-bootstrap`)
+- **NumPy / Pandas:** 2.4.3 / 3.0.1

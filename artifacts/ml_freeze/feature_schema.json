@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "target": "LST_C",
+  "features": [
+    "NDVI",
+    "NDBI",
+    "NDWI",
+    "LST_OBS_COUNT",
+    "LST_QA_MEDIAN_K"
+  ],
+  "feature_order_locked": true,
+  "features_description": {
+    "NDVI": "Normalized Difference Vegetation Index (surface greenness)",
+    "NDBI": "Normalized Difference Built-Up Index (built density/impervious surface)",
+    "NDWI": "Normalized Difference Water Index (surface water/moisture)",
+    "LST_OBS_COUNT": "Landsat Level-2 clear-sky seasonal observation count (temporal support)",
+    "LST_QA_MEDIAN_K": "Landsat Level-2 radiometric uncertainty / atmospheric retrieval context (Kelvin)"
+  }
+}

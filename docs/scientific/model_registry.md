@@ -103,22 +103,22 @@ In accordance with HEATSENSE scientific principles:
 
 ### 3.3 Model: `XGBoost_Tuned`
 
-- **Model Identifier:** `xgb_tuned_optuna_tpe_v1`
+- **Model Identifier:** `xgb_tuned_policy_d_v1`
 - **Architecture:** XGBoost `XGBRegressor` (`tree_method='hist'`)
-- **Purpose:** Hyperparameter-optimized gradient boosted decision tree discovered via 30-trial Tree-structured Parzen Estimator (TPE) spatial CV search and confirmed on full Policy D dataset.
-- **Search Optimization Strategy:** Optuna `TPESampler(seed=42)` on 250,004 spatially-stratified search sample across 165 spatial blocks (preserving geographic representation).
-- **Hyperparameters (Best Trial #23):**
+- **Purpose:** Hyperparameter-optimized gradient boosted decision tree discovered via 30-trial Tree-structured Parzen Estimator (TPE) spatial CV search strictly on 132 development blocks and validated once on 33 untouched test blocks.
+- **Search Optimization Strategy:** Optuna `TPESampler(seed=42)` across 30 trials evaluated strictly with 5-fold spatial block cross-validation on 132 development blocks (720,973 rows) with zero test leakage.
+- **Hyperparameters (Best Trial #25):**
   ```json
   {
-    "n_estimators": 1300,
-    "max_depth": 8,
-    "learning_rate": 0.03279127013273231,
-    "min_child_weight": 5.407238106447656,
-    "subsample": 0.7645658245026288,
-    "colsample_bytree": 0.9688977790657431,
-    "gamma": 1.6307304358159391,
-    "reg_alpha": 1.6949358907768442e-08,
-    "reg_lambda": 0.775738584617916,
+    "n_estimators": 900,
+    "max_depth": 9,
+    "learning_rate": 0.03662937937931856,
+    "min_child_weight": 3.253330265581497,
+    "subsample": 0.6539539403049981,
+    "colsample_bytree": 0.6285481356546664,
+    "gamma": 1.2827623793054954,
+    "reg_alpha": 6.448517630611331e-06,
+    "reg_lambda": 12.086733674708716,
     "objective": "reg:squarederror",
     "tree_method": "hist",
     "random_state": 42,
@@ -126,20 +126,16 @@ In accordance with HEATSENSE scientific principles:
   }
   ```
 - **Spatial Validation Performance:**
-  - **Development 5-Fold Spatial CV (Full Dataset Mean $\pm$ Std):**
-    - **MAE:** $1.2855 \pm 0.0294^\circ\text{C}$ (min: $1.2595$, max: $1.3301$)
-    - **RMSE:** $1.7840 \pm 0.0591^\circ\text{C}$ (min: $1.7342$, max: $1.8801$)
-    - **$R^2$:** $0.9033 \pm 0.0050$ (min: $0.8963$, max: $0.9095$)
-  - **Independent Spatial Holdout (Untouched 20% Blocks, N = 203,758):**
-    - **MAE:** **$1.2595^\circ\text{C}$**
-    - **RMSE:** **$1.7342^\circ\text{C}$**
-    - **$R^2$:** **$0.9026$**
-- **Training Time:** ~55.0 s / fold
+  - **Development 5-Fold Spatial CV (132 Blocks / 720,973 rows):**
+    - **Best Dev-CV RMSE:** $1.8478^\circ\text{C}$
+  - **Independent Spatial Holdout (Untouched 33 Blocks / 203,758 rows, Evaluation Count = 1):**
+    - **MAE:** **$1.2726^\circ\text{C}$**
+    - **RMSE:** **$1.7524^\circ\text{C}$**
+    - **$R^2$:** **$0.9006$**
+- **Training Time:** ~37.7 s on full development dataset (720,973 rows)
 - **Empirical Prediction Latency (CPU Batch Inference):**
-  - 10k samples: 0.099 s (RF: 0.058 s)
-  - 100k samples: 0.764 s (RF: 0.256 s)
-  - Full Dataset (924,731 rows): 6.548 s (RF: 2.113 s)
-  - *Note:* Random Forest is ~3.1x faster at CPU batch prediction than the 1,300-tree depth-8 XGBoost ensemble. Tuned XGBoost is selected due to slightly superior spatial accuracy and native TreeExplainer acceleration.
+  - 203,758 samples (test holdout): 1.093 s (~5.36 s per 1M rows)
+  - *Note:* Random Forest is ~2.5x faster at CPU batch prediction than the 900-tree depth-9 XGBoost ensemble. Tuned XGBoost is selected due to slightly superior spatial accuracy (holdout RMSE 1.7524°C vs RF 1.8024°C) and native TreeExplainer acceleration.
 - **Status:** **FROZEN (CERTIFIED OPERATIONAL MODEL)**
 
 ---

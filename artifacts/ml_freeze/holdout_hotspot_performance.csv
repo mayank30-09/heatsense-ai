@@ -1,0 +1,5 @@
+tier,definition,n_samples,sample_pct,MAE,RMSE,R2,mean_bias
+non_hotspot,hotspot_frequency == 0.0,191545,94.01,1.2251,1.6715,0.9076,0.0165
+active_hotspot,hotspot_frequency > 0.0,12213,5.99,2.017,2.7228,0.7809,-1.1281
+persistent_hotspot,hotspot_frequency >= 0.25 or is_persistent_hotspot,2177,1.07,3.0959,3.9896,0.4941,-1.3041
+chronic_hotspot,hotspot_frequency >= 0.50,405,0.2,3.9077,4.8413,0.2118,-1.5264
