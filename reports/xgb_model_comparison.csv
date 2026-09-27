@@ -1,0 +1,4 @@
+model,mean_MAE,std_MAE,mean_RMSE,std_RMSE,mean_R2,std_R2
+RandomForest_Baseline,1.2927,0.028,1.8024,0.0545,0.9014,0.0043
+XGBoost_Baseline,1.319,0.0274,1.828,0.0607,0.8986,0.0045
+XGBoost_Tuned,1.2855,0.0294,1.784,0.0591,0.9033,0.005

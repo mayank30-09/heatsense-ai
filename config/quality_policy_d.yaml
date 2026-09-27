@@ -1,0 +1,59 @@
+# HEATSENSE AI — Machine-Readable Specification: Quality Policy D
+# Authoritative reference: gis/quality/eligibility.py (`evaluate_policy_d`)
+
+policy_id: "D"
+policy_name: "policy_d"
+version: "1.0-draft"
+status: "DRAFT / UNDER SCIENTIFIC REVIEW — NOT YET FROZEN"
+description: >
+  Nuanced physical anomaly filter. Ingests all valid pixels with OBS >= 1,
+  while selectively purging single-observation pixels that exhibit severe
+  spatial anomaly signals (e.g. unflagged cloud-shadow depressions).
+
+temporal_support:
+  minimum_observations_for_accept: 2
+  minimum_observations_for_flag: 1
+  exclude_if_obs_less_than: 1
+
+spatial_screening:
+  neighborhood_matrix_size: 3
+  minimum_valid_neighbors: 4
+  anomaly_diff_threshold_celsius: 10.0
+  boundary_handling:
+    flag_if_boundary_and_neighbors_less_than: 4
+
+classification_rules:
+  exclude:
+    - name: "no_temporal_support"
+      condition: "obs_count is None or obs_count < 1"
+      action: "EXCLUDE"
+      reason: "No observation support (OBS < 1)"
+    - name: "single_observation_severe_spatial_anomaly"
+      condition: "obs_count == 1 and ('LOW_SUPPORT_SPATIAL_EXTREME' in quality_flags or abs_diff_med > 10.0)"
+      action: "EXCLUDE"
+      reason: "Excluded under Policy D (OBS=1 with severe spatial neighborhood anomaly)"
+
+  flag:
+    - name: "multi_observation_spatial_anomaly"
+      condition: "obs_count >= 2 and 'SPATIAL_ANOMALY' in quality_flags"
+      action: "FLAG"
+      reason: "Retained under Policy D (OBS >= 2) with spatial anomaly warning"
+    - name: "single_observation_boundary_context"
+      condition: "obs_count == 1 and is_boundary_context and valid_neighbor_count < 4 and abs_diff_med <= 10.0"
+      action: "FLAG"
+      reason: "Retained under Policy D (OBS=1 on boundary edge, review recommended)"
+    - name: "single_observation_spatially_coherent"
+      condition: "obs_count == 1 and abs_diff_med <= 10.0 and (not is_boundary_context or valid_neighbor_count >= 4)"
+      action: "FLAG"
+      reason: "Retained under Policy D (OBS=1, spatially coherent, flagged for temporal support)"
+
+  accept:
+    - name: "robust_temporal_support_and_spatially_coherent"
+      condition: "obs_count >= 2 and 'SPATIAL_ANOMALY' not in quality_flags"
+      action: "ACCEPT"
+      reason: "Eligible under Policy D (OBS >= 2)"
+
+quality_flag_semantics:
+  ACCEPT: "Uncompromised observation meeting full multi-temporal support (OBS >= 2) and spatial coherence."
+  FLAG: "Physically valid observation retained for ML modeling but annotated with quality/temporal support warnings."
+  EXCLUDE: "Non-physical artifact or unobservable cell discarded from analysis."

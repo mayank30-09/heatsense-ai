@@ -54,8 +54,13 @@ def mask_landsat_l2(image: ee.Image) -> ee.Image:
         .And(qa.bitwiseAnd(1 << 5).eq(0))
     )
 
-    return image.updateMask(clear)
+    qa_radsat = image.select("QA_RADSAT").eq(0)
 
+    return (
+        image
+        .updateMask(clear)
+        .updateMask(qa_radsat)
+    )
 
 def scale_lst(image: ee.Image) -> ee.Image:
     lst_c = (

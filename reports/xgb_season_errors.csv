@@ -1,0 +1,5 @@
+season,n_samples,MAE,RMSE,R2,contains_partial_season,notes
+winter,248735,0.9547,1.3165,0.6564,False,Complete seasonal series
+summer,248735,1.3658,1.786,0.7589,False,Complete seasonal series
+monsoon,228273,1.8211,2.4689,0.791,True,2026 monsoon contains partial acquisitions
+post_monsoon,198988,0.9858,1.2852,0.7951,False,Complete seasonal series
