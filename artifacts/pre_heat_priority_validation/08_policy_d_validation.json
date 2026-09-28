@@ -1,0 +1,19 @@
+{
+  "gate": "GATE 05 \u2014 POLICY D REAL REPRODUCTION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "total_rows_evaluated": 50000,
+  "total_dataset_rows": 924731,
+  "mismatches": 0,
+  "eligibility_distribution": {
+    "ACCEPT": 847179,
+    "FLAG": 77552
+  },
+  "policy_criteria_verified": [
+    "OBS_COUNT == 0 -> EXCLUDE",
+    "nonfinite/missing LST -> EXCLUDE",
+    "OBS_COUNT == 1 AND abs_diff > 10\u00b0C -> EXCLUDE",
+    "OBS_COUNT >= 2 AND abs_diff <= 10\u00b0C AND neighbors >= 4 -> ACCEPT",
+    "OBS_COUNT == 1 AND abs_diff <= 10\u00b0C -> FLAG"
+  ]
+}

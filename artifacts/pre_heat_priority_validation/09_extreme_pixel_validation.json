@@ -1,0 +1,21 @@
+{
+  "gate": "GATE 05B \u2014 EXTREME PIXEL QC",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "known_2023_monsoon_cold_anomaly": {
+    "lst_c": 6.4696,
+    "expected_lst_c": 6.47,
+    "obs_count": 1.0,
+    "neighborhood_median": 21.8576,
+    "expected_neighborhood_median": 21.86,
+    "delta_neighborhood": -15.3879,
+    "expected_delta": -15.39,
+    "policy_d_purged": true
+  },
+  "known_2023_monsoon_hot_extreme": {
+    "lst_c": 70.2328,
+    "expected_lst_c": 70.23,
+    "retained_in_analysis_dataset": true
+  },
+  "scientific_distinction": "Purges unsupported single-pass radiative outliers while retaining legitimate physical heat extremes without artificial temperature threshold censorship."
+}

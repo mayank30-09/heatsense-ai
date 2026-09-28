@@ -1,0 +1,14 @@
+{
+  "gate": "GATE 07 \u2014 REAL 132/33 SPATIAL SPLIT VALIDATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "total_spatial_blocks": 165,
+  "development_blocks_count": 132,
+  "test_blocks_count": 33,
+  "intersection_overlap": [],
+  "development_rows": 720973,
+  "expected_development_rows": 720973,
+  "test_rows": 203758,
+  "expected_test_rows": 203758,
+  "zero_spatial_leakage": true
+}

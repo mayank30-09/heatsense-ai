@@ -1,0 +1,49 @@
+{
+  "gate": "GATE 06 \u2014 ANALYSIS DATASET VALIDATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "file_path": "data\\processed\\sensitivity\\policy_d\\analysis.parquet",
+  "row_count": 924731,
+  "expected_row_count": 924731,
+  "spatial_blocks": 165,
+  "expected_spatial_blocks": 165,
+  "target_column": "LST_C",
+  "target_range": [
+    9.104900360107422,
+    70.23280334472656
+  ],
+  "features": [
+    "NDVI",
+    "NDBI",
+    "NDWI",
+    "LST_OBS_COUNT",
+    "LST_QA_MEDIAN_K"
+  ],
+  "feature_ranges": {
+    "NDVI": [
+      -9999.0,
+      0.9829999804496765
+    ],
+    "NDBI": [
+      -9999.0,
+      0.616100013256073
+    ],
+    "NDWI": [
+      -9999.0,
+      0.48179998993873596
+    ],
+    "LST_OBS_COUNT": [
+      1.0,
+      24.0
+    ],
+    "LST_QA_MEDIAN_K": [
+      1.4700000286102295,
+      87.5199966430664
+    ]
+  },
+  "null_count": 0,
+  "nan_count": 0,
+  "inf_count": 0,
+  "forbidden_spatial_identifiers_in_features": [],
+  "coordinate_leakage_free": true
+}

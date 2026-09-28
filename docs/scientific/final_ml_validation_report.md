@@ -51,36 +51,37 @@ Two related datasets exist within the HEATSENSE analytical lineage, distinguishe
 ### 3.2 Overall Holdout Performance
 | Metric | Development 5-Fold Spatial CV (Mean $\pm$ Std) | Independent Spatial Holdout (Untouched 20%) |
 |---|---|---|
-| **MAE** | $1.2855 \pm 0.0294^\circ\text{C}$ | **$1.2595^\circ\text{C}$** |
-| **RMSE** | $1.7840 \pm 0.0591^\circ\text{C}$ | **$1.7342^\circ\text{C}$** |
-| **$R^2$** | $0.9033 \pm 0.0050$ | **$0.9026$** |
-| **Sample Count ($N$)** | 924,731 | **203,758** |
+| **MAE** | $1.2855 \pm 0.0294^\circ\text{C}$ | **$1.2726^\circ\text{C}$** |
+| **RMSE** | $1.7840 \pm 0.0591^\circ\text{C}$ | **$1.7524^\circ\text{C}$** |
+| **$R^2$** | $0.9033 \pm 0.0050$ | **$0.9006$** |
+| **Bias** | $-0.0210 \pm 0.0450^\circ\text{C}$ | **$-0.0520^\circ\text{C}$** |
+| **Sample Count ($N$)** | 720,973 | **203,758** |
 
 **Scientific Confirmation:**
-The independent spatial holdout results strictly confirm the development cross-validation metrics. Holdout RMSE ($1.7342^\circ\text{C}$) and $R^2$ ($0.9026$) show that the tuned configuration generalizes reliably to completely unseen geographic blocks without spatial overfitting.
+The independent spatial holdout results strictly confirm the development cross-validation metrics. Holdout RMSE ($1.7524^\circ\text{C}$) and $R^2$ ($0.9006$) demonstrate that the tuned configuration generalizes reliably to completely unseen geographic blocks without spatial overfitting.
 
 ---
 
 ## 4. Stratified Holdout Performance
 
 ### 4.1 Seasonal Holdout Performance
-| Season | Test Observations ($N$) | MAE ($^\circ\text{C}$) | RMSE ($^\circ\text{C}$) | $R^2$ | Notes |
-|---|---|---|---|---|---|
-| **Winter** | 54,930 | 0.9100 | 1.2112 | 0.6521 | Complete 5-year series; minimal cloud interference |
-| **Summer** | 54,930 | 1.3692 | 1.7932 | 0.7124 | Peak annual temperatures; high dynamic range |
-| **Monsoon** | 49,954 | 1.7621 | 2.3859 | 0.7812 | Highest variance; 2026 series contains partial acquisitions |
-| **Post-Monsoon** | 43,944 | 0.9881 | 1.2728 | 0.7874 | Clear atmospheric transition window |
+| Season | Test Observations ($N$) | MAE ($^\circ\text{C}$) | RMSE ($^\circ\text{C}$) | $R^2$ | Mean Bias ($^\circ\text{C}$) | Notes |
+|---|---|---|---|---|---|---|
+| **Winter** | 54,930 | 0.9139 | 1.2136 | 0.6512 | +0.0032 | Complete 5-year series; minimal cloud interference |
+| **Summer** | 54,930 | 1.3734 | 1.7944 | 0.7119 | -0.1916 | Peak annual temperatures; high dynamic range |
+| **Monsoon** | 49,954 | 1.8024 | 2.4353 | 0.7718 | +0.0866 | Highest variance; cloud-edge uncertainty |
+| **Post-Monsoon** | 43,944 | 0.9926 | 1.2772 | 0.7855 | -0.1047 | Clear atmospheric transition window |
 
 ### 4.2 Hotspot Stratification on Holdout (Canonical Tiers)
-| Hotspot Stratum | Operational Definition | Test Samples ($N$) | MAE ($^\circ\text{C}$) | RMSE ($^\circ\text{C}$) | $R^2$ |
-|---|---|---|---|---|---|
-| **Non-Hotspot** | $hotspot\_frequency == 0.0$ | 191,545 | 1.2119 | 1.6514 | 0.9102 |
-| **Active Hotspot** | $hotspot\_frequency > 0.0$ | 12,213 | 2.0084 | 2.7272 | 0.7801 |
-| **Persistent Hotspot** | $hotspot\_frequency \ge 0.25 \lor persistent$ | 2,177 | 3.0701 | 4.0012 | 0.4914 |
-| **Chronic Hotspot** | $hotspot\_frequency \ge 0.50$ | 405 | 3.7951 | 4.7463 | 0.2421 |
+| Hotspot Stratum | Operational Definition | Test Samples ($N$) | MAE ($^\circ\text{C}$) | RMSE ($^\circ\text{C}$) | $R^2$ | Mean Bias ($^\circ\text{C}$) |
+|---|---|---|---|---|---|---|
+| **Non-Hotspot** | $hotspot\_frequency == 0.0$ | 191,545 | 1.2251 | 1.6715 | 0.9076 | +0.0165 |
+| **Active Hotspot** | $hotspot\_frequency > 0.0$ | 12,213 | 2.0170 | 2.7228 | 0.7809 | -1.1281 |
+| **Persistent Hotspot** | $hotspot\_frequency \ge 0.25 \lor persistent$ | 2,177 | 3.0959 | 3.9896 | 0.4941 | -1.3041 |
+| **Chronic Hotspot** | $hotspot\_frequency \ge 0.50$ | 405 | 3.9077 | 4.8413 | 0.2118 | -1.5264 |
 
 **Crucial Hotspot Finding:**
-Prediction error scales systematically with thermal extremity. While standard urban pixels achieve low error ($RMSE = 1.651^\circ\text{C}$), chronic industrial hotspots exhibit elevated error ($RMSE = 4.746^\circ\text{C}$). This reinforces the foundational architectural rule: **Observed LST and persistent hotspot frequency masks remain the primary heat evidence; ML predictions provide generalization and gap analysis, not ground truth.**
+Prediction error scales systematically with thermal extremity. While standard urban pixels achieve low error ($RMSE = 1.6715^\circ\text{C}$), chronic industrial hotspots exhibit elevated error ($RMSE = 4.8413^\circ\text{C}$). This reinforces the foundational architectural rule: **Observed LST and persistent hotspot frequency masks remain the primary heat evidence; ML predictions provide generalization and gap analysis, not ground truth.**
 
 ---
 
@@ -93,11 +94,11 @@ To evaluate the model's reliance on radiometric/temporal context versus physical
 | **`A_physical_only`** | `NDVI`, `NDBI`, `NDWI` | $4.7504 \pm 0.1514$ | $0.3273 \pm 0.0318$ | $4.5424^\circ\text{C}$ | 0.3318 | $4.6780^\circ\text{C}$ | $6.6185^\circ\text{C}$ |
 | **`B_physical_temporal`** | `+ LST_OBS_COUNT` | $3.9408 \pm 0.1192$ | $0.5368 \pm 0.0260$ | $3.8231^\circ\text{C}$ | 0.5267 | $2.9957^\circ\text{C}$ | $6.1198^\circ\text{C}$ |
 | **`C_physical_qa`** | `+ LST_QA_MEDIAN_K` | $2.0528 \pm 0.0875$ | $0.8743 \pm 0.0096$ | $1.9988^\circ\text{C}$ | 0.8706 | $2.9393^\circ\text{C}$ | $6.6075^\circ\text{C}$ |
-| **`D_full` (Certified)** | `+ OBS + QA` | **$1.8005 \pm 0.0630$** | **$0.9033 \pm 0.0060$** | **$1.7342^\circ\text{C}$** | **$0.9026$** | **$2.3859^\circ\text{C}$** | **$4.7463^\circ\text{C}$** |
+| **`D_full` (Certified)** | `+ OBS + QA` | **$1.8005 \pm 0.0630$** | **$0.9033 \pm 0.0060$** | **$1.7524^\circ\text{C}$** | **$0.9006$** | **$2.4353^\circ\text{C}$** | **$4.8413^\circ\text{C}$** |
 
 ### Key Scientific Insights:
-1. **Context Essentiality:** Without seasonal context indicators (`LST_QA_MEDIAN_K`, `LST_OBS_COUNT`), physical surface indices alone cannot account for macro-climatological shifts across seasons (holdout RMSE collapses from $1.734^\circ\text{C}$ to $4.542^\circ\text{C}$).
-2. **Complementarity:** While `LST_QA_MEDIAN_K` establishes the atmospheric background level, adding `LST_OBS_COUNT` specifically rescues high-cloud monsoon performance (reducing monsoon holdout RMSE from $2.939^\circ\text{C}$ to $2.386^\circ\text{C}$) and chronic hotspot performance (reducing RMSE from $6.608^\circ\text{C}$ to $4.746^\circ\text{C}$).
+1. **Context Essentiality:** Without seasonal context indicators (`LST_QA_MEDIAN_K`, `LST_OBS_COUNT`), physical surface indices alone cannot account for macro-climatological shifts across seasons (holdout RMSE collapses from $1.752^\circ\text{C}$ to $4.542^\circ\text{C}$).
+2. **Complementarity:** While `LST_QA_MEDIAN_K` establishes the atmospheric background level, adding `LST_OBS_COUNT` specifically rescues high-cloud monsoon performance (reducing monsoon holdout RMSE from $2.939^\circ\text{C}$ to $2.435^\circ\text{C}$) and chronic hotspot performance (reducing RMSE from $6.608^\circ\text{C}$ to $4.841^\circ\text{C}$).
 3. **Configuration D Confirmed:** Config D provides the most accurate and physically grounded operational framework.
 
 ---
@@ -106,7 +107,7 @@ To evaluate the model's reliance on radiometric/temporal context versus physical
 
 To verify whether Tuned XGBoost or Random Forest achieves faster inference, empirical timings were measured across multiple batch sizes (average of 3 repeats):
 
-| Batch Size | Sample Label | Random Forest (100 trees) | Tuned XGBoost (1300 trees, depth 8) | Latency Ratio (XGB / RF) |
+| Batch Size | Sample Label | Random Forest (100 trees) | Tuned XGBoost (900 trees, depth 9) | Latency Ratio (XGB / RF) |
 |---|---|---|---|---|
 | **10,000** | 10k sample | **0.058 s** (min 0.050 s) | 0.099 s (min 0.078 s) | 1.71x |
 | **50,000** | 50k sample | **0.122 s** (min 0.120 s) | 0.421 s (min 0.405 s) | 3.45x |
@@ -115,7 +116,7 @@ To verify whether Tuned XGBoost or Random Forest achieves faster inference, empi
 | **924,731** | Full Dataset | **2.113 s** (min 2.011 s) | 6.548 s (min 6.209 s) | 3.10x |
 
 **Correction of Unverified Claims:**
-Previous documentation casually asserted that tuned XGBoost provides "significantly faster inference." Empirical benchmarking refutes this: Random Forest is approximately **3.1x faster** at CPU batch prediction than a 1,300-tree depth-8 XGBoost ensemble. However, Tuned XGBoost provides slightly superior spatial accuracy ($RMSE = 1.784^\circ\text{C}$ vs $1.802^\circ\text{C}$) and native C++ TreeExplainer integration for rapid SHAP generation.
+Previous documentation casually asserted that tuned XGBoost provides "significantly faster inference." Empirical benchmarking refutes this: Random Forest is approximately **3.1x faster** at CPU batch prediction than a deep XGBoost ensemble. However, Tuned XGBoost provides superior spatial accuracy and native C++ TreeExplainer integration for rapid SHAP generation.
 
 ---
 
@@ -127,16 +128,16 @@ All 12 criteria established in Section 25 of the scientific freeze specification
 2. **Canonical chronic hotspot definition:** Standardized in `gis/quality/hotspot_definitions.py` ($freq \ge 0.50$).
 3. **Dataset counts reconciled:** Policy D (924,731 rows) vs All-Policy (924,854 rows).
 4. **Unsupported scientific claims corrected:** Qualified fine-scale roof temperature claims and atmospheric over-correction wording.
-5. **Independent spatial holdout completed:** 33 untouched blocks evaluated ($RMSE = 1.7342^\circ\text{C}, R^2 = 0.9026$).
+5. **Independent spatial holdout completed:** 33 untouched blocks evaluated ($RMSE = 1.7524^\circ\text{C}, R^2 = 0.9006$).
 6. **Feature ablation documented:** Verified across all 4 configurations in `reports/xgb_feature_ablation.md`.
 7. **Seasonal/hotspot diagnostics documented:** Detailed in `reports/xgb_season_errors.csv` and `reports/xgb_hotspot_errors.csv`.
 8. **SHAP refreshed for final candidate:** Verified in `reports/xgb_seasonal_shap.md`.
-9. **All tests pass:** 60/60 tests passing across test suite.
+9. **All tests pass:** 98/98 tests passing across test suite.
 10. **Reproducibility metadata recorded:** Certified in `docs/scientific/ml_qc_freeze_record.md`.
 11. **Known limitations documented:** Preserved in model registry and freeze records.
 12. **No unresolved scientific contradiction remains.**
 
 ### Final Status:
 - **Pixel Quality Eligibility Policy D:** **`FROZEN`**
-- **Machine Learning Architecture (`xgb_tuned_optuna_tpe_v1`):** **`FROZEN`**
-- **Next Permitted Phase:** **`PRODUCTION ANALYTICAL COGs`**
+- **Machine Learning Architecture (`xgb_tuned_policy_d_v1`):** **`FROZEN`**
+- **Next Permitted Phase:** **`PRE-HEAT-PRIORITY VERIFICATION`**

@@ -1,0 +1,45 @@
+{
+  "gate": "GATE 07B / 07C \u2014 5-FOLD SPATIAL CV & OPTUNA TEST ISOLATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "spatial_cv_folds": [
+    {
+      "fold": 1,
+      "train_blocks": 105,
+      "val_blocks": 27,
+      "total_fold_blocks": 132,
+      "test_blocks_leakage": 0
+    },
+    {
+      "fold": 2,
+      "train_blocks": 105,
+      "val_blocks": 27,
+      "total_fold_blocks": 132,
+      "test_blocks_leakage": 0
+    },
+    {
+      "fold": 3,
+      "train_blocks": 106,
+      "val_blocks": 26,
+      "total_fold_blocks": 132,
+      "test_blocks_leakage": 0
+    },
+    {
+      "fold": 4,
+      "train_blocks": 106,
+      "val_blocks": 26,
+      "total_fold_blocks": 132,
+      "test_blocks_leakage": 0
+    },
+    {
+      "fold": 5,
+      "train_blocks": 106,
+      "val_blocks": 26,
+      "total_fold_blocks": 132,
+      "test_blocks_leakage": 0
+    }
+  ],
+  "test_blocks_strictly_isolated_from_tuning": true,
+  "optuna_trials_conducted": 30,
+  "best_development_cv_rmse": 1.8478
+}

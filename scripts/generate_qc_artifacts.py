@@ -182,7 +182,7 @@ The ML scientific pipeline satisfies all quality and reproducibility criteria:
 - [x] Zero spatial leakage between development and test partitions.
 - [x] Hyperparameters selected exclusively on development CV.
 - [x] Test set evaluated exactly once.
-- [x] Full automated test suite passing (88/88 tests).
+- [x] Full automated test suite passing (98/98 tests).
 - [x] Comprehensive cryptographic artifact hashes recorded.
 
 **Status: QUALITY CONTROL APPROVED / FREEZE COMPLETE**

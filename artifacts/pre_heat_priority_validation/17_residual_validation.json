@@ -1,0 +1,90 @@
+{
+  "gate": "GATE 09D \u2014 RESIDUAL VALIDATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:40Z",
+  "residual_definition": "observed - predicted",
+  "mean_residual": 0.0521,
+  "std_residual": 1.7516,
+  "percentiles": {
+    "p1": -4.8066,
+    "p5": -2.5965,
+    "p25": -0.9016,
+    "p50": 0.0392,
+    "p75": 1.032,
+    "p95": 2.7686,
+    "p99": 4.4483
+  },
+  "decile_heteroscedasticity": [
+    {
+      "interval": "(16.648, 31.018]",
+      "count": 20391,
+      "mean_true_lst": 29.43,
+      "rmse": 1.6067,
+      "mean_residual": -0.8503
+    },
+    {
+      "interval": "(31.018, 32.378]",
+      "count": 20363,
+      "mean_true_lst": 31.73,
+      "rmse": 1.2702,
+      "mean_residual": -0.3447
+    },
+    {
+      "interval": "(32.378, 33.687]",
+      "count": 20399,
+      "mean_true_lst": 33.03,
+      "rmse": 1.3551,
+      "mean_residual": -0.0063
+    },
+    {
+      "interval": "(33.687, 35.234]",
+      "count": 20358,
+      "mean_true_lst": 34.44,
+      "rmse": 1.6672,
+      "mean_residual": -0.0491
+    },
+    {
+      "interval": "(35.234, 37.083]",
+      "count": 20372,
+      "mean_true_lst": 36.14,
+      "rmse": 1.8351,
+      "mean_residual": -0.2736
+    },
+    {
+      "interval": "(37.083, 39.069]",
+      "count": 20376,
+      "mean_true_lst": 38.06,
+      "rmse": 1.7887,
+      "mean_residual": -0.1325
+    },
+    {
+      "interval": "(39.069, 41.135]",
+      "count": 20383,
+      "mean_true_lst": 40.11,
+      "rmse": 1.8045,
+      "mean_residual": 0.0284
+    },
+    {
+      "interval": "(41.135, 43.102]",
+      "count": 20376,
+      "mean_true_lst": 42.15,
+      "rmse": 1.7397,
+      "mean_residual": 0.1016
+    },
+    {
+      "interval": "(43.102, 45.073]",
+      "count": 20382,
+      "mean_true_lst": 44.06,
+      "rmse": 1.6576,
+      "mean_residual": 0.5288
+    },
+    {
+      "interval": "(45.073, 61.278]",
+      "count": 20358,
+      "mean_true_lst": 47.34,
+      "rmse": 2.5108,
+      "mean_residual": 1.5205
+    }
+  ],
+  "diagnostics_status": "Residual structure characterized, documented, and scientifically reproducible."
+}

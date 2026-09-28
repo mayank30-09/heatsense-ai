@@ -1,0 +1,82 @@
+{
+  "gate": "GATE 04B / 04C \u2014 COG SEMANTIC & PERSISTENCE VALIDATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:37Z",
+  "semantic_errors": [],
+  "total_persistence_differing_pixels": 0,
+  "boundary_frequency_tests": [
+    {
+      "frequency": 0.0,
+      "tier": "non_hotspot",
+      "is_non_hotspot": true,
+      "is_active": false,
+      "is_persistent": false,
+      "is_chronic": false,
+      "match": true
+    },
+    {
+      "frequency": 0.01,
+      "tier": "transient_extreme",
+      "is_non_hotspot": false,
+      "is_active": true,
+      "is_persistent": false,
+      "is_chronic": false,
+      "match": true
+    },
+    {
+      "frequency": 0.24,
+      "tier": "occasional_hotspot",
+      "is_non_hotspot": false,
+      "is_active": true,
+      "is_persistent": false,
+      "is_chronic": false,
+      "match": true
+    },
+    {
+      "frequency": 0.25,
+      "tier": "frequent_hotspot",
+      "is_non_hotspot": false,
+      "is_active": true,
+      "is_persistent": true,
+      "is_chronic": false,
+      "match": true
+    },
+    {
+      "frequency": 0.26,
+      "tier": "frequent_hotspot",
+      "is_non_hotspot": false,
+      "is_active": true,
+      "is_persistent": true,
+      "is_chronic": false,
+      "match": true
+    },
+    {
+      "frequency": 0.49,
+      "tier": "frequent_hotspot",
+      "is_non_hotspot": false,
+      "is_active": true,
+      "is_persistent": true,
+      "is_chronic": false,
+      "match": true
+    },
+    {
+      "frequency": 0.5,
+      "tier": "chronic_hotspot",
+      "is_non_hotspot": false,
+      "is_active": true,
+      "is_persistent": true,
+      "is_chronic": true,
+      "match": true
+    },
+    {
+      "frequency": 0.51,
+      "tier": "chronic_hotspot",
+      "is_non_hotspot": false,
+      "is_active": true,
+      "is_persistent": true,
+      "is_chronic": true,
+      "match": true
+    }
+  ],
+  "rescued_flag_verified": true
+}

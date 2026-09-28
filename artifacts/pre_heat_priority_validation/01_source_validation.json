@@ -1,0 +1,93 @@
+{
+  "gate": "GATE 01 \u2014 REAL GEE / LANDSAT SOURCE VALIDATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:20Z",
+  "source_specification": {
+    "collections": [
+      "LANDSAT/LC08/C02/T1_L2",
+      "LANDSAT/LC09/C02/T1_L2"
+    ],
+    "processing_level_filter": "L2SP",
+    "cloud_cover_filter": "<= 80",
+    "thermal_band": "ST_B10",
+    "qa_bands": [
+      "QA_PIXEL",
+      "QA_RADSAT"
+    ],
+    "usgs_scale": 0.00341802,
+    "usgs_offset": 149.0,
+    "kelvin_to_celsius": -273.15
+  },
+  "earth_engine_live_query": {
+    "project_id": "gen-lang-client-0607312119",
+    "study_area": "Surat Municipal Corporation (SMC)",
+    "start_date": "2022-01-01",
+    "end_date": "2026-06-01",
+    "landsat_8_l2sp_retained": 162,
+    "landsat_9_l2sp_retained": 167,
+    "total_l2sp_retained": 329
+  },
+  "inspected_sample_scenes": [
+    {
+      "collection_id": "LANDSAT/LC08/C02/T1_L2",
+      "sensor": "Landsat 8 OLI/TIRS",
+      "scene_id": "LANDSAT/LC08/C02/T1_L2/LC08_148045_20220112",
+      "processing_level": "L2SP",
+      "cloud_cover": 0.72,
+      "acquisition_date": "2022-01-12",
+      "exists_in_catalog": true,
+      "verified_l2sp": true
+    },
+    {
+      "collection_id": "LANDSAT/LC08/C02/T1_L2",
+      "sensor": "Landsat 8 OLI/TIRS",
+      "scene_id": "LANDSAT/LC08/C02/T1_L2/LC08_148045_20220128",
+      "processing_level": "L2SP",
+      "cloud_cover": 0.13,
+      "acquisition_date": "2022-01-28",
+      "exists_in_catalog": true,
+      "verified_l2sp": true
+    },
+    {
+      "collection_id": "LANDSAT/LC08/C02/T1_L2",
+      "sensor": "Landsat 8 OLI/TIRS",
+      "scene_id": "LANDSAT/LC08/C02/T1_L2/LC08_148045_20220213",
+      "processing_level": "L2SP",
+      "cloud_cover": 0.12,
+      "acquisition_date": "2022-02-13",
+      "exists_in_catalog": true,
+      "verified_l2sp": true
+    },
+    {
+      "collection_id": "LANDSAT/LC09/C02/T1_L2",
+      "sensor": "Landsat 9 OLI-2/TIRS-2",
+      "scene_id": "LANDSAT/LC09/C02/T1_L2/LC09_148045_20220104",
+      "processing_level": "L2SP",
+      "cloud_cover": 0,
+      "acquisition_date": "2022-01-04",
+      "exists_in_catalog": true,
+      "verified_l2sp": true
+    },
+    {
+      "collection_id": "LANDSAT/LC09/C02/T1_L2",
+      "sensor": "Landsat 9 OLI-2/TIRS-2",
+      "scene_id": "LANDSAT/LC09/C02/T1_L2/LC09_148045_20220120",
+      "processing_level": "L2SP",
+      "cloud_cover": 0.75,
+      "acquisition_date": "2022-01-20",
+      "exists_in_catalog": true,
+      "verified_l2sp": true
+    },
+    {
+      "collection_id": "LANDSAT/LC09/C02/T1_L2",
+      "sensor": "Landsat 9 OLI-2/TIRS-2",
+      "scene_id": "LANDSAT/LC09/C02/T1_L2/LC09_148045_20220205",
+      "processing_level": "L2SP",
+      "cloud_cover": 0.54,
+      "acquisition_date": "2022-02-05",
+      "exists_in_catalog": true,
+      "verified_l2sp": true
+    }
+  ],
+  "all_scenes_verified_l2sp": true
+}

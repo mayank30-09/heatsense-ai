@@ -1,0 +1,113 @@
+{
+  "gate": "GATE 02B \u2014 REAL QA MASK VALIDATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:20Z",
+  "qa_pixel_bit_semantics": {
+    "bit_0": "Fill",
+    "bit_1": "Dilated cloud",
+    "bit_2": "Cirrus",
+    "bit_3": "Cloud",
+    "bit_4": "Cloud shadow",
+    "bit_5": "Snow"
+  },
+  "qa_radsat_condition": "QA_RADSAT == 0",
+  "total_test_cases": 12,
+  "test_results": [
+    {
+      "test_case": "Clear, unsaturated",
+      "qa_pixel": 0,
+      "qa_radsat": 0,
+      "expected_valid": true,
+      "actual_valid": true,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Cloud (bit 3)",
+      "qa_pixel": 8,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Cloud shadow (bit 4)",
+      "qa_pixel": 16,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Cirrus (bit 2)",
+      "qa_pixel": 4,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Dilated cloud (bit 1)",
+      "qa_pixel": 2,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Snow (bit 5)",
+      "qa_pixel": 32,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Fill (bit 0)",
+      "qa_pixel": 1,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Radiometrically saturated",
+      "qa_pixel": 0,
+      "qa_radsat": 1,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "USGS typical clear (21824)",
+      "qa_pixel": 21824,
+      "qa_radsat": 0,
+      "expected_valid": true,
+      "actual_valid": true,
+      "status": "PASS"
+    },
+    {
+      "test_case": "USGS cloud contaminated (21832)",
+      "qa_pixel": 21832,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "USGS shadow contaminated (21840)",
+      "qa_pixel": 21840,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    },
+    {
+      "test_case": "Multi-bit artifact (fill + cloud)",
+      "qa_pixel": 9,
+      "qa_radsat": 0,
+      "expected_valid": false,
+      "actual_valid": false,
+      "status": "PASS"
+    }
+  ]
+}

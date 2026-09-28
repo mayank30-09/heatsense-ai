@@ -1,0 +1,18 @@
+{
+  "gate": "GATE 08B \u2014 REAL INDEPENDENT HOLDOUT REPRODUCTION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:39Z",
+  "test_observations": 203758,
+  "expected_test_observations": 203758,
+  "metrics": {
+    "MAE": 1.2726,
+    "expected_MAE": 1.2726,
+    "RMSE": 1.7524,
+    "expected_RMSE": 1.7524,
+    "R2": 0.9006,
+    "expected_R2": 0.9006,
+    "Bias": -0.0521,
+    "expected_Bias": -0.052
+  },
+  "reproduction_verified": true
+}

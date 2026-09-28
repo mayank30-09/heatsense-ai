@@ -1,0 +1,102 @@
+{
+  "gate": "GATE 03 \u2014 SEASONAL WINDOW VALIDATION",
+  "status": "PASS",
+  "timestamp_utc": "2026-09-28T17:38:20Z",
+  "canonical_seasons": {
+    "winter": "Dec 1 prior year -> Mar 1 target year",
+    "summer": "Mar 1 target year -> Jun 1 target year",
+    "monsoon": "Jun 1 target year -> Oct 1 target year",
+    "post_monsoon": "Oct 1 target year -> Dec 1 target year"
+  },
+  "winter_2024_includes_dec_2023_verified": true,
+  "boundary_tests": [
+    {
+      "date": "2023-11-30",
+      "expected_season": "post_monsoon",
+      "expected_year": 2023,
+      "actual_season": "post_monsoon",
+      "actual_year": 2023,
+      "status": "PASS"
+    },
+    {
+      "date": "2023-12-01",
+      "expected_season": "winter",
+      "expected_year": 2024,
+      "actual_season": "winter",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-02-28",
+      "expected_season": "winter",
+      "expected_year": 2024,
+      "actual_season": "winter",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-02-29",
+      "expected_season": "winter",
+      "expected_year": 2024,
+      "actual_season": "winter",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-03-01",
+      "expected_season": "summer",
+      "expected_year": 2024,
+      "actual_season": "summer",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-05-31",
+      "expected_season": "summer",
+      "expected_year": 2024,
+      "actual_season": "summer",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-06-01",
+      "expected_season": "monsoon",
+      "expected_year": 2024,
+      "actual_season": "monsoon",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-09-30",
+      "expected_season": "monsoon",
+      "expected_year": 2024,
+      "actual_season": "monsoon",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-10-01",
+      "expected_season": "post_monsoon",
+      "expected_year": 2024,
+      "actual_season": "post_monsoon",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-11-30",
+      "expected_season": "post_monsoon",
+      "expected_year": 2024,
+      "actual_season": "post_monsoon",
+      "actual_year": 2024,
+      "status": "PASS"
+    },
+    {
+      "date": "2024-12-01",
+      "expected_season": "winter",
+      "expected_year": 2025,
+      "actual_season": "winter",
+      "actual_year": 2025,
+      "status": "PASS"
+    }
+  ]
+}
