@@ -25,6 +25,8 @@ import pandas as pd
 import rasterio
 from rasterio.enums import Resampling
 
+from gis.quality.hotspot_definitions import persistent_hotspot_mask
+
 # Canonical Analytical Band Names
 ANALYTICAL_BAND_NAMES: list[str] = [
     "LST_C",
@@ -130,10 +132,17 @@ def build_analytical_array(
     arr[7, rows, cols] = encode_eligibility(df_valid["eligibility"]).to_numpy(dtype=np.float32)
 
     # Band 9: HOTSPOT_FREQUENCY
-    arr[8, rows, cols] = df_valid["hotspot_frequency"].to_numpy(dtype=np.float32)
+    freqs = df_valid["hotspot_frequency"].to_numpy(dtype=np.float32)
+    arr[8, rows, cols] = freqs
 
-    # Band 10: IS_PERSISTENT_HOTSPOT
-    arr[9, rows, cols] = (df_valid["is_persistent_hotspot"] == True).to_numpy(dtype=np.float32)
+    # Band 10: IS_PERSISTENT_HOTSPOT (Canonical delegation: frequency >= 0.25 | existing_flag)
+    existing_flag = (
+        df_valid["is_persistent_hotspot"].to_numpy(dtype=bool)
+        if "is_persistent_hotspot" in df_valid.columns
+        else None
+    )
+    pers_mask = persistent_hotspot_mask(freqs, existing_flag)
+    arr[9, rows, cols] = np.asarray(pers_mask, dtype=np.float32)
 
     return arr
 

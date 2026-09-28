@@ -1,0 +1,6 @@
+model,policy,fold,MAE,RMSE,R2,n_samples,fit_time_s
+XGBoost,policy_d,1,1.2899,1.7715,0.8984,203758,15.02
+XGBoost,policy_d,2,1.3142,1.7804,0.9016,194357,16.75
+XGBoost,policy_d,3,1.3588,1.9217,0.8917,196290,15.95
+XGBoost,policy_d,4,1.3323,1.8187,0.8977,167043,17.27
+XGBoost,policy_d,5,1.2999,1.8478,0.9034,163283,17.08

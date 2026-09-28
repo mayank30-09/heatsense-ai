@@ -93,6 +93,7 @@ def save_holdout_split(
     payload: dict[str, Any] = {
         "schema_version": "1.0",
         "random_state": random_state,
+        "test_ratio": test_ratio,
         "test_fraction": test_ratio,
         "total_blocks": len(dev_blocks) + len(test_blocks),
         "development_block_count": len(dev_blocks),
@@ -122,7 +123,6 @@ def load_holdout_split(split_path: Path) -> dict[str, Any]:
     # Validate schema
     required_keys = [
         "random_state",
-        "test_fraction",
         "total_blocks",
         "development_blocks",
         "test_blocks",
@@ -130,6 +130,9 @@ def load_holdout_split(split_path: Path) -> dict[str, Any]:
     for key in required_keys:
         if key not in data:
             raise ValueError(f"Holdout split artifact missing required key: '{key}'")
+
+    if "test_fraction" not in data and "test_ratio" not in data:
+        raise ValueError("Holdout split artifact missing 'test_ratio' / 'test_fraction'")
 
     dev_blocks = data["development_blocks"]
     test_blocks = data["test_blocks"]

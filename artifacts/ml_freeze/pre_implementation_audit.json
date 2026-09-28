@@ -1,0 +1,42 @@
+{
+  "repository_branch": "feature/scientific-freeze-correction",
+  "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+  "working_tree_clean": true,
+  "dataset_path": "data/processed/sensitivity/policy_d/analysis.parquet",
+  "dataset_rows": 924731,
+  "block_count": 165,
+  "existing_tuning_script": "scripts/tune_xgb.py",
+  "existing_cv_implementation": "gis/ml/development_cv.py",
+  "existing_holdout_implementation": "gis/ml/holdout_split.py",
+  "existing_model_artifact": "artifacts/ml_freeze/xgb_tuned_policy_d.json",
+  "existing_tests": [
+    "backend/tests/test_holdout_protocol.py",
+    "backend/tests/test_heat_priority.py",
+    "backend/tests/test_xgb_tuning.py",
+    "backend/tests/test_spatial_validation.py",
+    "backend/tests/test_quality_eligibility.py",
+    "backend/tests/test_analysis.py",
+    "backend/tests/test_rasters.py",
+    "backend/tests/test_rf_model.py"
+  ],
+  "existing_reports": [
+    "reports/xgb_tuning_report.md",
+    "reports/xgb_seasonal_shap.md",
+    "reports/xgb_feature_ablation.md",
+    "docs/scientific/ml_qc_freeze_record.md",
+    "docs/scientific/model_registry.md",
+    "docs/scientific/pixel_eligibility_policy.md"
+  ],
+  "conflicts_found": [
+    "Historical Optuna tuning and full confirmation both used the same 165-block spatial fold framework rather than an untouched holdout partition.",
+    "Historical code used 'hotspot_frequency >= 6' treating normalized float recurrence as an integer season count.",
+    "Historical documentation contained causal assertions regarding atmospheric water vapor over-correction, NDBI saturation causality, and unverified 20m rooftop temperatures."
+  ],
+  "implementation_notes": [
+    "Strict 132/33 block spatial partition created with seed=42 and persisted to artifacts/ml_freeze/holdout_split.json.",
+    "Development-only Optuna TPE search completed (30 trials) on 132 development blocks (best Trial #25, Dev-CV RMSE: 1.8478 degC).",
+    "Final candidate model evaluated exactly once on 33 untouched test blocks (MAE: 1.2726 degC, RMSE: 1.7524 degC, R2: 0.9006).",
+    "All 19 production analytical COGs generated and validated under data/processed/analytical/.",
+    "Heat Priority scoring engine implemented with observed satellite LST as primary thermal evidence and separate component layers."
+  ]
+}

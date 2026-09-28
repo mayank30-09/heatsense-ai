@@ -1,0 +1,10 @@
+{
+  "holdout_type": "independent_spatial_blocks_20pct",
+  "n_samples": 203758,
+  "MAE": 1.2595,
+  "RMSE": 1.7342,
+  "R2": 0.9026,
+  "fit_time_seconds": 49.74,
+  "test_blocks_count": 33,
+  "dev_blocks_count": 132
+}

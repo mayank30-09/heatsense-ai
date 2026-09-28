@@ -16,18 +16,24 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 CRITICAL_FREEZE_TARGETS = [
-    # 1. Configuration & Policy Spec
+    # 1. Audit and Validation Records
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "pre_implementation_audit.json",
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "dataset_validation.json",
+    # 2. Configuration & Policy Spec
     PROJECT_ROOT / "config" / "quality_policy_d.yaml",
-    # 2. Frozen Analysis Dataset
+    # 3. Frozen Analysis Dataset
     PROJECT_ROOT / "data" / "processed" / "sensitivity" / "policy_d" / "analysis.parquet",
-    # 3. Spatial Holdout Split Partition
+    # 4. Spatial Holdout Split Partition
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "holdout_split.json",
-    # 4. Spatial Fold Definition
+    # 5. Spatial Fold Definition & Tuning
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "tuning" / "spatial_fold_definition.json",
-    # 5. Best Hyperparameters
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "tuning" / "best_params.json",
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "tuning" / "xgb_best_params.json",
-    # 6. Locked Feature Schema
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "tuning" / "study_summary.json",
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "tuning" / "trial_results.csv",
+    # 6. Locked Feature Schema & Model Metadata
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "feature_schema.json",
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "model_metadata.json",
     # 7. Final Trained Candidate Model
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "xgb_tuned_policy_d.json",
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "xgb_tuned_policy_d.joblib",
@@ -36,8 +42,10 @@ CRITICAL_FREEZE_TARGETS = [
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "holdout_season_performance.csv",
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "holdout_hotspot_performance.csv",
     PROJECT_ROOT / "artifacts" / "ml_freeze" / "holdout_spatial_residuals.geojson",
-    # 9. Model Metadata
-    PROJECT_ROOT / "artifacts" / "ml_freeze" / "model_metadata.json",
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "evaluation_manifest.json",
+    # 9. QC and Test Suite Summaries
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "qc_summary.json",
+    PROJECT_ROOT / "artifacts" / "ml_freeze" / "test_results.json",
 ]
 
 

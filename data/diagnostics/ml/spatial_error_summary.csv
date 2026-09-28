@@ -1,0 +1,8 @@
+stratum,category,n_samples,MAE,RMSE,R2
+Overall,ALL,924731,1.3191,1.8281,0.899
+Season,winter,248735,0.977,1.337,0.6456
+Season,summer,248735,1.4005,1.8253,0.7481
+Season,monsoon,228273,1.8737,2.5412,0.7786
+Season,post_monsoon,198988,1.0085,1.3128,0.7862
+Hotspot_Status,Hotspot (freq > 0),65620,2.1108,2.8938,0.7837
+Hotspot_Status,Non-Hotspot (freq == 0),859111,1.2586,1.7198,0.9075

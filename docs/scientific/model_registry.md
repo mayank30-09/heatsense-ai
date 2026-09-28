@@ -3,7 +3,7 @@
 **Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform  
 **Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)  
 **Document Version:** 1.0  
-**Status:** **DRAFT / UNDER SCIENTIFIC REVIEW — NOT YET FROZEN**  
+**Status:** **FROZEN (ML/QC SCIENTIFIC FREEZE)**
 **Date:** September 2026  
 
 ---
@@ -14,9 +14,9 @@ This registry maintains the formal specification, lineage, hyperparameter config
 
 In accordance with HEATSENSE scientific principles:
 1. **Spatial Independence:** Models are trained and evaluated under strict spatial block separation (zero spatial leakage: $\text{train\_blocks} \cap \text{val\_blocks} = \emptyset$).
-2. **Policy Lineage:** Models are evaluated against defined pixel quality and eligibility policies (current evaluation baseline: Policy D Draft).
+2. **Policy Lineage:** Models are evaluated against defined pixel quality and eligibility policies (authoritative baseline: Policy D).
 3. **Reproducibility:** All seeds, dependencies, environments, and data hashes are explicitly tracked.
-4. **Policy Status:** Policy D remains **DRAFT / NOT FROZEN**. Production analytical COG generation is intentionally pending final freeze.
+4. **Policy Status:** Policy D and the ML/QC pipeline are **FROZEN**. All 19 production analytical COGs are validated.
 
 ---
 
@@ -31,13 +31,13 @@ In accordance with HEATSENSE scientific principles:
 | **SHAP Version** | 0.52.0 |
 | **NumPy / Pandas** | 2.4.3 / 3.0.1 |
 | **Target Variable ($y$)** | `LST_C` (Land Surface Temperature in Celsius, 100m ground resolution) |
-| **Feature Predictors ($X$)** | `NDVI`, `NDBI`, `NDWI`, `LST_OBS_COUNT`, `LST_QA_MEDIAN_K` |
+| **Feature Predictors ($X$)** | `NDVI`, `NDBI`, `NDWI`, `LST_OBS_COUNT`, `LST_QA_MEDIAN_K` (`LST_QA_MEDIAN_K` is the seasonal median of the per-scene Landsat ST_QA uncertainty indicator, expressed in Kelvin; provides radiometric retrieval context) |
 | **Predictor Exclusions** | Geographic coordinates (`latitude`, `longitude`, `row`, `col`) are strictly excluded to avoid spatial memorization. |
-| **Spatial Validation Design** | 5-Fold Spatial Cross-Validation over 165 deterministic blocks (~$2\text{ km} \times 2\text{ km}$, $20 \times 20$ pixels). |
+| **Spatial Validation Design** | 165 spatial blocks (2 km × 2 km); 132 development blocks (5-fold spatial CV + Optuna) and 33 locked test blocks (independent spatial holdout). |
 | **Random Seed** | 42 (fixed across all splits, samplers, and model seeds) |
 | **Dataset Path** | `data/processed/sensitivity/policy_d/analysis.parquet` |
 | **Dataset Observations** | 924,731 pixel-season records (19 seasons across 2022–2026) |
-| **Policy D Status** | **DRAFT / NOT FROZEN** |
+| **Policy D Status** | **FROZEN** |
 
 ---
 
@@ -134,24 +134,35 @@ In accordance with HEATSENSE scientific principles:
     - **$R^2$:** **$0.9006$**
 - **Training Time:** ~37.7 s on full development dataset (720,973 rows)
 - **Empirical Prediction Latency (CPU Batch Inference):**
-  - 203,758 samples (test holdout): 1.093 s (~5.36 s per 1M rows)
-  - *Note:* Random Forest is ~2.5x faster at CPU batch prediction than the 900-tree depth-9 XGBoost ensemble. Tuned XGBoost is selected due to slightly superior spatial accuracy (holdout RMSE 1.7524°C vs RF 1.8024°C) and native TreeExplainer acceleration.
+  - 203,758 samples (test holdout): 1.093 s (~5.36 s per 1M rows under linear extrapolation).
+  - *Note:* In dedicated benchmarks on 924,731 rows, Random Forest demonstrated lower CPU batch inference latency (2.1132 s) than XGBoost (6.5477 s). Tuned XGBoost is selected due to superior spatial accuracy (holdout RMSE 1.7524°C vs RF 1.8024°C) and native TreeExplainer acceleration.
 - **Status:** **FROZEN (CERTIFIED OPERATIONAL MODEL)**
 
 ---
 
 ## 4. Known Scientific & Sensor Limitations
 
-All registered models operate under explicit geospatial and sensor constraints:
+All registered models operate under explicit geospatial, temporal, and sensor constraints:
 
-1. **Thermal Spatial Resolution (~100m):**
-   Landsat Collection 2 Level-2 Band 10 thermal data is acquired at 100m native resolution (resampled by USGS to 30m, aggregated to 100m analytical grid cells). Micro-scale urban features smaller than $100\text{ m} \times 100\text{ m}$ (individual trees, building courtyards, narrow asphalt roads) are radiometrically integrated into cell-average brightness temperature.
-2. **Partial 2026 Monsoon Observation Record:**
-   The 2026 monsoon period represents partial satellite acquisitions. Models evaluated on temporal splits involving 2026 monsoon must account for truncated scene counts ($OBS \approx 1-2$) and elevated cloud-edge variance.
-3. **Chronic Industrial Hotspot Under-Prediction:**
-   In chronic high-temperature industrial zones (e.g. Pandesara GIDC, Sachin GIDC), localized industrial surfaces and structural materials exhibit elevated thermal skin radiance. When integrated into 100m grid cells, optical indices (`NDBI`, `NDVI`) reach asymptotic saturation, bounding the model's ability to predict localized thermal extremes (mean under-prediction of $2.0 - 4.5^\circ\text{C}$, holdout RMSE = $4.746^\circ\text{C}$). Sub-pixel building material emissivity effects remain an active hypothesis for future high-resolution sensor investigation.
-4. **Temporal / Inter-Annual Climatological Shifts:**
-   Inter-annual macro-climatic anomalies (e.g. the abnormally warm winter of 2025 across western India) introduce global offset biases in multi-year zero-shot projections if baseline seasonal temperatures are not normalized or context-adjusted.
-5. **Non-Causal Nature of Feature Attributions:**
-   SHAP values quantify statistical contribution within the fitted decision-tree ensembles. They do not constitute proof of physical causality (`LST_QA_MEDIAN_K` acts as an atmospheric quality/context indicator, not a direct physical driver of surface temperature).
-
+1. **Validation Scope & Spatial Generalization:**
+   The final independent evaluation uses 33 previously locked spatial blocks withheld from development and model selection. The reported performance therefore measures spatial generalization within the sampled temporal distribution. It explicitly does **NOT** establish:
+   - future-year forecasting accuracy
+   - transferability to cities outside Surat
+   - real-time operational prediction
+   - sub-100 m thermal prediction
+   - intervention cooling effects from the regression model alone
+2. **Temporal Coverage Limitation (2022–2026):**
+   - The year 2026 is temporally incomplete.
+   - 2026 post-monsoon is not represented because that seasonal period had not occurred at data generation time.
+   - 2026 must not be interpreted as a complete annual climatological representation.
+   - The spatial holdout protocol must not be conflated with a future-year forecasting holdout ($\text{spatial holdout} \neq \text{future-year holdout}$).
+3. **Thermal Spatial Resolution (~100m Footprint):**
+   Landsat Collection 2 Level-2 Band 10 thermal data is acquired at ~100m native resolution (resampled by USGS to 30m, aggregated to 100m analytical grid cells). Micro-scale urban features smaller than $100\text{ m} \times 100\text{ m}$ (individual trees, building courtyards, narrow asphalt roads) are radiometrically integrated into cell-average brightness temperature.
+4. **Chronic Industrial Hotspot Under-Prediction:**
+   Predictive error increases for recurrent/chronic hotspot classes (holdout RMSE increases from $1.6715^\circ\text{C}$ for non-hotspots to $4.8413^\circ\text{C}$ for chronic hotspots). The observed cold bias is consistent with sub-pixel thermal heterogeneity within the approximately 100 m thermal footprint, where high-radiance industrial surfaces (e.g. metal roofing in Pandesara/Sachin GIDC) are averaged with cooler surrounding background.
+5. **Architectural Guardrail — Observed LST as Primary Thermal Evidence:**
+   For downstream analysis, **observed satellite LST remains the authoritative primary thermal evidence**. Model predictions are supplementary predictive and error-context information, used for counterfactual scenario evaluation and uncertainty context, never as a replacement for observed thermal evidence.
+6. **Non-Causal Nature of Feature Attributions:**
+   SHAP values quantify numerical attribution within the fitted decision-tree ensembles, not physical causality. `LST_QA_MEDIAN_K` is the seasonal median of the per-scene Landsat ST_QA uncertainty indicator, expressed in Kelvin (not the formal uncertainty of the seasonal median LST composite). It provides a strong retrieval-quality and atmospheric-retrieval context signal that improves predictive performance in the evaluated feature configurations; its predictive contribution must not be interpreted as physical causation.
+7. **Canonical Hotspot Persistence Terminology:**
+   `IS_PERSISTENT_HOTSPOT` is a recurrence-based persistence indicator derived from the canonical hotspot-frequency policy, using $\text{frequency} \ge 0.25$ OR the authoritative existing persistent-hotspot flag. It denotes recurrence persistence under Policy D screening, not proof of continuous sub-daily thermal elevation.

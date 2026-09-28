@@ -1,0 +1,1226 @@
+{
+  "schema_version": "1.0",
+  "validation_status": "PASS",
+  "overall_status": "PASS",
+  "total_cogs": 19,
+  "file_count": 19,
+  "band_count": 10,
+  "expected_band_count": 10,
+  "band_names": [
+    "LST_C",
+    "NDVI",
+    "NDBI",
+    "NDWI",
+    "LST_OBS_COUNT",
+    "LST_QA_MEDIAN_K",
+    "QUALITY_FLAG",
+    "ELIGIBILITY",
+    "HOTSPOT_FREQUENCY",
+    "IS_PERSISTENT_HOTSPOT"
+  ],
+  "expected_band_names": [
+    "LST_C",
+    "NDVI",
+    "NDBI",
+    "NDWI",
+    "LST_OBS_COUNT",
+    "LST_QA_MEDIAN_K",
+    "QUALITY_FLAG",
+    "ELIGIBILITY",
+    "HOTSPOT_FREQUENCY",
+    "IS_PERSISTENT_HOTSPOT"
+  ],
+  "dtype": "float32",
+  "crs": "EPSG:4326",
+  "dimensions": {
+    "height": 324,
+    "width": 318
+  },
+  "nodata": -9999.0,
+  "cogs": [
+    {
+      "cog_path": "data/processed/analytical/surat_2022_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2022_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2022_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2022_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "LST_C range warning: [9.10, 70.23] degC"
+      ]
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2026_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2026_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2026_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    }
+  ],
+  "files": [
+    {
+      "cog_path": "data/processed/analytical/surat_2022_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2022_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2022_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2022_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "LST_C range warning: [9.10, 70.23] degC"
+      ]
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2023_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2024_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_post_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2025_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2026_monsoon_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2026_summer_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "cog_path": "data/processed/analytical/surat_2026_winter_analytical_cog.tif",
+      "band_count": 10,
+      "band_names": [
+        "LST_C",
+        "NDVI",
+        "NDBI",
+        "NDWI",
+        "LST_OBS_COUNT",
+        "LST_QA_MEDIAN_K",
+        "QUALITY_FLAG",
+        "ELIGIBILITY",
+        "HOTSPOT_FREQUENCY",
+        "IS_PERSISTENT_HOTSPOT"
+      ],
+      "dtype": "float32",
+      "crs": "EPSG:4326",
+      "resolution": [
+        0.0008983152841195215,
+        0.0008983152841195215
+      ],
+      "width": 318,
+      "height": 324,
+      "nodata": -9999.0,
+      "is_cog": true,
+      "has_overviews": true,
+      "validation_status": "PASS",
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}

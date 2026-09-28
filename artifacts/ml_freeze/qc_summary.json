@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "status": "PASS",
+  "dataset_integrity": {
+    "dataset_path": "data/processed/sensitivity/policy_d/analysis.parquet",
+    "row_count": 924731,
+    "spatial_blocks": 165,
+    "target": "LST_C",
+    "nonfinite_target_count": 0,
+    "coordinate_leakage_prevented": true,
+    "policy": "Policy D (Spatially coherent, physically bounded pixel eligibility)"
+  },
+  "spatial_split_integrity": {
+    "total_blocks": 165,
+    "development_blocks": 132,
+    "test_blocks": 33,
+    "test_ratio": 0.2,
+    "random_state": 42,
+    "disjointness_verified": true,
+    "coverage_verified": true,
+    "deterministic": true
+  },
+  "leakage_controls": {
+    "train_val_spatial_disjointness_per_fold": true,
+    "test_blocks_excluded_from_optuna": true,
+    "test_blocks_excluded_from_feature_selection": true,
+    "test_blocks_excluded_from_model_selection": true,
+    "test_blocks_excluded_from_final_training": true,
+    "single_independent_evaluation_verified": true
+  },
+  "feature_schema": {
+    "target": "LST_C",
+    "features": [
+      "NDVI",
+      "NDBI",
+      "NDWI",
+      "LST_OBS_COUNT",
+      "LST_QA_MEDIAN_K"
+    ],
+    "feature_order_locked": true,
+    "coordinates_excluded": true
+  },
+  "model_training": {
+    "model_id": "xgb_tuned_policy_d_v1",
+    "algorithm": "XGBRegressor (hist)",
+    "training_blocks": 132,
+    "training_rows": 720973,
+    "optuna_trials": 30,
+    "best_trial": 25,
+    "development_cv_rmse": 1.8478
+  },
+  "holdout_evaluation": {
+    "evaluation_count": 1,
+    "test_blocks": 33,
+    "test_rows": 203758,
+    "mae": 1.2726,
+    "rmse": 1.7524,
+    "r2": 0.9006,
+    "inference_latency_seconds": 1.093
+  },
+  "seasonal_performance": {
+    "winter": {
+      "n": 54930,
+      "mae": 0.9139,
+      "rmse": 1.2136,
+      "r2": 0.6512,
+      "bias": 0.0032
+    },
+    "summer": {
+      "n": 54930,
+      "mae": 1.3734,
+      "rmse": 1.7944,
+      "r2": 0.7119,
+      "bias": -0.1916
+    },
+    "monsoon": {
+      "n": 49954,
+      "mae": 1.8024,
+      "rmse": 2.4353,
+      "r2": 0.7718,
+      "bias": 0.0866
+    },
+    "post_monsoon": {
+      "n": 43944,
+      "mae": 0.9926,
+      "rmse": 1.2772,
+      "r2": 0.7855,
+      "bias": -0.1047
+    }
+  },
+  "hotspot_performance": {
+    "non_hotspot": {
+      "n": 191545,
+      "mae": 1.2251,
+      "rmse": 1.6715,
+      "r2": 0.9076,
+      "bias": 0.0165
+    },
+    "active_hotspot": {
+      "n": 12213,
+      "mae": 2.017,
+      "rmse": 2.7228,
+      "r2": 0.7809,
+      "bias": -1.1281
+    },
+    "persistent_hotspot": {
+      "n": 2177,
+      "mae": 3.0959,
+      "rmse": 3.9896,
+      "r2": 0.4941,
+      "bias": -1.3041
+    },
+    "chronic_hotspot": {
+      "n": 405,
+      "mae": 3.9077,
+      "rmse": 4.8413,
+      "r2": 0.2118,
+      "bias": -1.5264
+    }
+  },
+  "residual_diagnostics": {
+    "cold_bias_in_chronic_hotspots": -1.5264,
+    "spatial_clustering_of_residuals": "Consistent with 100m sensor footprint aggregation over high-emissivity industrial surfaces.",
+    "primary_evidence_retained": "Observed satellite LST"
+  },
+  "known_limitations": [
+    "100m native Landsat thermal resolution resampled to 30m limits fine-scale roof-level temperature resolution.",
+    "Monsoon cloud attenuation reduces temporal clear-sky support.",
+    "Predictions bounded geographically to Surat municipal study region."
+  ]
+}

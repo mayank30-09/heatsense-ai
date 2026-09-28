@@ -1,0 +1,49 @@
+{
+  "experiment_name": "XGBoost_Spatial_Hyperparameter_Tuning",
+  "dataset_path": "E:\\FINAL YEAR PROJECT\\heatsense-ai\\data\\processed\\sensitivity\\policy_d\\analysis.parquet",
+  "total_dataset_rows": 924731,
+  "search_sample_size": 249997,
+  "feature_columns": [
+    "NDVI",
+    "NDBI",
+    "NDWI",
+    "LST_OBS_COUNT",
+    "LST_QA_MEDIAN_K"
+  ],
+  "target_column": "LST_C",
+  "spatial_validation_method": "5-Fold Spatial Block Cross-Validation (2km x 2km)",
+  "number_of_folds": 5,
+  "random_seed": 42,
+  "n_trials": 30,
+  "best_value_rmse": 1.8478,
+  "best_params": {
+    "n_estimators": 900,
+    "max_depth": 9,
+    "learning_rate": 0.03662937937931856,
+    "min_child_weight": 3.253330265581497,
+    "subsample": 0.6539539403049981,
+    "colsample_bytree": 0.6285481356546664,
+    "gamma": 1.2827623793054954,
+    "reg_alpha": 6.448517630611331e-06,
+    "reg_lambda": 12.086733674708716
+  },
+  "fixed_params": {
+    "objective": "reg:squarederror",
+    "tree_method": "hist",
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "environment": {
+    "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.22631-SP0",
+    "xgboost_version": "3.4.1",
+    "optuna_version": "5.0.0",
+    "sklearn_version": "1.9.1"
+  },
+  "git_commit": "06a4c850893cb2656f9687c9ac3bc52cb03cdc3d",
+  "timestamp_utc": "2026-09-27T19:39:32Z",
+  "holdout_split_path": "E:\\FINAL YEAR PROJECT\\heatsense-ai\\artifacts\\ml_freeze\\holdout_split.json",
+  "development_rows": 720973,
+  "development_blocks": 132,
+  "test_blocks_excluded": 33
+}

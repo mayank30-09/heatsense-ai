@@ -1,6 +1,7 @@
 {
   "schema_version": "1.0",
   "random_state": 42,
+  "test_ratio": 0.2,
   "test_fraction": 0.2,
   "total_blocks": 165,
   "development_block_count": 132,

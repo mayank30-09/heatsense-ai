@@ -1,0 +1,11 @@
+{
+  "pytest_command": ".venv\\Scripts\\pytest.exe backend/tests -q",
+  "pytest_exit_code": 0,
+  "pytest_passed": 98,
+  "pytest_failed": 0,
+  "compile_command": ".venv\\Scripts\\python.exe -m compileall gis backend scripts",
+  "compile_exit_code": 0,
+  "frontend_build_run": true,
+  "frontend_build_exit_code": 0,
+  "git_diff_check_passed": true
+}

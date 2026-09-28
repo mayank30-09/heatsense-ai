@@ -1,0 +1,24 @@
+{
+  "best_trial_number": 23,
+  "best_value_rmse": 1.8225,
+  "best_params": {
+    "n_estimators": 1300,
+    "max_depth": 8,
+    "learning_rate": 0.03279127013273231,
+    "min_child_weight": 5.407238106447656,
+    "subsample": 0.7645658245026288,
+    "colsample_bytree": 0.9688977790657431,
+    "gamma": 1.6307304358159391,
+    "reg_alpha": 1.6949358907768442e-08,
+    "reg_lambda": 0.775738584617916
+  },
+  "fixed_params": {
+    "objective": "reg:squarederror",
+    "tree_method": "hist",
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "n_trials": 30,
+  "search_sample_size": 250004,
+  "total_dataset_rows": 924731
+}

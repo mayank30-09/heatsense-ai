@@ -5,6 +5,14 @@
   "evaluation_count": 1,
   "development_rows": 720973,
   "test_rows": 203758,
+  "model_id": "xgb_tuned_policy_d_v1",
+  "feature_schema_hash": "e7c94e8c4a527a13d7b9538d491c8e27125fb5a1c245b565df2d390113c2c7e5",
+  "holdout_split_hash": "8a04b20c97b088ffc7d3f513ecd3e41007adea51ad16401f104529f40d8c1a2d",
+  "metrics": {
+    "mae": 1.2726,
+    "rmse": 1.7524,
+    "r2": 0.9006
+  },
   "MAE": 1.2726,
   "RMSE": 1.7524,
   "R2": 0.9006,

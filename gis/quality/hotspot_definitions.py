@@ -28,8 +28,14 @@ import pandas as pd
 NON_HOTSPOT_FREQ_THRESHOLD: float = 0.0
 ACTIVE_HOTSPOT_FREQ_THRESHOLD: float = 0.0
 OCCASIONAL_HOTSPOT_FREQ_THRESHOLD: float = 0.10
-PERSISTENT_HOTSPOT_FREQ_THRESHOLD: float = 0.25
-CHRONIC_HOTSPOT_FREQ_THRESHOLD: float = 0.50
+
+# Preferred canonical constants per scientific freeze specification
+PERSISTENT_FREQUENCY_THRESHOLD: float = 0.25
+CHRONIC_FREQUENCY_THRESHOLD: float = 0.50
+
+# Backward compatibility aliases
+PERSISTENT_HOTSPOT_FREQ_THRESHOLD: float = PERSISTENT_FREQUENCY_THRESHOLD
+CHRONIC_HOTSPOT_FREQ_THRESHOLD: float = CHRONIC_FREQUENCY_THRESHOLD
 
 HOTSPOT_TIER_NAMES = [
     "non_hotspot",
@@ -77,19 +83,60 @@ def is_active_hotspot(freq: float | np.ndarray | pd.Series) -> bool | np.ndarray
     return freq > 0.0
 
 
+def persistent_hotspot_mask(
+    hotspot_frequency: float | np.ndarray | pd.Series,
+    existing_persistent_flag: bool | np.ndarray | pd.Series | None = None,
+) -> bool | np.ndarray | pd.Series:
+    """Array-safe canonical persistent hotspot mask.
+
+    The canonical recurrence policy for persistence is:
+        is_persistent = (hotspot_frequency >= 0.25) OR authoritative existing persistent-hotspot flag
+
+    Parameters
+    ----------
+    hotspot_frequency : float or array-like
+        Normalized recurrence frequency in [0.0, 1.0].
+    existing_persistent_flag : bool or array-like, optional
+        Precomputed / authoritative persistence flag.
+
+    Returns
+    -------
+    bool or array-like of bool
+        Boolean indicator / mask of persistence.
+    """
+    if isinstance(hotspot_frequency, pd.Series):
+        mask = hotspot_frequency >= PERSISTENT_FREQUENCY_THRESHOLD
+        if existing_persistent_flag is not None:
+            if isinstance(existing_persistent_flag, pd.Series):
+                mask = mask | existing_persistent_flag.astype(bool)
+            else:
+                flag_arr = np.asarray(existing_persistent_flag, dtype=bool)
+                mask = mask | flag_arr
+        return mask
+
+    freq_arr = np.asarray(hotspot_frequency)
+    mask = freq_arr >= PERSISTENT_FREQUENCY_THRESHOLD
+    if existing_persistent_flag is not None:
+        flag_arr = np.asarray(existing_persistent_flag, dtype=bool)
+        mask = mask | flag_arr
+
+    if np.ndim(hotspot_frequency) == 0 and (
+        existing_persistent_flag is None or np.ndim(existing_persistent_flag) == 0
+    ):
+        return bool(mask)
+    return mask
+
+
 def is_persistent_hotspot(
     freq: float | np.ndarray | pd.Series,
     is_persistent_flag: bool | np.ndarray | pd.Series | None = None,
 ) -> bool | np.ndarray | pd.Series:
-    """
-    Return True if pixel meets the multi-season persistence criterion (freq >= 0.25).
+    """Return True if pixel meets the multi-season persistence criterion.
 
-    If the precomputed `is_persistent_flag` is provided, it is logically OR'd with freq >= 0.25.
+    Delegates to canonical persistent_hotspot_mask:
+        frequency >= 0.25 OR authoritative existing persistent-hotspot flag.
     """
-    cond = freq >= PERSISTENT_HOTSPOT_FREQ_THRESHOLD
-    if is_persistent_flag is not None:
-        cond = cond | (is_persistent_flag == True)
-    return cond
+    return persistent_hotspot_mask(freq, is_persistent_flag)
 
 
 def is_chronic_hotspot(

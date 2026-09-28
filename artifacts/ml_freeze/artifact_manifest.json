@@ -1,0 +1,339 @@
+{
+  "schema_version": "1.0",
+  "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+  "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+  "experiment_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+  "branch": "feature/scientific-freeze-correction",
+  "reconciled_at": "2026-09-28T16:27:01Z",
+  "total_artifacts": 41,
+  "artifacts": [
+    {
+      "artifact": "artifacts/ml_freeze/pre_implementation_audit.json",
+      "sha256": "d22623275bbab2c62c28125f8270534b832a6621e852243f970fd500bd35d0bb",
+      "size_bytes": 2299,
+      "generated_at": "2026-09-28T04:17:17Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/dataset_validation.json",
+      "sha256": "1b20895a2e1d020c80b8daef1652cf21e7b060e22ff507abb9b480fa70366d63",
+      "size_bytes": 1296,
+      "generated_at": "2026-09-28T04:17:33Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "config/quality_policy_d.yaml",
+      "sha256": "5f122e6104cc2772de1d6fc6daef64de170b68d4ed74d2a8e8182144b4c21363",
+      "size_bytes": 2624,
+      "generated_at": "2026-09-27T17:55:40Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/sensitivity/policy_d/analysis.parquet",
+      "sha256": "e824794e5ba2e26937ac40f55f5fd788adad70b1a6b23c6ab435b08223dd9997",
+      "size_bytes": 15052187,
+      "generated_at": "2026-09-27T16:20:28Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/holdout_split.json",
+      "sha256": "8a04b20c97b088ffc7d3f513ecd3e41007adea51ad16401f104529f40d8c1a2d",
+      "size_bytes": 3119,
+      "generated_at": "2026-09-28T04:18:41Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/tuning/spatial_fold_definition.json",
+      "sha256": "6836471bc503e7c9aeadcbf86907f1a10baa8def6607925cb27c0b0bf84b3418",
+      "size_bytes": 929,
+      "generated_at": "2026-09-27T19:09:42Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/tuning/best_params.json",
+      "sha256": "0ca76e50933d35783596274467247dfa5936678ada0ef7dd7e8003c827026512",
+      "size_bytes": 644,
+      "generated_at": "2026-09-27T19:39:32Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/tuning/xgb_best_params.json",
+      "sha256": "0ca76e50933d35783596274467247dfa5936678ada0ef7dd7e8003c827026512",
+      "size_bytes": 644,
+      "generated_at": "2026-09-27T19:39:32Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/tuning/study_summary.json",
+      "sha256": "664d9710d4c99bb8897c0c6adde6e75aadf3f09495c8c824e905876130dc6564",
+      "size_bytes": 1647,
+      "generated_at": "2026-09-27T19:39:32Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/tuning/trial_results.csv",
+      "sha256": "9cfea58f72e805c6c3abe09fdbd6b5fdaaff31475dfdedd1daa1426baf149a11",
+      "size_bytes": 6650,
+      "generated_at": "2026-09-27T19:39:32Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/feature_schema.json",
+      "sha256": "e7c94e8c4a527a13d7b9538d491c8e27125fb5a1c245b565df2d390113c2c7e5",
+      "size_bytes": 703,
+      "generated_at": "2026-09-28T04:23:13Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/model_metadata.json",
+      "sha256": "ee51f60ab3b956b1a4294d9cebb495069c8ba5fd5e7ed1a937bafc13778a2b15",
+      "size_bytes": 2126,
+      "generated_at": "2026-09-28T16:18:18Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/xgb_tuned_policy_d.json",
+      "sha256": "8c4aad26e2a56867e327aeae0cd758f9b2b1105bf8d35c0ec8f6774f4ef38377",
+      "size_bytes": 27671551,
+      "generated_at": "2026-09-27T19:42:18Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/xgb_tuned_policy_d.joblib",
+      "sha256": "e1aedd4946b1b29823bdea66ea3ec7b9ba5f20c4ddbfdf6920c2e62e6b30b7c9",
+      "size_bytes": 17537641,
+      "generated_at": "2026-09-27T19:42:19Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/holdout_performance.json",
+      "sha256": "93db2435970ea68b0e18c61abeebb0622a793a6026770973a534efd70a29ac3a",
+      "size_bytes": 668,
+      "generated_at": "2026-09-28T16:27:00Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/holdout_season_performance.csv",
+      "sha256": "1158e56ba4e1a22cd44e6d92d614cc635db20be06415e902db99807cdf5291af",
+      "size_bytes": 252,
+      "generated_at": "2026-09-27T19:42:20Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/holdout_hotspot_performance.csv",
+      "sha256": "3990946de0616a2d4e20457278c09c6c39268aab59756dee72501bcb1097e539",
+      "size_bytes": 408,
+      "generated_at": "2026-09-27T19:42:20Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/holdout_spatial_residuals.geojson",
+      "sha256": "4b4d3d59e2f0c2b27e479f157d355d745bcb65c49c61aac077ffd5179cc27327",
+      "size_bytes": 13504,
+      "generated_at": "2026-09-27T19:42:20Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/evaluation_manifest.json",
+      "sha256": "0ca65f2e840f3a73a9c7ea6bee7c2c985925886704c31167d22d4d7e28011b0b",
+      "size_bytes": 3955,
+      "generated_at": "2026-09-28T16:27:00Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/qc_summary.json",
+      "sha256": "387a1725ece353ffb095faa2de34aa7fa5fc48ef3454a020e0a7ec2bd13c5e50",
+      "size_bytes": 3463,
+      "generated_at": "2026-09-28T05:15:52Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/test_results.json",
+      "sha256": "a4fe0b3e2c3ed59de5dafdbc7b9867bafd018f603b17cad3f40597c5bc0a80c1",
+      "size_bytes": 347,
+      "generated_at": "2026-09-28T16:24:42Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "artifacts/ml_freeze/production_cog_validation.json",
+      "sha256": "07ce6181fab7b97a9188cf44c7e0130fae7541989697f4faa795ec6b69291ecf",
+      "size_bytes": 30086,
+      "generated_at": "2026-09-28T16:26:52Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2022_monsoon_analytical_cog.tif",
+      "sha256": "3151a8991e725c3ae71a52940ed2cbd41f87c437eb8878e3598fb4596a8c6041",
+      "size_bytes": 1173764,
+      "generated_at": "2026-09-27T20:06:34Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2022_post_monsoon_analytical_cog.tif",
+      "sha256": "dd0481ca0c37a9d774cc1859267600afb68ad80d940f3713fb2325d3db12c2a3",
+      "size_bytes": 1155406,
+      "generated_at": "2026-09-27T20:06:35Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2022_summer_analytical_cog.tif",
+      "sha256": "30bfd56de97f479bb7094cbc2e7c391bea216cde91f562edc1d44f6c51fc6284",
+      "size_bytes": 1142776,
+      "generated_at": "2026-09-27T20:06:35Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2022_winter_analytical_cog.tif",
+      "sha256": "490a035f3a52f258a948c9dc4edb3684af3be47e26920bf13d5d47ecb2d41183",
+      "size_bytes": 1132884,
+      "generated_at": "2026-09-27T20:06:36Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2023_monsoon_analytical_cog.tif",
+      "sha256": "76d82dc6d3921a288b4d3d73def8cf98bc8f5a56dbeb9fb5530bfb2051e8cc89",
+      "size_bytes": 1161082,
+      "generated_at": "2026-09-27T20:06:36Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2023_post_monsoon_analytical_cog.tif",
+      "sha256": "609a5a89ce4a83a015a0c8ca96c32a5122bc8edc6b01dad716107c388463d851",
+      "size_bytes": 1141752,
+      "generated_at": "2026-09-27T20:06:37Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2023_summer_analytical_cog.tif",
+      "sha256": "92db6070e2a09e2eb62d4e2f6759baf122af4f23a4d2fda9fa9e6eee0e039b89",
+      "size_bytes": 1139960,
+      "generated_at": "2026-09-27T20:06:37Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2023_winter_analytical_cog.tif",
+      "sha256": "80bb0c6a23e7b8b342828d6a2cd42b056d05d52dfbaafb063fef90cdd1dd55b3",
+      "size_bytes": 1131058,
+      "generated_at": "2026-09-27T20:06:37Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2024_monsoon_analytical_cog.tif",
+      "sha256": "cc6627ef529d01dbed917ac8323b9f203acb9ecbd57934cb589268b2346974b7",
+      "size_bytes": 1112846,
+      "generated_at": "2026-09-27T20:06:38Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2024_post_monsoon_analytical_cog.tif",
+      "sha256": "1642005e302ee1909502856fa5f374bd516c64f3b0ea3f580809be0c5d734d8f",
+      "size_bytes": 1118618,
+      "generated_at": "2026-09-27T20:06:38Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2024_summer_analytical_cog.tif",
+      "sha256": "373a3e4cef406da00db975302b87ac4166aaa4e8a68eeecd04b4cf3f7a2a232a",
+      "size_bytes": 1119214,
+      "generated_at": "2026-09-27T20:06:39Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2024_winter_analytical_cog.tif",
+      "sha256": "d0405377e850878c8205357d8512d2ae3f4858cf3010743f8e35dd00450673fb",
+      "size_bytes": 1134338,
+      "generated_at": "2026-09-27T20:06:39Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2025_monsoon_analytical_cog.tif",
+      "sha256": "907b8d8253bd5b76567f7665d82d7136adcd1f0daf23fce289badcec65ba54ea",
+      "size_bytes": 1080700,
+      "generated_at": "2026-09-27T20:06:40Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2025_post_monsoon_analytical_cog.tif",
+      "sha256": "e34beb886c5e52a4aa52dd9775f5efdfd562cc496b206b001cd4c4c3d7a77b4b",
+      "size_bytes": 1149370,
+      "generated_at": "2026-09-27T20:06:40Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2025_summer_analytical_cog.tif",
+      "sha256": "5f074dc01e947e0a94e768d3994435bed75b6a51c226ce49d93f72070a18c8cc",
+      "size_bytes": 1136588,
+      "generated_at": "2026-09-27T20:06:40Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2025_winter_analytical_cog.tif",
+      "sha256": "a186afa71b4b87d5ef30faa18f3c47abd065cbf77effbd3b194fec5fb1a077ae",
+      "size_bytes": 1133952,
+      "generated_at": "2026-09-27T20:06:41Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2026_monsoon_analytical_cog.tif",
+      "sha256": "15e571e7a9328e5e6d851e70effcbbb6584c0e61ef87bda893d85779a6bed5fb",
+      "size_bytes": 896312,
+      "generated_at": "2026-09-27T20:06:41Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2026_summer_analytical_cog.tif",
+      "sha256": "84be6def8cc2b45771dfe557bcd30aa5fbecb4419368787ae1330c2facd31540",
+      "size_bytes": 1135396,
+      "generated_at": "2026-09-27T20:06:42Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    },
+    {
+      "artifact": "data/processed/analytical/surat_2026_winter_analytical_cog.tif",
+      "sha256": "4de042fe35a99e547f55bcbdb8543c8e35bd3968049bf6c6a2876cb03243add3",
+      "size_bytes": 1140716,
+      "generated_at": "2026-09-27T20:06:42Z",
+      "git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96",
+      "freeze_git_commit": "c91bc69038d1796c568772a5bce9fba900be7e96"
+    }
+  ]
+}

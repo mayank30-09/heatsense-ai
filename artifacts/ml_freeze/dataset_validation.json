@@ -1,0 +1,60 @@
+{
+  "dataset_path": "data/processed/sensitivity/policy_d/analysis.parquet",
+  "row_count": 924731,
+  "unique_spatial_blocks": 165,
+  "target": "LST_C",
+  "features": [
+    "NDVI",
+    "NDBI",
+    "NDWI",
+    "LST_OBS_COUNT",
+    "LST_QA_MEDIAN_K"
+  ],
+  "coordinate_columns_excluded": [
+    "latitude",
+    "longitude",
+    "row",
+    "col"
+  ],
+  "null_counts": {
+    "year": 0,
+    "season": 0,
+    "row": 0,
+    "col": 0,
+    "longitude": 0,
+    "latitude": 0,
+    "LST_C": 0,
+    "NDVI": 0,
+    "NDBI": 0,
+    "NDWI": 0,
+    "LST_OBS_COUNT": 0,
+    "LST_QA_MEDIAN_K": 0,
+    "quality_flag": 0,
+    "eligibility": 0,
+    "hotspot_frequency": 0,
+    "is_persistent_hotspot": 0,
+    "neighborhood_median": 16,
+    "neighborhood_std": 16,
+    "pixel_minus_neighborhood_median": 16,
+    "absolute_pixel_minus_neighborhood_median": 16,
+    "valid_neighbor_count": 0,
+    "is_boundary_context": 0,
+    "is_partial_season": 0,
+    "block_id": 0
+  },
+  "nonfinite_target_count": 0,
+  "season_counts": {
+    "winter": 248735,
+    "summer": 248735,
+    "monsoon": 228273,
+    "post_monsoon": 198988
+  },
+  "year_counts": {
+    "2022": 198967,
+    "2023": 198718,
+    "2024": 197018,
+    "2025": 194366,
+    "2026": 135662
+  },
+  "policy": "D"
+}

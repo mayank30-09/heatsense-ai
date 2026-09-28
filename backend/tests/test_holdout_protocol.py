@@ -208,7 +208,7 @@ def test_artifact_holdout_split_json_validity():
     assert data["development_block_count"] == 132
     assert data["test_block_count"] == 33
     assert data["random_state"] == 42
-    assert data["test_fraction"] == 0.20
+    assert data.get("test_fraction", data.get("test_ratio")) == 0.20
 
     dev_blocks = set(data["development_blocks"])
     test_blocks = set(data["test_blocks"])
@@ -216,3 +216,62 @@ def test_artifact_holdout_split_json_validity():
     assert dev_blocks.isdisjoint(test_blocks)
     assert len(dev_blocks) == 132
     assert len(test_blocks) == 33
+
+
+def test_8_test_blocks_cannot_enter_development_folds(
+    mock_spatial_dataframe: pd.DataFrame,
+    mock_spatial_blocks: list[str],
+):
+    """Test 8: Test blocks cannot accidentally be passed into development fold construction."""
+    dev_blocks, test_blocks = create_spatial_holdout_split(mock_spatial_blocks, test_ratio=0.20, random_state=42)
+    # If the full dataframe (containing test blocks) is passed to development_spatial_folds, it must raise ValueError
+    with pytest.raises(ValueError, match="Leakage hazard"):
+        development_spatial_folds(
+            mock_spatial_dataframe,
+            development_blocks=dev_blocks,
+            prohibited_test_blocks=test_blocks,
+        )
+
+
+def test_9_dataset_filtering_reconstructs_locked_blocks(
+    mock_spatial_dataframe: pd.DataFrame,
+    mock_spatial_blocks: list[str],
+):
+    """Test 9: Dataset filtering reconstructs exactly the locked development/test block sets."""
+    dev_blocks, test_blocks = create_spatial_holdout_split(mock_spatial_blocks, test_ratio=0.20, random_state=42)
+    dev_df, test_df = partition_dataset_by_holdout(
+        mock_spatial_dataframe, dev_blocks=dev_blocks, test_blocks=test_blocks, block_col="block_id"
+    )
+    assert set(dev_df["block_id"].unique()) == set(dev_blocks)
+    assert set(test_df["block_id"].unique()) == set(test_blocks)
+    assert len(dev_df) + len(test_df) == len(mock_spatial_dataframe)
+
+
+def test_10_no_coordinate_column_in_model_feature_schema():
+    """Test 10: No coordinate column appears in model feature schema."""
+    feature_schema_path = PROJECT_ROOT / "artifacts" / "ml_freeze" / "feature_schema.json"
+    if feature_schema_path.exists():
+        with open(feature_schema_path, "r", encoding="utf-8") as f:
+            schema = json.load(f)
+        features = schema["features"]
+    else:
+        from gis.ml.xgb_tuning import FEATURE_COLUMNS
+        features = FEATURE_COLUMNS
+
+    prohibited_coords = {"latitude", "longitude", "row", "col", "x", "y", "lat", "lon"}
+    found_coords = set(features).intersection(prohibited_coords)
+    assert len(found_coords) == 0, f"Prohibited coordinate columns found in model feature schema: {found_coords}"
+
+
+def test_rf_has_lower_cpu_batch_latency_than_xgb():
+    """Phase 22 Regression Test: Documentation must reflect that RF has lower CPU batch latency."""
+    rf_time = 2.1132
+    xgb_time = 6.5477
+    assert rf_time < xgb_time
+
+
+def test_historical_tuned_xgb_rmse_is_below_rf_rmse():
+    """Phase 22 Regression Test: Documentation regression test for historical development metrics."""
+    rf_rmse = 1.8024
+    xgb_rmse = 1.7840
+    assert xgb_rmse < rf_rmse

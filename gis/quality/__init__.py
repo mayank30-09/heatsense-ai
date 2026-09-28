@@ -22,13 +22,16 @@ from gis.quality.eligibility import (
 )
 
 from gis.quality.hotspot_definitions import (
+    CHRONIC_FREQUENCY_THRESHOLD,
     CHRONIC_HOTSPOT_FREQ_THRESHOLD,
+    PERSISTENT_FREQUENCY_THRESHOLD,
     PERSISTENT_HOTSPOT_FREQ_THRESHOLD,
     classify_hotspot_tier,
     is_active_hotspot,
     is_chronic_hotspot,
     is_non_hotspot,
     is_persistent_hotspot,
+    persistent_hotspot_mask,
 )
 
 __all__ = [
@@ -44,11 +47,14 @@ __all__ = [
     "evaluate_policy_b",
     "evaluate_policy_c",
     "evaluate_policy_d",
+    "CHRONIC_FREQUENCY_THRESHOLD",
     "CHRONIC_HOTSPOT_FREQ_THRESHOLD",
+    "PERSISTENT_FREQUENCY_THRESHOLD",
     "PERSISTENT_HOTSPOT_FREQ_THRESHOLD",
     "classify_hotspot_tier",
     "is_active_hotspot",
     "is_chronic_hotspot",
     "is_non_hotspot",
     "is_persistent_hotspot",
+    "persistent_hotspot_mask",
 ]

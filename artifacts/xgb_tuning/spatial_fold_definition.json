@@ -1,0 +1,43 @@
+{
+  "n_splits": 5,
+  "random_state": 42,
+  "block_col": "block_id",
+  "unique_blocks_count": 165,
+  "folds": [
+    {
+      "fold": 1,
+      "train_samples": 194917,
+      "val_samples": 55087,
+      "train_blocks": 132,
+      "val_blocks": 33
+    },
+    {
+      "fold": 2,
+      "train_samples": 197460,
+      "val_samples": 52544,
+      "train_blocks": 132,
+      "val_blocks": 33
+    },
+    {
+      "fold": 3,
+      "train_samples": 196937,
+      "val_samples": 53067,
+      "train_blocks": 132,
+      "val_blocks": 33
+    },
+    {
+      "fold": 4,
+      "train_samples": 204843,
+      "val_samples": 45161,
+      "train_blocks": 132,
+      "val_blocks": 33
+    },
+    {
+      "fold": 5,
+      "train_samples": 205859,
+      "val_samples": 44145,
+      "train_blocks": 132,
+      "val_blocks": 33
+    }
+  ]
+}

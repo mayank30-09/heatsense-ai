@@ -1,0 +1,17 @@
+{
+  "model": "XGBoost_Tuned",
+  "n_samples": 924731,
+  "n_folds": 5,
+  "mean_mae": 1.2855,
+  "std_mae": 0.0294,
+  "min_mae": 1.2595,
+  "max_mae": 1.3301,
+  "mean_rmse": 1.784,
+  "std_rmse": 0.0591,
+  "min_rmse": 1.7342,
+  "max_rmse": 1.8801,
+  "mean_r2": 0.9033,
+  "std_r2": 0.005,
+  "min_r2": 0.8963,
+  "max_r2": 0.9095
+}

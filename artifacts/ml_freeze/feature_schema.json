@@ -9,6 +9,7 @@
     "LST_QA_MEDIAN_K"
   ],
   "feature_order_locked": true,
+  "coordinates_excluded": true,
   "features_description": {
     "NDVI": "Normalized Difference Vegetation Index (surface greenness)",
     "NDBI": "Normalized Difference Built-Up Index (built density/impervious surface)",

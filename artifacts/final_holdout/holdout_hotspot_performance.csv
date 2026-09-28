@@ -1,0 +1,5 @@
+hotspot_category,definition,n_samples,MAE,RMSE,R2
+non_hotspot,hotspot_frequency == 0,191545,1.2118,1.6508,0.9099
+active_hotspot,hotspot_frequency > 0,12213,2.0081,2.7268,0.7802
+persistent_hotspot,hotspot_frequency >= 0.25 or is_persistent_hotspot,2177,3.0702,4.001,0.4912
+chronic_hotspot,hotspot_frequency >= 0.5 (highest persistence tier),405,3.7945,4.7462,0.2425

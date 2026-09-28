@@ -1,0 +1,13 @@
+{
+  "dataset_path": "E:\\FINAL YEAR PROJECT\\heatsense-ai\\data\\processed\\sensitivity\\policy_d\\analysis.parquet",
+  "dataset_sha256": "e824794e5ba2e26937ac40f55f5fd788adad70b1a6b23c6ab435b08223dd9997",
+  "total_rows": 924731,
+  "total_blocks": 165,
+  "test_ratio": 0.2,
+  "random_state": 42,
+  "development_blocks_count": 132,
+  "development_rows_count": 720973,
+  "test_blocks_count": 33,
+  "test_rows_count": 203758,
+  "timestamp": "2026-09-27T17:57:40Z"
+}
