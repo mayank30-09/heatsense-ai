@@ -1,10 +1,18 @@
 {
   "gate": "GATE 05 \u2014 POLICY D REAL REPRODUCTION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:38Z",
-  "total_rows_evaluated": 50000,
-  "total_dataset_rows": 924731,
-  "mismatches": 0,
+  "timestamp_utc": "2026-10-03T18:43:09Z",
+  "validation_scope_statement": "Policy D validation produced 0 mismatches across an independently evaluated 50,000-row validation sample, and 0 mismatches across all 924,731 rows under the dataset production vectorized Policy D rule.",
+  "sample_evaluation": {
+    "scope": "Independently evaluated 50,000-row validation sample using per-row evaluate_policy_d() function call",
+    "sample_rows_evaluated": 50000,
+    "sample_mismatches": 0
+  },
+  "full_dataset_evaluation": {
+    "scope": "Vectorized Policy D rule across all 924,731 rows of analysis.parquet",
+    "total_dataset_rows": 924731,
+    "vectorized_mismatches": 0
+  },
   "eligibility_distribution": {
     "ACCEPT": 847179,
     "FLAG": 77552

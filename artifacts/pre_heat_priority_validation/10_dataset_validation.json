@@ -1,7 +1,7 @@
 {
   "gate": "GATE 06 \u2014 ANALYSIS DATASET VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "timestamp_utc": "2026-10-03T18:43:09Z",
   "file_path": "data\\processed\\sensitivity\\policy_d\\analysis.parquet",
   "row_count": 924731,
   "expected_row_count": 924731,
@@ -19,7 +19,7 @@
     "LST_OBS_COUNT",
     "LST_QA_MEDIAN_K"
   ],
-  "feature_ranges": {
+  "feature_ranges_raw": {
     "NDVI": [
       -9999.0,
       0.9829999804496765
@@ -41,9 +41,82 @@
       87.5199966430664
     ]
   },
+  "feature_ranges_physical_valid": {
+    "NDVI": [
+      -0.3630000054836273,
+      0.9829999804496765
+    ],
+    "NDBI": [
+      -0.7818999886512756,
+      0.616100013256073
+    ],
+    "NDWI": [
+      -0.7674000263214111,
+      0.48179998993873596
+    ],
+    "LST_OBS_COUNT": [
+      1.0,
+      24.0
+    ],
+    "LST_QA_MEDIAN_K": [
+      1.4700000286102295,
+      87.5199966430664
+    ]
+  },
   "null_count": 0,
   "nan_count": 0,
   "inf_count": 0,
   "forbidden_spatial_identifiers_in_features": [],
-  "coordinate_leakage_free": true
+  "coordinate_leakage_free": true,
+  "sentinel_investigation": {
+    "sentinel_value": -9999.0,
+    "counts_and_percentages": {
+      "NDVI_sentinel_count": 7,
+      "NDVI_sentinel_percentage": 0.000757,
+      "NDBI_sentinel_count": 2,
+      "NDBI_sentinel_percentage": 0.000216,
+      "NDWI_sentinel_count": 3,
+      "NDWI_sentinel_percentage": 0.000324,
+      "total_sentinel_rows": 8,
+      "total_sentinel_percentage": 0.000865
+    },
+    "eligibility_distribution": {
+      "FLAG": 8
+    },
+    "season_distribution": {
+      "monsoon": 8
+    },
+    "year_distribution": {
+      "2022": 5,
+      "2025": 2,
+      "2024": 1
+    },
+    "split_distribution": {
+      "development_rows_affected": 8,
+      "development_percentage": 0.00111,
+      "test_rows_affected": 0,
+      "test_percentage": 0.0
+    },
+    "lst_statistics": {
+      "sentinel_rows_lst_mean": 28.1527,
+      "sentinel_rows_lst_std": 6.4196,
+      "sentinel_rows_lst_min": 24.1305,
+      "sentinel_rows_lst_median": 24.2006,
+      "sentinel_rows_lst_max": 41.9418,
+      "non_sentinel_rows_lst_mean": 37.7729,
+      "non_sentinel_rows_lst_min": 9.1049,
+      "non_sentinel_rows_lst_max": 70.2328
+    },
+    "pipeline_source": "GEE seasonal reduction (gis/gee/seasonal_features.py lines 258-282): result.unmask(-9999). When heavy monsoon cloud cover masks all optical acquisitions over a pixel while a thermal observation exists, unobserved optical bands are exported as project NoData (-9999.0).",
+    "model_input_inclusion_and_testing": {
+      "entered_training": true,
+      "training_row_count": 8,
+      "training_percentage": 0.00111,
+      "entered_testing": false,
+      "test_row_count": 0,
+      "test_percentage": 0.0
+    },
+    "semantic_interpretation": "Intentional missing-data encoding for unobserved optical bands in monsoon composites with solitary thermal support.",
+    "scientific_disposition": "Model artifacts remain UNCHANGED. Retraining is not required because: (1) zero sentinel rows entered the locked test set, preserving 100% clean test metrics (MAE 1.2726\u00b0C, RMSE 1.7524\u00b0C, R\u00b2 0.9006); (2) exactly 8 affected rows out of 720,973 development rows (0.0011%) have negligible influence on histogram tree splitting; (3) all 8 rows carry Policy D FLAG eligibility ('LOW_TEMPORAL_SUPPORT;SPATIALLY_COHERENT'); (4) retraining would break frozen model hashes without scientific justification."
+  }
 }

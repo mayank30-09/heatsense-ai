@@ -1,7 +1,7 @@
 {
   "gate": "GATE 09 \u2014 SEASONAL METRIC REPRODUCTION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:39Z",
+  "timestamp_utc": "2026-10-03T18:43:11Z",
   "seasonal_breakdown": {
     "WINTER": {
       "count": 54930,
@@ -12,7 +12,8 @@
       "expected_RMSE": 1.2136,
       "R2": 0.6512,
       "expected_R2": 0.6512,
-      "mean_bias": 0.0032,
+      "mean_model_bias": 0.0032,
+      "mean_residual": -0.0032,
       "match": true
     },
     "SUMMER": {
@@ -24,7 +25,8 @@
       "expected_RMSE": 1.7944,
       "R2": 0.7119,
       "expected_R2": 0.7119,
-      "mean_bias": -0.1916,
+      "mean_model_bias": -0.1916,
+      "mean_residual": 0.1916,
       "match": true
     },
     "MONSOON": {
@@ -36,7 +38,8 @@
       "expected_RMSE": 2.4353,
       "R2": 0.7718,
       "expected_R2": 0.7718,
-      "mean_bias": 0.0866,
+      "mean_model_bias": 0.0866,
+      "mean_residual": -0.0866,
       "match": true
     },
     "POST_MONSOON": {
@@ -48,7 +51,8 @@
       "expected_RMSE": 1.2772,
       "R2": 0.7855,
       "expected_R2": 0.7855,
-      "mean_bias": -0.1047,
+      "mean_model_bias": -0.1047,
+      "mean_residual": 0.1047,
       "match": true
     }
   }

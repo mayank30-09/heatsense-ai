@@ -1,9 +1,11 @@
 {
   "gate": "GATE 09D \u2014 RESIDUAL VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:40Z",
-  "residual_definition": "observed - predicted",
+  "timestamp_utc": "2026-10-03T18:43:11Z",
+  "residual_convention": "residual = observed - predicted (mean = +0.0521\u00b0C)",
+  "model_bias_convention": "model_bias = predicted - observed (mean = -0.0521\u00b0C)",
   "mean_residual": 0.0521,
+  "mean_model_bias": -0.0521,
   "std_residual": 1.7516,
   "percentiles": {
     "p1": -4.8066,

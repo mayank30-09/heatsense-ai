@@ -1,7 +1,7 @@
 {
   "gate": "GATE 09B / 09C \u2014 HOTSPOT METRIC REPRODUCTION & RF COMPARISON",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:39Z",
+  "timestamp_utc": "2026-10-03T18:43:11Z",
   "hotspot_tier_breakdown": {
     "non_hotspot": {
       "count": 191545,
@@ -53,5 +53,5 @@
     }
   },
   "scientific_limitation_preserved": "Model error systematically escalates from standard non-hotspot urban cells (RMSE=1.67\u00b0C) to chronic industrial hotspots (RMSE=4.84\u00b0C). Observed satellite LST remains mandatory primary thermal evidence.",
-  "rf_comparison_protocol": "Random Forest is an active baseline benchmark (development 5-fold CV RMSE = 1.8024\u00b0C). Direct holdout comparison with tuned XGBoost holdout RMSE (1.7524\u00b0C) is not claimed as they represent different validation stages."
+  "rf_comparison_protocol": "XGBoost is the frozen operational model based on the tuned development workflow, independent locked test evaluation, and explainability workflow. RF remains an active benchmark. The currently reported RF 5-fold development CV RMSE and XGBoost locked-test RMSE are not directly comparable."
 }

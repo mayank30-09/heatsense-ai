@@ -1,14 +1,24 @@
-"""Transparent Heat Priority Scoring Engine.
+"""Transparent Heat Priority Scoring Engine for HEATSENSE AI.
 
 Combines thermal evidence layers transparently without collapsing them into an opaque black box.
+Supports both the canonical Stage C 4-Component formulation and the backward-compatible
+diagnostic layer preservation.
 
-Scientific Requirements:
+Canonical Stage C 4-Component Formulation:
+    HPI = 100.0 * (w_T * T_norm + w_P * P_persist + w_V * V_deficit + w_B * B_density)
+
+Approved Baseline Parameters:
+- Thermal Severity Weight (w_T): 0.40 (LST bounds [30.0, 50.0] deg C)
+- Multi-Year Persistence Weight (w_P): 0.30 (Recurrence frequency in [0.0, 1.0])
+- Vegetation Deficit Weight (w_V): 0.15 (NDVI deficit bounds [0.05, 0.45])
+- Built-Up Density Weight (w_B): 0.15 (NDBI density bounds [-0.25, 0.15])
+
+Scientific Invariants:
 1. OBSERVED LST is PRIMARY THERMAL EVIDENCE (never substituted by model predictions).
-2. MODEL PREDICTION is SUPPLEMENTARY MODEL EVIDENCE (stored as distinct contextual layer).
-3. Component layers (severity, persistence, quality, uncertainty) are preserved separately.
-4. Formula:
-   HeatPriority = w1 * heat_severity + w2 * heat_persistence
-   with configurable default weights (w1 = 0.60, w2 = 0.40).
+2. MODEL PREDICTION is SUPPLEMENTARY MODEL EVIDENCE (for spatial/hypothetical interpolation).
+3. Missing summer observed LST results in strict NULL score (no modeled temperature fallback).
+4. All components are bounded in [0.0, 1.0] and composite HPI is bounded in [0.0, 100.0].
+5. Distinct components and confidence indices are preserved separately.
 """
 
 from __future__ import annotations
@@ -18,12 +28,58 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from gis.heat_priority.lst_priority import compute_lst_severity
+from gis.heat_priority.lst_priority import (
+    DEFAULT_NDBI_MAX,
+    DEFAULT_NDBI_MIN,
+    DEFAULT_NDVI_MIN,
+    DEFAULT_NDVI_TARGET,
+    DEFAULT_T_MAX,
+    DEFAULT_T_MIN,
+    compute_builtup_density,
+    compute_lst_severity,
+    compute_vegetation_deficit,
+    normalize_lst_severity,
+)
 from gis.heat_priority.persistence import compute_heat_persistence
-from gis.heat_priority.quality import compute_quality_confidence
+from gis.heat_priority.quality import (
+    compute_calibrated_confidence_index,
+    compute_obs_multiplier,
+    compute_qa_multiplier,
+    compute_quality_confidence,
+    compute_season_multiplier,
+)
 
+# Approved canonical Stage C weights
+DEFAULT_WEIGHT_THERMAL: float = 0.40
+DEFAULT_WEIGHT_PERSISTENCE: float = 0.30
+DEFAULT_WEIGHT_VEGETATION: float = 0.15
+DEFAULT_WEIGHT_BUILTUP: float = 0.15
+
+# Legacy 2-component weights
 DEFAULT_SEVERITY_WEIGHT: float = 0.60
 DEFAULT_PERSISTENCE_WEIGHT: float = 0.40
+
+
+def sanitize_for_sql(val: Any) -> Any:
+    """
+    Convert float NaNs, out-of-range sentinels (<= -9000), or pd.NA to genuine SQL None.
+
+    Ensures PostgreSQL receives true SQL NULL rather than NaN, 0.0, or -9999.0.
+    """
+    if val is None or val is pd.NA:
+        return None
+    try:
+        if isinstance(val, (float, np.floating)):
+            if np.isnan(val) or val <= -9000.0:
+                return None
+            return float(val)
+        if isinstance(val, (int, np.integer)):
+            if val <= -9000:
+                return None
+            return int(val)
+    except Exception:
+        pass
+    return val
 
 
 @dataclass(frozen=True)
@@ -36,6 +92,11 @@ class HeatPriorityLayers:
     model_uncertainty: np.ndarray | None
     heat_priority_score: np.ndarray
     weights: dict[str, float]
+    vegetation_deficit: np.ndarray | None = None
+    builtup_density: np.ndarray | None = None
+    confidence_index: np.ndarray | None = None
+    confidence_tier: np.ndarray | None = None
+    spec_version: str = "v2.0"
 
     def to_dataframe(self, index: pd.Index | None = None) -> pd.DataFrame:
         """Export layers to a structured pandas DataFrame."""
@@ -47,7 +108,72 @@ class HeatPriorityLayers:
         }
         if self.model_uncertainty is not None:
             data["model_uncertainty"] = self.model_uncertainty
+        if self.vegetation_deficit is not None:
+            data["vegetation_deficit"] = self.vegetation_deficit
+        if self.builtup_density is not None:
+            data["builtup_density"] = self.builtup_density
+        if self.confidence_index is not None:
+            data["confidence_index"] = self.confidence_index
+        if self.confidence_tier is not None:
+            data["confidence_tier"] = self.confidence_tier
         return pd.DataFrame(data, index=index)
+
+    def to_sql_records(self, index: pd.Index | None = None) -> list[dict[str, Any]]:
+        """Export layers to a list of dicts with genuine SQL None for all invalid/missing entries."""
+        df = self.to_dataframe(index=index)
+        records = df.to_dict(orient="records")
+        return [{k: sanitize_for_sql(v) for k, v in r.items()} for r in records]
+
+
+def compute_heat_priority_composite(
+    observed_lst: np.ndarray | pd.Series,
+    hotspot_frequency: np.ndarray | pd.Series,
+    ndvi: np.ndarray | pd.Series,
+    ndbi: np.ndarray | pd.Series,
+    w_t: float = DEFAULT_WEIGHT_THERMAL,
+    w_p: float = DEFAULT_WEIGHT_PERSISTENCE,
+    w_v: float = DEFAULT_WEIGHT_VEGETATION,
+    w_b: float = DEFAULT_WEIGHT_BUILTUP,
+    t_min: float = DEFAULT_T_MIN,
+    t_max: float = DEFAULT_T_MAX,
+    v_min: float = DEFAULT_NDVI_MIN,
+    v_target: float = DEFAULT_NDVI_TARGET,
+    b_min: float = DEFAULT_NDBI_MIN,
+    b_max: float = DEFAULT_NDBI_MAX,
+    valid_mask: np.ndarray | pd.Series | None = None,
+    valid_seasons_count: np.ndarray | pd.Series | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Compute 4-component Heat Priority Index composite score and its component layers in [0.0, 100.0].
+
+    Returns
+    -------
+    tuple of (hpi_score, t_norm, p_persist, v_deficit, b_density)
+    """
+    total_w = w_t + w_p + w_v + w_b
+    if not (0.999 <= total_w <= 1.001):
+        raise ValueError(f"Sum of component weights must equal 1.0 (got {total_w})")
+
+    t_norm = normalize_lst_severity(observed_lst, t_min=t_min, t_max=t_max, valid_mask=valid_mask)
+    p_persist = compute_heat_persistence(
+        hotspot_frequency, valid_mask=valid_mask, valid_seasons_count=valid_seasons_count
+    )
+    v_def = compute_vegetation_deficit(ndvi, v_min=v_min, v_target=v_target, valid_mask=valid_mask)
+    b_den = compute_builtup_density(ndbi, b_min=b_min, b_max=b_max, valid_mask=valid_mask)
+
+    hpi_score = np.full(t_norm.shape, np.nan, dtype=np.float64)
+    eligible = np.isfinite(t_norm) & np.isfinite(p_persist) & np.isfinite(v_def) & np.isfinite(b_den)
+
+    if np.any(eligible):
+        raw_score = 100.0 * (
+            w_t * t_norm[eligible]
+            + w_p * p_persist[eligible]
+            + w_v * v_def[eligible]
+            + w_b * b_den[eligible]
+        )
+        hpi_score[eligible] = np.clip(raw_score, 0.0, 100.0)
+
+    return hpi_score, t_norm, p_persist, v_def, b_den
 
 
 def compute_heat_priority_score(
@@ -57,23 +183,8 @@ def compute_heat_priority_score(
     w_persistence: float = DEFAULT_PERSISTENCE_WEIGHT,
 ) -> np.ndarray:
     """
-    Compute transparent Heat Priority composite score.
-
-    Parameters
-    ----------
-    heat_severity : np.ndarray or pd.Series
-        Thermal severity percentile [0.0, 1.0] derived from observed satellite LST.
-    heat_persistence : np.ndarray or pd.Series
-        Normalized multi-season recurrence frequency [0.0, 1.0].
-    w_severity : float
-        Weight for observed LST severity (default 0.60).
-    w_persistence : float
-        Weight for multi-season persistence (default 0.40).
-
-    Returns
-    -------
-    np.ndarray
-        Composite priority score in [0.0, 1.0].
+    Compute transparent Heat Priority composite score in [0.0, 1.0].
+    Preserved for backward-compatibility with Stage B tests.
     """
     total_w = w_severity + w_persistence
     if total_w <= 0:
@@ -85,10 +196,8 @@ def compute_heat_priority_score(
     sev = np.asarray(heat_severity, dtype=np.float64)
     pers = np.asarray(heat_persistence, dtype=np.float64)
 
-    # Valid mask where both components are valid
     valid_mask = np.isfinite(sev) & np.isfinite(pers)
     score = np.full(sev.shape, np.nan, dtype=np.float64)
-
     score[valid_mask] = np.clip(w1 * sev[valid_mask] + w2 * pers[valid_mask], 0.0, 1.0)
     return score
 
@@ -101,50 +210,18 @@ def compute_heat_priority_layers(
     eligibility_code: np.ndarray | pd.Series | None = None,
     qa_uncertainty_k: np.ndarray | pd.Series | None = None,
     model_prediction: np.ndarray | pd.Series | None = None,
+    valid_mask: np.ndarray | pd.Series | None = None,
     w_severity: float = DEFAULT_SEVERITY_WEIGHT,
     w_persistence: float = DEFAULT_PERSISTENCE_WEIGHT,
-    valid_mask: np.ndarray | pd.Series | None = None,
 ) -> HeatPriorityLayers:
     """
-    Generate all separate component layers and the transparent Heat Priority score.
-
-    Parameters
-    ----------
-    observed_lst : np.ndarray or pd.Series
-        Observed Land Surface Temperature (degC) — PRIMARY THERMAL EVIDENCE.
-    hotspot_frequency : np.ndarray or pd.Series
-        Normalized multi-season extreme recurrence frequency.
-    obs_count : np.ndarray or pd.Series
-        Clear-sky seasonal observation support count.
-    is_persistent_hotspot : np.ndarray or pd.Series, optional
-        Precomputed multi-season persistence flag.
-    eligibility_code : np.ndarray or pd.Series, optional
-        Policy D eligibility code (1.0=ACCEPT, 2.0=FLAG, 0.0=EXCLUDE).
-    qa_uncertainty_k : np.ndarray or pd.Series, optional
-        USGS Level-2 radiometric uncertainty (Kelvin).
-    model_prediction : np.ndarray or pd.Series, optional
-        Trained model LST prediction (degC) — SUPPLEMENTARY MODEL EVIDENCE.
-    w_severity : float
-        Severity weight (default 0.60).
-    w_persistence : float
-        Persistence weight (default 0.40).
-    valid_mask : np.ndarray or pd.Series, optional
-        Boolean valid mask.
-
-    Returns
-    -------
-    HeatPriorityLayers
-        Container with severity, persistence, quality, model uncertainty, and priority score.
+    Compute transparent heat priority layers preserving distinct component layers.
+    Maintains compatibility with test_heat_priority.py.
     """
-    # 1. Compute LST Severity from OBSERVED LST (Primary Evidence)
     heat_severity = compute_lst_severity(observed_lst, valid_mask=valid_mask)
-
-    # 2. Compute Heat Persistence
     heat_persistence = compute_heat_persistence(
         hotspot_frequency, is_persistent_hotspot=is_persistent_hotspot, valid_mask=valid_mask
     )
-
-    # 3. Compute Quality Confidence
     quality_confidence = compute_quality_confidence(
         obs_count,
         eligibility_code=eligibility_code,
@@ -152,19 +229,17 @@ def compute_heat_priority_layers(
         valid_mask=valid_mask,
     )
 
-    # 4. Compute Model Uncertainty / Residual Context if supplementary prediction provided
-    model_uncertainty = None
+    model_uncertainty: np.ndarray | None = None
     if model_prediction is not None:
         obs_arr = np.asarray(observed_lst, dtype=np.float64)
         pred_arr = np.asarray(model_prediction, dtype=np.float64)
-        residual = obs_arr - pred_arr
-        # Model uncertainty quantified by absolute residual magnitude
-        model_uncertainty = np.where(np.isfinite(residual), np.abs(residual), np.nan)
+        model_uncertainty = np.abs(obs_arr - pred_arr)
 
-    # 5. Transparent Weighted Priority Score
     priority_score = compute_heat_priority_score(
         heat_severity, heat_persistence, w_severity=w_severity, w_persistence=w_persistence
     )
+
+    weights = {"w_severity": w_severity, "w_persistence": w_persistence}
 
     return HeatPriorityLayers(
         heat_severity=heat_severity,
@@ -172,5 +247,5 @@ def compute_heat_priority_layers(
         quality_confidence=quality_confidence,
         model_uncertainty=model_uncertainty,
         heat_priority_score=priority_score,
-        weights={"w_severity": w_severity, "w_persistence": w_persistence},
+        weights=weights,
     )

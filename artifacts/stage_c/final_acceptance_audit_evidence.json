@@ -1,0 +1,244 @@
+{
+  "protected_hashes": {
+    "landsat_lst_reference_2021_2026.tif": "FILE_NOT_FOUND: e:\\FINAL YEAR PROJECT\\heatsense-ai\\data\\processed\\analytical\\landsat_lst_reference_2021_2026.tif",
+    "landsat_lst_summer_operational_2026.tif": "FILE_NOT_FOUND: e:\\FINAL YEAR PROJECT\\heatsense-ai\\data\\processed\\analytical\\landsat_lst_summer_operational_2026.tif",
+    "surat_boundary": "FILE_NOT_FOUND: e:\\FINAL YEAR PROJECT\\heatsense-ai\\data\\raw\\surat_boundary\\surat_boundary.shp"
+  },
+  "manifest_validation": {
+    "status": "PASS",
+    "verified_count": null
+  },
+  "alembic_version": [
+    "a1b2c3d4e5f6"
+  ],
+  "database_tables": [
+    "admin_boundaries",
+    "alembic_version",
+    "geography_columns",
+    "geometry_columns",
+    "osm_places",
+    "spatial_ref_sys",
+    "stage_c_grid_cells",
+    "stage_c_grid_observations",
+    "stage_c_heat_priority_scores",
+    "study_areas"
+  ],
+  "pipeline_runs": "TABLE_NOT_CREATED",
+  "grid_cells": {
+    "total_cells": 49747,
+    "row_range": [
+      0,
+      322
+    ],
+    "col_range": [
+      0,
+      316
+    ],
+    "lat_range": [
+      21.034502,
+      21.323759
+    ],
+    "lon_range": [
+      72.684037,
+      72.967905
+    ]
+  },
+  "scores_summary": {
+    "total_records": 49747,
+    "non_null_scores": 49747,
+    "null_scores": 0,
+    "min_score": 4.8282013,
+    "max_score": 96.38875,
+    "mean_score": 42.13843648100646,
+    "std_score": 12.581632550176643,
+    "component_bounds": {
+      "thermal_severity": [
+        0.0,
+        1.0
+      ],
+      "persistence": [
+        0.0,
+        1.0
+      ],
+      "vegetation_deficit": [
+        0.0,
+        1.0
+      ],
+      "built_density": [
+        0.0,
+        1.0
+      ]
+    },
+    "confidence_index_bounds": [
+      0.5,
+      1.0
+    ]
+  },
+  "confidence_tier_counts": {
+    "HIGH": 49674,
+    "MODERATE": 73
+  },
+  "persistence_tier_counts": {
+    "non_hotspot": {
+      "count": 46233,
+      "chronic_hotspots": 0
+    },
+    "transient_extreme": {
+      "count": 2126,
+      "chronic_hotspots": 0
+    },
+    "occasional_hotspot": {
+      "count": 885,
+      "chronic_hotspots": 0
+    },
+    "frequent_hotspot": {
+      "count": 280,
+      "chronic_hotspots": 0
+    },
+    "chronic_hotspot": {
+      "count": 223,
+      "chronic_hotspots": 223
+    }
+  },
+  "eligibility_status_counts": {
+    "ACCEPT": {
+      "count": 49747,
+      "scored_count": 49747
+    }
+  },
+  "optical_imputation_flags_2026_summer": {
+    "NONE": {
+      "count": 49747,
+      "min_lst": 29.6404,
+      "max_lst": 58.6491,
+      "avg_lst": 43.78623685078216
+    }
+  },
+  "db_constraints": [
+    {
+      "name": "ck_hpi_built_density",
+      "type": "c",
+      "definition": "CHECK (((built_density_component >= (0.0)::double precision) AND (built_density_component <= (1.0)::double precision)))"
+    },
+    {
+      "name": "ck_hpi_confidence_index",
+      "type": "c",
+      "definition": "CHECK (((confidence_index >= (0.0)::double precision) AND (confidence_index <= (1.0)::double precision)))"
+    },
+    {
+      "name": "ck_hpi_confidence_tier",
+      "type": "c",
+      "definition": "CHECK (((confidence_tier)::text = ANY ((ARRAY['HIGH'::character varying, 'MODERATE'::character varying, 'LOW'::character varying, 'INSUFFICIENT'::character varying])::text[])))"
+    },
+    {
+      "name": "ck_hpi_eligibility",
+      "type": "c",
+      "definition": "CHECK (((eligibility_status)::text = ANY ((ARRAY['ACCEPT'::character varying, 'FLAG'::character varying, 'EXCLUDE'::character varying, 'INSUFFICIENT_THERMAL_EVIDENCE'::character varying])::text[])))"
+    },
+    {
+      "name": "ck_hpi_hotspot_frequency",
+      "type": "c",
+      "definition": "CHECK (((hotspot_frequency >= (0.0)::double precision) AND (hotspot_frequency <= (1.0)::double precision)))"
+    },
+    {
+      "name": "ck_hpi_persistence",
+      "type": "c",
+      "definition": "CHECK (((persistence_component >= (0.0)::double precision) AND (persistence_component <= (1.0)::double precision)))"
+    },
+    {
+      "name": "ck_hpi_persistence_tier",
+      "type": "c",
+      "definition": "CHECK (((persistence_tier)::text = ANY ((ARRAY['chronic_hotspot'::character varying, 'frequent_hotspot'::character varying, 'occasional_hotspot'::character varying, 'transient_extreme'::character varying, 'non_hotspot'::character varying])::text[])))"
+    },
+    {
+      "name": "ck_hpi_score_range",
+      "type": "c",
+      "definition": "CHECK (((heat_priority_score >= (0.0)::double precision) AND (heat_priority_score <= (100.0)::double precision)))"
+    },
+    {
+      "name": "ck_hpi_thermal_severity",
+      "type": "c",
+      "definition": "CHECK (((thermal_severity_component >= (0.0)::double precision) AND (thermal_severity_component <= (1.0)::double precision)))"
+    },
+    {
+      "name": "ck_hpi_vegetation_deficit",
+      "type": "c",
+      "definition": "CHECK (((vegetation_deficit_component >= (0.0)::double precision) AND (vegetation_deficit_component <= (1.0)::double precision)))"
+    },
+    {
+      "name": "stage_c_heat_priority_scores_pixel_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (pixel_id) REFERENCES stage_c_grid_cells(pixel_id) ON DELETE CASCADE"
+    },
+    {
+      "name": "stage_c_heat_priority_scores_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (pixel_id, scoring_period, spec_version)"
+    }
+  ],
+  "representative_cells": {
+    "chronic_hotspot": {
+      "pixel_id": "R198_C178",
+      "hpi_score": 96.38875,
+      "thermal_severity": 1.0,
+      "persistence": 1.0,
+      "vegetation_deficit": 0.83625,
+      "built_density": 0.923,
+      "confidence_index": 0.5,
+      "confidence_tier": "MODERATE",
+      "persistence_tier": "chronic_hotspot",
+      "is_chronic": true,
+      "hotspot_frequency": 1.0,
+      "eligibility_status": "ACCEPT",
+      "observed_lst_c": 56.453,
+      "optical_flag": "NONE",
+      "nearest_place": "Udhana",
+      "distance_m": 2111.9
+    },
+    "typical_urban": {
+      "pixel_id": "R000_C249",
+      "hpi_score": 52.167248,
+      "thermal_severity": 0.84489995,
+      "persistence": 0.0,
+      "vegetation_deficit": 0.50325,
+      "built_density": 0.7215,
+      "confidence_index": 1.0,
+      "confidence_tier": "HIGH",
+      "persistence_tier": "non_hotspot",
+      "is_chronic": false,
+      "hotspot_frequency": 0.0,
+      "eligibility_status": "ACCEPT",
+      "observed_lst_c": 46.898,
+      "optical_flag": "NONE",
+      "nearest_place": "Gothangam",
+      "distance_m": 4263.1
+    },
+    "flagged_marginal": null,
+    "null_unscored": null
+  },
+  "api_summary": {
+    "status_code": 200,
+    "json_keys": [
+      "scoring_period",
+      "spec_version",
+      "total_grid_cells",
+      "scored_cells",
+      "mean_hpi",
+      "min_hpi",
+      "max_hpi",
+      "chronic_hotspots_count",
+      "confidence_tier_counts",
+      "persistence_tier_counts"
+    ],
+    "total_cells": 49747
+  },
+  "api_viewport": {
+    "status_code": 200,
+    "returned_items": 10,
+    "total_in_bounds": 3080
+  },
+  "finite_json_verification": {
+    "summary_has_nan": false,
+    "viewport_has_nan": false
+  }
+}

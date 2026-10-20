@@ -1,0 +1,35 @@
+{
+  "pipeline": "HEATSENSE_AI_STAGE_C_HEAT_PRIORITY",
+  "specification_version": "v2.0",
+  "scoring_period": "2026_summer_operational",
+  "timestamp_utc": "2026-10-04T07:10:01Z",
+  "target_study_area": "Surat Municipal Corporation (SMC), Gujarat, India",
+  "authoritative_area_km2": 461.630791,
+  "canonical_cells_count": 49747,
+  "input_artifact_hashes": {
+    "analysis_parquet": "e824794e5ba2e26937ac40f55f5fd788adad70b1a6b23c6ab435b08223dd9997",
+    "persistence_summary": "74cf0858dd34d4c01be11ea1d704e88914611c4d30bef75806a99dba8064e564",
+    "frozen_xgb_model": "e1aedd4946b1b29823bdea66ea3ec7b9ba5f20c4ddbfdf6920c2e62e6b30b7c9",
+    "holdout_split": "8a04b20c97b088ffc7d3f513ecd3e41007adea51ad16401f104529f40d8c1a2d"
+  },
+  "score_summary": {
+    "scored_cells": 49747,
+    "mean_hpi": 42.14,
+    "std_hpi": 12.58,
+    "min_hpi": 4.83,
+    "max_hpi": 96.39,
+    "chronic_hotspots_count": 223,
+    "confidence_tier_distribution": {
+      "HIGH": 49674,
+      "MODERATE": 73
+    },
+    "persistence_tier_distribution": {
+      "chronic_hotspot": 223,
+      "frequent_hotspot": 280,
+      "non_hotspot": 46233,
+      "occasional_hotspot": 885,
+      "transient_extreme": 2126
+    }
+  },
+  "status": "STAGE_C_IMPLEMENTATION_VERIFIED"
+}

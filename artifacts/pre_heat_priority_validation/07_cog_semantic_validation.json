@@ -1,7 +1,12 @@
 {
   "gate": "GATE 04B / 04C \u2014 COG SEMANTIC & PERSISTENCE VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:37Z",
+  "timestamp_utc": "2026-10-03T18:43:08Z",
+  "validation_scope_distinction": {
+    "structural_validation_scope": "Evaluated in Gate 04 (06_cog_structural_validation.json): dimensions (318x324), CRS (EPSG:4326), data types (float32), nodata (-9999.0), LZW compression, pyramid overviews, and 256x256 block tiling across all 19 COGs and all 10 bands.",
+    "semantic_validation_scope": "Evaluated in Gate 04B/C (07_cog_semantic_validation.json): Band 9 (HOTSPOT_FREQUENCY in [0, 1]) and Band 10 (IS_PERSISTENT_HOTSPOT) recurrence semantics, canonical threshold boundaries (0.0, 0.25, 0.50), persistence agreement, and rescued flags.",
+    "unvalidated_bands_disposition": "Bands 1-4 (LST_C, NDVI, NDBI, NDWI) and Bands 5-8 (LST_OBS_COUNT, LST_QA_MEDIAN_K, QUALITY_FLAG, ELIGIBILITY) represent physical/quality raster inputs whose mathematical and quality transformations are verified in Gate 02, Gate 02B, Gate 05, and Gate 06; they are not independently semantic-re-evaluated inside this gate."
+  },
   "semantic_errors": [],
   "total_persistence_differing_pixels": 0,
   "boundary_frequency_tests": [

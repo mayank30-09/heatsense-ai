@@ -1,7 +1,7 @@
 {
   "gate": "GATE 01 \u2014 REAL GEE / LANDSAT SOURCE VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:20Z",
+  "timestamp_utc": "2026-10-03T18:42:51Z",
   "source_specification": {
     "collections": [
       "LANDSAT/LC08/C02/T1_L2",
@@ -21,11 +21,13 @@
   "earth_engine_live_query": {
     "project_id": "gen-lang-client-0607312119",
     "study_area": "Surat Municipal Corporation (SMC)",
-    "start_date": "2022-01-01",
-    "end_date": "2026-06-01",
+    "validation_window_start": "2022-01-01",
+    "validation_window_end": "2026-06-01",
     "landsat_8_l2sp_retained": 162,
     "landsat_9_l2sp_retained": 167,
-    "total_l2sp_retained": 329
+    "total_l2sp_retained": 329,
+    "temporal_scope_note": "Validation query covers 2022-01-01 through 2026-06-01 (329 retained scenes). Production seasonal rasters additionally include 2026 monsoon (partial season through September 2026, contributing 7 additional scenes: 2 L8, 5 L9, total 336 scenes through 2026-10-01). 2026 post-monsoon is intentionally absent.",
+    "historical_scene_count_correction": "Previous draft documentation cited an unverified count of 682 candidate scenes before processing level and cloud filters; authoritative verified count of retained L2SP scenes is 329 (2022-01-01 to 2026-06-01)."
   },
   "inspected_sample_scenes": [
     {

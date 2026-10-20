@@ -1,7 +1,7 @@
 {
   "gate": "GATE 08 \u2014 FROZEN MODEL PARAMETER VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "timestamp_utc": "2026-10-03T18:43:09Z",
   "model_id": "xgb_tuned_policy_d_v1",
   "model_file": "artifacts\\ml_freeze\\xgb_tuned_policy_d.joblib",
   "parameter_comparisons": {

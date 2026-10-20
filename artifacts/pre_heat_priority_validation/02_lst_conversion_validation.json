@@ -1,8 +1,9 @@
 {
   "gate": "GATE 02 \u2014 INDEPENDENT LST CONVERSION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:20Z",
+  "timestamp_utc": "2026-10-03T18:42:51Z",
   "formula": "LST_K = DN * 0.00341802 + 149.0; LST_C = LST_K - 273.15",
+  "description": "LST_C is derived from Landsat Collection 2 Level-2 Surface Temperature (ST_B10) using the USGS-provided scale factor and offset, followed by conversion from Kelvin to Celsius.",
   "numerical_tolerance": 1e-05,
   "sample_count": 50,
   "max_difference": 0.0,

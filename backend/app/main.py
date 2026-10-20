@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.api.v1.router import router as api_v1_router
 from backend.app.config import get_settings
 from backend.app.core.logging import configure_logging
+from backend.app.core.middleware import setup_security_and_audit
 
 configure_logging()
 settings = get_settings()
@@ -11,8 +12,11 @@ settings = get_settings()
 app = FastAPI(
     title="HEATSENSE AI API",
     version="0.1.0",
-    description="Day 1 backend skeleton for the HEATSENSE AI platform.",
+    description="HeatSense AI urban heat mitigation and decision-support platform.",
 )
+
+# Apply OWASP security headers, audit telemetry, and exception shielding
+setup_security_and_audit(app)
 
 app.add_middleware(
     CORSMiddleware,

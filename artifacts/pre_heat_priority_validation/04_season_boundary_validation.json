@@ -1,7 +1,7 @@
 {
   "gate": "GATE 03 \u2014 SEASONAL WINDOW VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:20Z",
+  "timestamp_utc": "2026-10-03T18:42:51Z",
   "canonical_seasons": {
     "winter": "Dec 1 prior year -> Mar 1 target year",
     "summer": "Mar 1 target year -> Jun 1 target year",

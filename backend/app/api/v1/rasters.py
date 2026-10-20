@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Path
 from fastapi.responses import Response
 
 from ...raster.tiles import get_lst_tile
@@ -15,9 +15,9 @@ router = APIRouter(
     response_class=Response,
 )
 def lst_tile(
-    z: int,
-    x: int,
-    y: int,
+    z: int = Path(..., ge=0, le=24, description="Tile zoom level (0-24)"),
+    x: int = Path(..., ge=0, description="Tile X column (non-negative)"),
+    y: int = Path(..., ge=0, description="Tile Y row (non-negative)"),
 ) -> Response:
     try:
         tile = get_lst_tile(
@@ -43,5 +43,5 @@ def lst_tile(
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"Unable to render LST tile: {exc}",
+            detail="Unable to render requested LST raster tile.",
         ) from exc

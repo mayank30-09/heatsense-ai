@@ -1,0 +1,10 @@
+{
+  "boundary_area_km2": 461.63079085086207,
+  "operational_cells_count": 49747,
+  "operational_sum_clipped_area_km2": 459.55016452999996,
+  "operational_sum_nominal_area_km2": 461.77257908999997,
+  "operational_coverage_percentage": 99.54928779403403,
+  "omitted_boundary_area_km2": 2.080626320862109,
+  "omitted_boundary_percentage": 0.45071220596597517,
+  "nominal_area_discrepancy_percentage": 0.03071464077960572
+}

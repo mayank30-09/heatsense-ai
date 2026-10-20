@@ -1,14 +1,15 @@
 {
   "gate": "GATE 11 \u2014 ENVIRONMENT VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:45Z",
+  "timestamp_utc": "2026-10-03T18:43:17Z",
   "active_environment": {
-    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "python": "3.12.10",
     "numpy": "2.5.3",
     "pandas": "3.0.6",
     "xgboost": "3.4.1",
     "sklearn": "1.9.1",
-    "optuna": "5.0.0"
+    "optuna": "5.0.0",
+    "shap": "0.52.0"
   },
   "frozen_metadata_environment": {
     "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",

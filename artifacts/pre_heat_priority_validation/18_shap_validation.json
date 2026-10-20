@@ -1,7 +1,7 @@
 {
   "gate": "GATE 10 \u2014 SHAP TECHNICAL VALIDATION & SCIENTIFIC LANGUAGE",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:45Z",
+  "timestamp_utc": "2026-10-03T18:43:16Z",
   "sample_size": 500,
   "feature_names": [
     "NDVI",
@@ -16,6 +16,7 @@
   "reconstruction_tolerance": 0.001,
   "additivity_verified": true,
   "scientific_language_audit": {
+    "shap_definition": "SHAP quantifies the contribution of a feature to the model prediction for the evaluated samples.",
     "attribution_vs_causation_clear": true,
     "prohibited_causal_statements": [
       "NDBI causes heat",
@@ -23,6 +24,6 @@
       "QA uncertainty causes temperature"
     ],
     "audit_result": "No prohibited causal claims exist in active documentation.",
-    "monsoon_interpretation": "Temporal support (LST_OBS_COUNT) is confirmed highly informative during monsoon, reflecting clear-sky sampling bias rather than direct surface thermodynamics."
+    "monsoon_interpretation": "This indicates that observation support/retrieval context is highly informative to the model during monsoon. It does not establish that observation count physically causes temperature."
   }
 }

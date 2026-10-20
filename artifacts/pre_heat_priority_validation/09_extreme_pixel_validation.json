@@ -1,7 +1,7 @@
 {
   "gate": "GATE 05B \u2014 EXTREME PIXEL QC",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:38Z",
+  "timestamp_utc": "2026-10-03T18:43:09Z",
   "known_2023_monsoon_cold_anomaly": {
     "lst_c": 6.4696,
     "expected_lst_c": 6.47,
@@ -17,5 +17,5 @@
     "expected_lst_c": 70.23,
     "retained_in_analysis_dataset": true
   },
-  "scientific_distinction": "Purges unsupported single-pass radiative outliers while retaining legitimate physical heat extremes without artificial temperature threshold censorship."
+  "scientific_distinction": "Purges unsupported single-pass radiative outliers; the spatially coherent 70.23\u00b0C observed LST extreme is retained for downstream review."
 }

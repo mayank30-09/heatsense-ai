@@ -1,7 +1,7 @@
 {
-  "gate": "GATE 02B \u2014 REAL QA MASK VALIDATION",
+  "gate": "GATE 02B \u2014 QA MASK LOGIC VALIDATION",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:20Z",
+  "timestamp_utc": "2026-10-03T18:42:51Z",
   "qa_pixel_bit_semantics": {
     "bit_0": "Fill",
     "bit_1": "Dilated cloud",

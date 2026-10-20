@@ -1,9 +1,14 @@
 {
   "gate": "GATE 04 \u2014 REAL 19 PRODUCTION COG VALIDATION (STRUCTURAL)",
   "status": "PASS",
-  "timestamp_utc": "2026-09-28T17:38:36Z",
+  "timestamp_utc": "2026-10-03T18:43:07Z",
   "total_cogs_found": 19,
   "expected_total": 19,
+  "verified_block_shape": [
+    256,
+    256
+  ],
+  "all_cogs_use_256x256_blocks": true,
   "year_distribution": {
     "2022": 4,
     "2023": 4,
@@ -27,7 +32,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -42,6 +47,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -65,7 +113,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -80,6 +128,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -103,7 +194,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -118,6 +209,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -141,7 +275,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -156,6 +290,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -179,7 +356,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -194,6 +371,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -217,7 +437,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -232,6 +452,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -255,7 +518,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -270,6 +533,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -293,7 +599,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -308,6 +614,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -331,7 +680,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -346,6 +695,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -369,7 +761,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -384,6 +776,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -407,7 +842,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -422,6 +857,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -445,7 +923,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -460,6 +938,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -483,7 +1004,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -498,6 +1019,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -521,7 +1085,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -536,6 +1100,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -559,7 +1166,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -574,6 +1181,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -597,7 +1247,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -612,6 +1262,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -635,7 +1328,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -650,6 +1343,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -673,7 +1409,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -688,6 +1424,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [
@@ -711,7 +1490,7 @@
       "width": 318,
       "height": 324,
       "bands": 10,
-      "crs": "GEOGCS[\"WGS 84\",DATUM[\"World Geodetic System 1984\",SPHEROID[\"WGS 84\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AXIS[\"Latitude\",NORTH],AXIS[\"Longitude\",EAST]]",
+      "crs": "EPSG:4326",
       "dtypes": [
         "float32",
         "float32",
@@ -726,6 +1505,49 @@
       ],
       "nodata": -9999.0,
       "is_tiled": true,
+      "block_shapes": [
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ],
+        [
+          256,
+          256
+        ]
+      ],
+      "is_256x256_tiled": true,
       "compression": "deflate",
       "has_overviews": true,
       "descriptions": [

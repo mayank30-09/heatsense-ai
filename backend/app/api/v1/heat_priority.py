@@ -1,0 +1,370 @@
+"""API endpoints for Stage C Heat Priority Index (HPI) data.
+
+Provides read-only access to authoritative analytical grid cells, HPI scores,
+component layers (thermal severity, persistence, vegetation deficit, built density),
+confidence ratings, and chronic hotspot status.
+"""
+
+from __future__ import annotations
+
+import math
+from typing import Any
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from backend.app.db.models.stage_c import (
+    StageCGridCell,
+    StageCGridObservation,
+    StageCHeatPriorityScore,
+)
+from backend.app.db.session import get_db
+
+router = APIRouter(
+    prefix="/heat-priority",
+    tags=["heat-priority"],
+)
+
+
+def safe_float(val: Any, decimals: int | None = None) -> float | None:
+    """Safely convert and round floating point values, converting NaN/Inf/None to None (JSON null)."""
+    if val is None:
+        return None
+    try:
+        f = float(val)
+        if not math.isfinite(f):
+            return None
+        return round(f, decimals) if decimals is not None else f
+    except (ValueError, TypeError):
+        return None
+
+
+class HeatPrioritySummaryResponse(BaseModel):
+    scoring_period: str
+    spec_version: str
+    total_grid_cells: int
+    scored_cells: int
+    mean_hpi: float | None = None
+    min_hpi: float | None = None
+    max_hpi: float | None = None
+    chronic_hotspots_count: int
+    confidence_tier_counts: dict[str, int]
+    persistence_tier_counts: dict[str, int]
+
+
+class GridCellScoreItem(BaseModel):
+    pixel_id: str
+    row_idx: int
+    col_idx: int
+    latitude: float
+    longitude: float
+    nearest_osm_place_name: str | None = None
+    nearest_osm_distance_m: float | None = None
+    heat_priority_score: float | None = None
+    thermal_severity_component: float | None = None
+    persistence_component: float | None = None
+    vegetation_deficit_component: float | None = None
+    built_density_component: float | None = None
+    confidence_index: float | None = None
+    confidence_tier: str | None = None
+    persistence_tier: str | None = None
+    is_chronic_hotspot: bool = False
+    hotspot_frequency: float | None = None
+    eligibility_status: str | None = None
+    observed_lst_c: float | None = None
+    optical_imputation_flag: str | None = None
+
+
+class GridCellsPaginatedResponse(BaseModel):
+    total: int
+    offset: int
+    limit: int
+    items: list[GridCellScoreItem]
+
+
+@router.get("/summary", response_model=HeatPrioritySummaryResponse)
+def get_heat_priority_summary(
+    scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
+    spec_version: str = Query("v2.0", description="Specification version"),
+    db: Session = Depends(get_db),
+) -> HeatPrioritySummaryResponse:
+    """Retrieve aggregate summary statistics for the operational HPI dataset."""
+    total_cells = db.scalar(select(func.count()).select_from(StageCGridCell)) or 0
+
+    scores_q = (
+        select(
+            func.count(StageCHeatPriorityScore.pixel_id).label("scored_count"),
+            func.avg(StageCHeatPriorityScore.heat_priority_score).label("mean_score"),
+            func.min(StageCHeatPriorityScore.heat_priority_score).label("min_score"),
+            func.max(StageCHeatPriorityScore.heat_priority_score).label("max_score"),
+            func.count()
+            .filter(StageCHeatPriorityScore.is_chronic_hotspot.is_(True))
+            .label("chronic_count"),
+        )
+        .where(StageCHeatPriorityScore.scoring_period == scoring_period)
+        .where(StageCHeatPriorityScore.spec_version == spec_version)
+    )
+    score_stats = db.execute(scores_q).one()
+
+    # Confidence tiers distribution
+    conf_q = (
+        select(
+            StageCHeatPriorityScore.confidence_tier,
+            func.count(StageCHeatPriorityScore.pixel_id),
+        )
+        .where(StageCHeatPriorityScore.scoring_period == scoring_period)
+        .where(StageCHeatPriorityScore.spec_version == spec_version)
+        .group_by(StageCHeatPriorityScore.confidence_tier)
+    )
+    conf_counts = {tier: count for tier, count in db.execute(conf_q).all()}
+
+    # Persistence tiers distribution
+    pers_q = (
+        select(
+            StageCHeatPriorityScore.persistence_tier,
+            func.count(StageCHeatPriorityScore.pixel_id),
+        )
+        .where(StageCHeatPriorityScore.scoring_period == scoring_period)
+        .where(StageCHeatPriorityScore.spec_version == spec_version)
+        .group_by(StageCHeatPriorityScore.persistence_tier)
+    )
+    pers_counts = {tier: count for tier, count in db.execute(pers_q).all()}
+
+    return HeatPrioritySummaryResponse(
+        scoring_period=scoring_period,
+        spec_version=spec_version,
+        total_grid_cells=total_cells,
+        scored_cells=score_stats.scored_count or 0,
+        mean_hpi=safe_float(score_stats.mean_score, 2),
+        min_hpi=safe_float(score_stats.min_score, 2),
+        max_hpi=safe_float(score_stats.max_score, 2),
+        chronic_hotspots_count=score_stats.chronic_count or 0,
+        confidence_tier_counts=conf_counts,
+        persistence_tier_counts=pers_counts,
+    )
+
+
+@router.get("/cells", response_model=GridCellsPaginatedResponse)
+def get_grid_cells(
+    scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
+    spec_version: str = Query("v2.0", description="Specification version"),
+    min_hpi: float | None = Query(None, ge=0.0, le=100.0, description="Filter cells with HPI >= min_hpi"),
+    is_chronic_hotspot: bool | None = Query(None, description="Filter by chronic hotspot flag"),
+    confidence_tier: str | None = Query(
+        None,
+        pattern=r"^(HIGH|MODERATE|LOW|INSUFFICIENT)$",
+        description="Filter by confidence tier (HIGH, MODERATE, LOW, INSUFFICIENT)",
+    ),
+    persistence_tier: str | None = Query(
+        None,
+        pattern=r"^(chronic_hotspot|frequent_hotspot|occasional_hotspot|transient_extreme|non_hotspot)$",
+        description="Filter by persistence tier",
+    ),
+    locality: str | None = Query(None, min_length=1, max_length=100, description="Filter by OSM place name substring"),
+    min_lat: float | None = Query(None, description="Minimum latitude for viewport bounding box"),
+    max_lat: float | None = Query(None, description="Maximum latitude for viewport bounding box"),
+    min_lon: float | None = Query(None, description="Minimum longitude for viewport bounding box"),
+    max_lon: float | None = Query(None, description="Maximum longitude for viewport bounding box"),
+    bbox: str | None = Query(None, description="Bounding box filter as 'min_lon,min_lat,max_lon,max_lat'"),
+    limit: int = Query(50, ge=1, le=500, description="Page limit (1 to 500)"),
+    offset: int = Query(0, ge=0, description="Page offset (>= 0)"),
+    db: Session = Depends(get_db),
+) -> GridCellsPaginatedResponse:
+    """Retrieve paginated grid cells with their HPI scores, observations, and spatial properties."""
+    query = (
+        select(
+            StageCGridCell.pixel_id,
+            StageCGridCell.row_idx,
+            StageCGridCell.col_idx,
+            StageCGridCell.latitude,
+            StageCGridCell.longitude,
+            StageCGridCell.nearest_osm_place_name,
+            StageCGridCell.nearest_osm_distance_m,
+            StageCHeatPriorityScore.heat_priority_score,
+            StageCHeatPriorityScore.thermal_severity_component,
+            StageCHeatPriorityScore.persistence_component,
+            StageCHeatPriorityScore.vegetation_deficit_component,
+            StageCHeatPriorityScore.built_density_component,
+            StageCHeatPriorityScore.confidence_index,
+            StageCHeatPriorityScore.confidence_tier,
+            StageCHeatPriorityScore.persistence_tier,
+            StageCHeatPriorityScore.is_chronic_hotspot,
+            StageCHeatPriorityScore.hotspot_frequency,
+            StageCHeatPriorityScore.eligibility_status,
+            StageCGridObservation.observed_lst_c,
+            StageCGridObservation.optical_imputation_flag,
+        )
+        .join(
+            StageCHeatPriorityScore,
+            StageCGridCell.pixel_id == StageCHeatPriorityScore.pixel_id,
+        )
+        .outerjoin(
+            StageCGridObservation,
+            (StageCGridCell.pixel_id == StageCGridObservation.pixel_id)
+            & (StageCGridObservation.year == 2026)
+            & (StageCGridObservation.season == "summer"),
+        )
+        .where(StageCHeatPriorityScore.scoring_period == scoring_period)
+        .where(StageCHeatPriorityScore.spec_version == spec_version)
+    )
+
+    if min_hpi is not None:
+        query = query.where(StageCHeatPriorityScore.heat_priority_score >= min_hpi)
+    if is_chronic_hotspot is not None:
+        query = query.where(StageCHeatPriorityScore.is_chronic_hotspot == is_chronic_hotspot)
+    if confidence_tier is not None:
+        query = query.where(StageCHeatPriorityScore.confidence_tier == confidence_tier)
+    if persistence_tier is not None:
+        query = query.where(StageCHeatPriorityScore.persistence_tier == persistence_tier)
+    if locality is not None:
+        query = query.where(StageCGridCell.nearest_osm_place_name.ilike(f"%{locality}%"))
+
+    # Viewport Bounding Box filters
+    if bbox:
+        try:
+            parts = [float(p.strip()) for p in bbox.split(",")]
+            if len(parts) == 4:
+                b_min_lon, b_min_lat, b_max_lon, b_max_lat = parts
+                if not (-180.0 <= b_min_lon <= 180.0 and -180.0 <= b_max_lon <= 180.0 and -90.0 <= b_min_lat <= 90.0 and -90.0 <= b_max_lat <= 90.0):
+                    raise HTTPException(status_code=400, detail="Bounding box coordinates out of range [-180, 180] lon, [-90, 90] lat.")
+                if b_min_lon > b_max_lon or b_min_lat > b_max_lat:
+                    raise HTTPException(status_code=400, detail="Reversed bounding box extent: min exceeds max.")
+                query = (
+                    query.where(StageCGridCell.latitude >= b_min_lat)
+                    .where(StageCGridCell.latitude <= b_max_lat)
+                    .where(StageCGridCell.longitude >= b_min_lon)
+                    .where(StageCGridCell.longitude <= b_max_lon)
+                )
+            else:
+                raise HTTPException(status_code=400, detail="Bounding box must contain exactly 4 coordinates: min_lon,min_lat,max_lon,max_lat.")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid bounding box format. Expected float coordinates.")
+    else:
+        if min_lat is not None:
+            query = query.where(StageCGridCell.latitude >= min_lat)
+        if max_lat is not None:
+            query = query.where(StageCGridCell.latitude <= max_lat)
+        if min_lon is not None:
+            query = query.where(StageCGridCell.longitude >= min_lon)
+        if max_lon is not None:
+            query = query.where(StageCGridCell.longitude <= max_lon)
+
+    # Count total matching
+    count_subq = query.subquery()
+    total = db.scalar(select(func.count()).select_from(count_subq)) or 0
+
+    # Paginate and order by heat_priority_score descending
+    results = db.execute(
+        query.order_by(StageCHeatPriorityScore.heat_priority_score.desc().nullslast()).offset(offset).limit(limit)
+    ).all()
+
+    items = [
+        GridCellScoreItem(
+            pixel_id=r.pixel_id,
+            row_idx=r.row_idx,
+            col_idx=r.col_idx,
+            latitude=r.latitude,
+            longitude=r.longitude,
+            nearest_osm_place_name=r.nearest_osm_place_name,
+            nearest_osm_distance_m=safe_float(r.nearest_osm_distance_m, 1),
+            heat_priority_score=safe_float(r.heat_priority_score, 2),
+            thermal_severity_component=safe_float(r.thermal_severity_component, 4),
+            persistence_component=safe_float(r.persistence_component, 4),
+            vegetation_deficit_component=safe_float(r.vegetation_deficit_component, 4),
+            built_density_component=safe_float(r.built_density_component, 4),
+            confidence_index=safe_float(r.confidence_index, 4),
+            confidence_tier=r.confidence_tier,
+            persistence_tier=r.persistence_tier,
+            is_chronic_hotspot=bool(r.is_chronic_hotspot) if r.is_chronic_hotspot is not None else False,
+            hotspot_frequency=safe_float(r.hotspot_frequency, 4),
+            eligibility_status=r.eligibility_status,
+            observed_lst_c=safe_float(r.observed_lst_c, 2),
+            optical_imputation_flag=r.optical_imputation_flag,
+        )
+        for r in results
+    ]
+
+    return GridCellsPaginatedResponse(
+        total=total,
+        offset=offset,
+        limit=limit,
+        items=items,
+    )
+
+
+@router.get("/cell/{pixel_id}", response_model=GridCellScoreItem)
+def get_grid_cell_detail(
+    pixel_id: str = Path(..., min_length=1, max_length=16, description="Canonical grid cell identifier (e.g., R045_C067)"),
+    scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
+    spec_version: str = Query("v2.0", description="Specification version"),
+    db: Session = Depends(get_db),
+) -> GridCellScoreItem:
+    """Retrieve detailed Stage C HPI score and components for a specific grid cell."""
+    cell_query = (
+        select(
+            StageCGridCell.pixel_id,
+            StageCGridCell.row_idx,
+            StageCGridCell.col_idx,
+            StageCGridCell.latitude,
+            StageCGridCell.longitude,
+            StageCGridCell.nearest_osm_place_name,
+            StageCGridCell.nearest_osm_distance_m,
+            StageCHeatPriorityScore.heat_priority_score,
+            StageCHeatPriorityScore.thermal_severity_component,
+            StageCHeatPriorityScore.persistence_component,
+            StageCHeatPriorityScore.vegetation_deficit_component,
+            StageCHeatPriorityScore.built_density_component,
+            StageCHeatPriorityScore.confidence_index,
+            StageCHeatPriorityScore.confidence_tier,
+            StageCHeatPriorityScore.persistence_tier,
+            StageCHeatPriorityScore.is_chronic_hotspot,
+            StageCHeatPriorityScore.hotspot_frequency,
+            StageCHeatPriorityScore.eligibility_status,
+            StageCGridObservation.observed_lst_c,
+            StageCGridObservation.optical_imputation_flag,
+        )
+        .outerjoin(
+            StageCHeatPriorityScore,
+            (StageCGridCell.pixel_id == StageCHeatPriorityScore.pixel_id)
+            & (StageCHeatPriorityScore.scoring_period == scoring_period)
+            & (StageCHeatPriorityScore.spec_version == spec_version),
+        )
+        .outerjoin(
+            StageCGridObservation,
+            (StageCGridCell.pixel_id == StageCGridObservation.pixel_id)
+            & (StageCGridObservation.year == 2026)
+            & (StageCGridObservation.season == "summer"),
+        )
+        .where(StageCGridCell.pixel_id == pixel_id)
+    )
+
+    r = db.execute(cell_query).first()
+    if not r:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Grid cell '{pixel_id}' does not exist.",
+        )
+
+    return GridCellScoreItem(
+        pixel_id=r.pixel_id,
+        row_idx=r.row_idx,
+        col_idx=r.col_idx,
+        latitude=r.latitude,
+        longitude=r.longitude,
+        nearest_osm_place_name=r.nearest_osm_place_name,
+        nearest_osm_distance_m=safe_float(r.nearest_osm_distance_m, 1),
+        heat_priority_score=safe_float(r.heat_priority_score, 2),
+        thermal_severity_component=safe_float(r.thermal_severity_component, 4),
+        persistence_component=safe_float(r.persistence_component, 4),
+        vegetation_deficit_component=safe_float(r.vegetation_deficit_component, 4),
+        built_density_component=safe_float(r.built_density_component, 4),
+        confidence_index=safe_float(r.confidence_index, 4),
+        confidence_tier=r.confidence_tier,
+        persistence_tier=r.persistence_tier,
+        is_chronic_hotspot=bool(r.is_chronic_hotspot) if r.is_chronic_hotspot is not None else False,
+        hotspot_frequency=safe_float(r.hotspot_frequency, 4),
+        eligibility_status=r.eligibility_status,
+        observed_lst_c=safe_float(r.observed_lst_c, 2),
+        optical_imputation_flag=r.optical_imputation_flag,
+    )
