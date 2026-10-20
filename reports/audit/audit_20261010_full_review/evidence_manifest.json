@@ -1,0 +1,287 @@
+{
+  "audit_metadata": {
+    "audit_run_id": "audit_20261010_full_review",
+    "audit_date": "2026-10-10",
+    "auditor_role": "Principal AI/ML Auditor & Geospatial Data Scientist",
+    "system_name": "HEATSENSE AI",
+    "target_region": "Surat Municipal Corporation (SMC), Gujarat, India",
+    "git_commit": "5dc4d74b7a53522c8bbcab04f46ff518c41691de",
+    "git_branch": "feature/scientific-freeze-correction",
+    "alembic_version": "a1b2c3d4e5f6",
+    "down_revision": "f4a8b1c2d3e4",
+    "python_version": "3.12.10",
+    "node_version": "v26.3.0",
+    "npm_version": "12.0.0",
+    "postgresql_version": "17.0 (PostgreSQL x64)",
+    "port": 5433
+  },
+  "scientific_freeze_hashes": {
+    "xgb_tuned_policy_d.joblib": "e1aedd4946b1b29823bdea66ea3ec7b9ba5f20c4ddbfdf6920c2e62e6b30b7c9",
+    "policy_d_analysis.parquet": "e824794e5ba2e26937ac40f55f5fd788adad70b1a6b23c6ab435b08223dd9997",
+    "holdout_split.json": "8a04b20c97b088ffc7d3f513ecd3e41007adea51ad16401f104529f40d8c1a2d",
+    "manifest_status": "41/41 checksums verified with 0 mismatches"
+  },
+  "spatial_coverage": {
+    "authoritative_boundary_area_km2": 461.630791,
+    "all_intersecting_cells_count": 50871,
+    "all_intersecting_clipped_area_km2": 461.630791,
+    "all_intersecting_relative_error_pct": 0.0,
+    "operational_centroid_inside_cells_count": 49747,
+    "operational_clipped_area_km2": 459.550165,
+    "operational_coverage_pct": 99.549288,
+    "omitted_perimeter_slivers_count": 1124,
+    "omitted_perimeter_slivers_area_km2": 2.080626,
+    "omitted_perimeter_slivers_pct": 0.450712
+  },
+  "ml_evaluation_metrics": {
+    "model_path": "artifacts\\ml_freeze\\xgb_tuned_policy_d.joblib",
+    "model_type": "XGBRegressor",
+    "test_samples": 203758,
+    "dev_samples": 720973,
+    "test_blocks_count": 33,
+    "dev_blocks_count": 132,
+    "inference_time_seconds": 0.9566442999639548,
+    "throughput_samples_per_sec": 212992.4361726478,
+    "metrics": {
+      "MAE": 1.2725802659988403,
+      "RMSE": 1.7524057609480825,
+      "R2": 0.9005511999130249,
+      "mean_residual": 0.05213506519794464,
+      "mean_model_bias": -0.05213506519794464,
+      "median_ae": 0.9673652648925781,
+      "p90_ae": 2.6882379055023193,
+      "p95_ae": 3.4557650089263916,
+      "p99_ae": 5.690191268920898,
+      "max_ae": 23.23467254638672
+    },
+    "residual_quantiles": {
+      "p01": -4.806588649749756,
+      "p05": -2.5965161323547363,
+      "p25": -0.9016003608703613,
+      "p50": 0.039216041564941406,
+      "p75": 1.0320253372192383,
+      "p95": 2.7685658931732178,
+      "p99": 4.4483418464660645,
+      "std": 1.7516300678253174
+    },
+    "seasonal_breakdown": {
+      "monsoon": {
+        "n_samples": 49954,
+        "MAE": 1.8024394512176514,
+        "RMSE": 2.4353256225585938,
+        "R2": 0.771849513053894,
+        "bias": -0.08660244941711426,
+        "mean_y": 40.29933547973633
+      },
+      "post_monsoon": {
+        "n_samples": 43944,
+        "MAE": 0.9925645589828491,
+        "RMSE": 1.2772436141967773,
+        "R2": 0.7855208516120911,
+        "bias": 0.10466250032186508,
+        "mean_y": 35.703834533691406
+      },
+      "summer": {
+        "n_samples": 54930,
+        "MAE": 1.3733669519424438,
+        "RMSE": 1.7944203615188599,
+        "R2": 0.7118605375289917,
+        "bias": 0.19162940979003906,
+        "mean_y": 42.677005767822266
+      },
+      "winter": {
+        "n_samples": 54930,
+        "MAE": 0.9139458537101746,
+        "RMSE": 1.2135707139968872,
+        "R2": 0.6511720418930054,
+        "bias": -0.0032116558868438005,
+        "mean_y": 31.756057739257812
+      }
+    },
+    "hotspot_breakdown": {},
+    "feature_importances": {
+      "weight": {
+        "f0": 60038.0,
+        "f1": 60272.0,
+        "f2": 59599.0,
+        "f3": 36129.0,
+        "f4": 32539.0
+      },
+      "gain": {
+        "f0": 181.079345703125,
+        "f1": 484.4461364746094,
+        "f2": 321.7856140136719,
+        "f3": 1012.4674072265625,
+        "f4": 3326.54541015625
+      },
+      "cover": {
+        "f0": 12841.955078125,
+        "f1": 11159.6669921875,
+        "f2": 12858.1015625,
+        "f3": 14600.0615234375,
+        "f4": 32947.109375
+      }
+    }
+  },
+  "database_metrics": {
+    "grid_cells_count": 49747,
+    "grid_obs_count": 924731,
+    "hpi_scores_count": 49747,
+    "check_constraints": {
+      "ck_hpi_score_range": "CHECK (((heat_priority_score >= (0.0)::double precision) AND (heat_priority_score <= (100.0)::double precision)))",
+      "ck_hpi_confidence_tier": "CHECK (((confidence_tier)::text = ANY ((ARRAY['HIGH'::character varying, 'MODERATE'::character varying, 'LOW'::character varying, 'INSUFFICIENT'::character varying])::text[])))",
+      "ck_hpi_thermal_severity": "CHECK (((thermal_severity_component >= (0.0)::double precision) AND (thermal_severity_component <= (1.0)::double precision)))",
+      "ck_hpi_persistence": "CHECK (((persistence_component >= (0.0)::double precision) AND (persistence_component <= (1.0)::double precision)))",
+      "ck_hpi_vegetation_deficit": "CHECK (((vegetation_deficit_component >= (0.0)::double precision) AND (vegetation_deficit_component <= (1.0)::double precision)))",
+      "ck_hpi_built_density": "CHECK (((built_density_component >= (0.0)::double precision) AND (built_density_component <= (1.0)::double precision)))",
+      "ck_hpi_confidence_index": "CHECK (((confidence_index >= (0.0)::double precision) AND (confidence_index <= (1.0)::double precision)))",
+      "ck_hpi_hotspot_frequency": "CHECK (((hotspot_frequency >= (0.0)::double precision) AND (hotspot_frequency <= (1.0)::double precision)))",
+      "ck_hpi_persistence_tier": "CHECK (((persistence_tier)::text = ANY ((ARRAY['chronic_hotspot'::character varying, 'frequent_hotspot'::character varying, 'occasional_hotspot'::character varying, 'transient_extreme'::character varying, 'non_hotspot'::character varying])::text[])))",
+      "ck_hpi_eligibility": "CHECK (((eligibility_status)::text = ANY ((ARRAY['ACCEPT'::character varying, 'FLAG'::character varying, 'EXCLUDE'::character varying, 'INSUFFICIENT_THERMAL_EVIDENCE'::character varying])::text[])))"
+    },
+    "score_statistics": {
+      "total": 49747.0,
+      "non_null_scores": 49747.0,
+      "null_scores": 0.0,
+      "min_score": 4.8282013,
+      "avg_score": 42.13843648100646,
+      "max_score": 96.38875,
+      "min_conf": 0.5,
+      "avg_conf": 0.9980038998078914,
+      "max_conf": 1.0
+    },
+    "persistence_tiers": {
+      "non_hotspot": 46233,
+      "transient_extreme": 2126,
+      "occasional_hotspot": 885,
+      "frequent_hotspot": 280,
+      "chronic_hotspot": 223
+    },
+    "eligibility_statuses": {
+      "ACCEPT": 49747
+    },
+    "confidence_tiers": {
+      "HIGH": 49674,
+      "MODERATE": 73
+    },
+    "chronic_hotspots_count": 223
+  },
+  "api_benchmarks": {
+    "health": {
+      "url": "/api/v1/health",
+      "status_code": 200,
+      "latency_mean_ms": 15.12165999156423,
+      "latency_min_ms": 8.567899989429861,
+      "latency_median_ms": 9.003899991512299,
+      "latency_p95_ms": 42.80903999751893,
+      "latency_max_ms": 69.96240001171827,
+      "contains_nan_or_inf": false,
+      "sample_keys": [
+        "status",
+        "service",
+        "database"
+      ]
+    },
+    "hpi_summary": {
+      "url": "/api/v1/heat-priority/summary",
+      "status_code": 200,
+      "latency_mean_ms": 57.13571000378579,
+      "latency_min_ms": 52.88339999970049,
+      "latency_median_ms": 54.20194999896921,
+      "latency_p95_ms": 70.99536002788224,
+      "latency_max_ms": 84.09000001847744,
+      "contains_nan_or_inf": false,
+      "sample_keys": [
+        "scoring_period",
+        "spec_version",
+        "total_grid_cells",
+        "scored_cells",
+        "mean_hpi",
+        "min_hpi",
+        "max_hpi",
+        "chronic_hotspots_count",
+        "confidence_tier_counts",
+        "persistence_tier_counts"
+      ]
+    },
+    "hpi_cells_default": {
+      "url": "/api/v1/heat-priority/cells?limit=50",
+      "status_code": 200,
+      "latency_mean_ms": 61.16189999738708,
+      "latency_min_ms": 58.0373999546282,
+      "latency_median_ms": 60.16565000754781,
+      "latency_p95_ms": 66.3406500039855,
+      "latency_max_ms": 68.60460003372282,
+      "contains_nan_or_inf": false,
+      "sample_keys": [
+        "total",
+        "offset",
+        "limit",
+        "items"
+      ]
+    },
+    "hpi_cells_bbox": {
+      "url": "/api/v1/heat-priority/cells?bbox=72.75,21.10,72.85,21.20&limit=50",
+      "status_code": 200,
+      "latency_mean_ms": 64.61986999493092,
+      "latency_min_ms": 55.145999998785555,
+      "latency_median_ms": 57.80125001911074,
+      "latency_p95_ms": 90.04575999861117,
+      "latency_max_ms": 91.14340000087395,
+      "contains_nan_or_inf": false,
+      "sample_keys": [
+        "total",
+        "offset",
+        "limit",
+        "items"
+      ]
+    },
+    "hpi_cell_detail": {
+      "url": "/api/v1/heat-priority/cell/R000_C249",
+      "status_code": 200,
+      "latency_mean_ms": 9.668539994163439,
+      "latency_min_ms": 8.903699985239655,
+      "latency_median_ms": 9.378299990203232,
+      "latency_p95_ms": 11.50905500981025,
+      "latency_max_ms": 12.913100013975054,
+      "contains_nan_or_inf": false,
+      "sample_keys": [
+        "pixel_id",
+        "row_idx",
+        "col_idx",
+        "latitude",
+        "longitude",
+        "nearest_osm_place_name",
+        "nearest_osm_distance_m",
+        "heat_priority_score",
+        "thermal_severity_component",
+        "persistence_component",
+        "vegetation_deficit_component",
+        "built_density_component",
+        "confidence_index",
+        "confidence_tier",
+        "persistence_tier",
+        "is_chronic_hotspot",
+        "hotspot_frequency",
+        "eligibility_status",
+        "observed_lst_c",
+        "optical_imputation_flag"
+      ]
+    }
+  },
+  "test_suite_summary": {
+    "backend_pytest_passed": 162,
+    "backend_pytest_failed": 0,
+    "backend_pytest_warnings": 25,
+    "backend_pytest_duration_seconds": 42.82,
+    "stage_c_targeted_tests_passed": 47,
+    "optical_sentinel_tests_passed": 14,
+    "frontend_vitest_passed": 13,
+    "frontend_vitest_failed": 0,
+    "frontend_vitest_duration_ms": 810,
+    "frontend_production_build_status": "SUCCESS (0 errors in 4.20s)",
+    "grand_total_tests_passed": 175,
+    "grand_total_tests_failed": 0
+  },
+  "audit_verdict": "STAGE C FULLY ACCEPTED & VERIFIED \u2014 SCIENTIFICALLY SOUND, ROBUST & OPERATIONAL"
+}

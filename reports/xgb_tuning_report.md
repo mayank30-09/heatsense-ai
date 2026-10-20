@@ -1,11 +1,11 @@
 # HEATSENSE AI — XGBoost Hyperparameter Tuning & Spatial Confirmation Report
 
-**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform  
-**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)  
-**Document Version:** 1.0-SCIENTIFIC-EVIDENCE  
-**Stage:** XGBoost Hyperparameter Tuning -> Spatial Confirmation -> Model Comparison -> SHAP Refresh -> Residual Analysis -> Scientific Model Selection  
-**Date:** September 2026  
-**Status:** **DRAFT / UNDER SCIENTIFIC REVIEW — NOT YET FROZEN**  
+**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform
+**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)
+**Document Version:** 1.0-SCIENTIFIC-EVIDENCE
+**Stage:** XGBoost Hyperparameter Tuning -> Spatial Confirmation -> Model Comparison -> SHAP Refresh -> Residual Analysis -> Scientific Model Selection
+**Date:** September 2026
+**Status:** **DRAFT / UNDER SCIENTIFIC REVIEW — NOT YET FROZEN**
 
 ---
 
@@ -40,7 +40,7 @@ All experiments consume the authoritative Policy D analysis dataset:
 To ensure rigorous spatial and physical generalization, geographic coordinates are strictly excluded from the predictor space:
 
 ### Target Variable ($y$)
-- **`LST_C`:** Land Surface Temperature in Celsius derived from Landsat 8/9 Collection 2 Level-2 Band 10 thermal infrared radiance via single-channel atmospheric correction (100m ground resolution).
+- **`LST_C`:** Land Surface Temperature in Celsius derived from Landsat Collection 2 Level-2 Surface Temperature (ST_B10) using the USGS-provided scale factor and offset, followed by conversion from Kelvin to Celsius (100m ground resolution).
 
 ### Feature Predictors ($X$)
 1. **`NDVI`** (Normalized Difference Vegetation Index): Canopy greenness and vegetation fraction ($(\text{NIR}-\text{Red})/(\text{NIR}+\text{Red})$).

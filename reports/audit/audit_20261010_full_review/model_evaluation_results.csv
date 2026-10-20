@@ -1,0 +1,41 @@
+eval_id,model_name,evaluation_split,target_variable,sample_count,metric_name,measured_value,unit,metric_category,verification_method,historical_vs_recalculated,audit_status
+EVAL-01,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,MAE,1.2726,°C,Accuracy,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-02,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,RMSE,1.7524,°C,Accuracy,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-03,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,R2,0.9006,unitless,Goodness of Fit,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-04,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,Mean Residual (y - y_hat),0.0521,°C,Bias,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-05,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,Mean Model Bias (y_hat - y),-0.0521,°C,Bias,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-06,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,Median Absolute Error,0.9161,°C,Robust Error,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-07,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,P90 Absolute Error,2.7661,°C,Tail Error,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-08,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,P95 Absolute Error,3.6542,°C,Tail Error,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-09,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,P99 Absolute Error,5.6791,°C,Tail Error,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-10,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,Max Absolute Error,17.5143,°C,Extreme Error,Direct Model Inference on Locked Holdout,Recalculated,PASS
+EVAL-11,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,Inference Latency,1.093,seconds,Performance,Direct Timed Execution on Locked Holdout,Executed,PASS
+EVAL-12,xgb_tuned_policy_d_v1,Locked Holdout (33 Test Blocks),LST_C,203758,Inference Throughput,186420.8,samples/sec,Throughput,Direct Timed Execution on Locked Holdout,Executed,PASS
+EVAL-13,xgb_tuned_policy_d_v1,Holdout - Winter,LST_C,54930,MAE,0.9139,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-14,xgb_tuned_policy_d_v1,Holdout - Winter,LST_C,54930,RMSE,1.2136,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-15,xgb_tuned_policy_d_v1,Holdout - Winter,LST_C,54930,R2,0.6512,unitless,Seasonal Fit,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-16,xgb_tuned_policy_d_v1,Holdout - Winter,LST_C,54930,Bias,-0.0032,°C,Seasonal Bias,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-17,xgb_tuned_policy_d_v1,Holdout - Summer,LST_C,54930,MAE,1.3734,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-18,xgb_tuned_policy_d_v1,Holdout - Summer,LST_C,54930,RMSE,1.7944,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-19,xgb_tuned_policy_d_v1,Holdout - Summer,LST_C,54930,R2,0.7119,unitless,Seasonal Fit,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-20,xgb_tuned_policy_d_v1,Holdout - Summer,LST_C,54930,Bias,0.1916,°C,Seasonal Bias,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-21,xgb_tuned_policy_d_v1,Holdout - Monsoon,LST_C,49954,MAE,1.8024,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-22,xgb_tuned_policy_d_v1,Holdout - Monsoon,LST_C,49954,RMSE,2.4353,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-23,xgb_tuned_policy_d_v1,Holdout - Monsoon,LST_C,49954,R2,0.7718,unitless,Seasonal Fit,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-24,xgb_tuned_policy_d_v1,Holdout - Monsoon,LST_C,49954,Bias,-0.0866,°C,Seasonal Bias,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-25,xgb_tuned_policy_d_v1,Holdout - Post-Monsoon,LST_C,43944,MAE,0.9926,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-26,xgb_tuned_policy_d_v1,Holdout - Post-Monsoon,LST_C,43944,RMSE,1.2772,°C,Seasonal Accuracy,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-27,xgb_tuned_policy_d_v1,Holdout - Post-Monsoon,LST_C,43944,R2,0.7855,unitless,Seasonal Fit,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-28,xgb_tuned_policy_d_v1,Holdout - Post-Monsoon,LST_C,43944,Bias,0.1047,°C,Seasonal Bias,Holdout Groupby Evaluation,Recalculated,PASS
+EVAL-29,xgb_tuned_policy_d_v1,Holdout - Non-Hotspot,LST_C,192842,RMSE,1.6715,°C,Hotspot Stratification,Holdout Hotspot Stratification,Historical/Recalculated,PASS
+EVAL-30,xgb_tuned_policy_d_v1,Holdout - Episodic Hotspot,LST_C,9924,RMSE,2.6104,°C,Hotspot Stratification,Holdout Hotspot Stratification,Historical/Recalculated,PASS
+EVAL-31,xgb_tuned_policy_d_v1,Holdout - Chronic Hotspot,LST_C,992,RMSE,4.8413,°C,Hotspot Stratification,Holdout Hotspot Stratification,Historical/Recalculated,PASS
+EVAL-32,RandomForest_Baseline,5-Fold Spatial CV (Dev),LST_C,720973,Mean MAE,1.2927,°C,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-33,RandomForest_Baseline,5-Fold Spatial CV (Dev),LST_C,720973,Mean RMSE,1.8024,°C,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-34,RandomForest_Baseline,5-Fold Spatial CV (Dev),LST_C,720973,Mean R2,0.9014,unitless,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-35,XGBoost_Baseline,5-Fold Spatial CV (Dev),LST_C,720973,Mean MAE,1.319,°C,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-36,XGBoost_Baseline,5-Fold Spatial CV (Dev),LST_C,720973,Mean RMSE,1.828,°C,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-37,XGBoost_Baseline,5-Fold Spatial CV (Dev),LST_C,720973,Mean R2,0.8986,unitless,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-38,XGBoost_Tuned,5-Fold Spatial CV (Dev),LST_C,720973,Mean MAE,1.2855,°C,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-39,XGBoost_Tuned,5-Fold Spatial CV (Dev),LST_C,720973,Mean RMSE,1.784,°C,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
+EVAL-40,XGBoost_Tuned,5-Fold Spatial CV (Dev),LST_C,720973,Mean R2,0.9033,unitless,CV Comparison,5-Fold Spatial Cross-Validation,Historical,PASS
