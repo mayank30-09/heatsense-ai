@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import HPIDashboardView from "./components/dashboard/HPIDashboardView";
 import { MapShell } from "./components/map/MapShell";
 import { getHealth, type HealthResponse } from "./services/api";
 import "./styles.css";
@@ -14,6 +15,7 @@ const views = [
 ];
 
 export default function App() {
+  const [activeView, setActiveView] = useState("Dashboard");
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -66,37 +68,88 @@ export default function App() {
           <h2>Workspace</h2>
 
           <nav>
-            {views.map((view, index) => (
-              <button
-                className={index === 0 ? "nav-item active" : "nav-item"}
-                key={view}
-                type="button"
-                disabled={index !== 0}
-              >
-                {view}
-              </button>
-            ))}
+            {views.map((view) => {
+              const isEnabled =
+                view === "Dashboard" ||
+                view === "Heat Map" ||
+                view === "Area Analysis";
+              const isActive = activeView === view;
+
+              return (
+                <button
+                  className={isActive ? "nav-item active" : "nav-item"}
+                  key={view}
+                  type="button"
+                  disabled={!isEnabled}
+                  onClick={() => isEnabled && setActiveView(view)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{view}</span>
+                    {!isEnabled && (
+                      <span className="text-[10px] text-slate-400 font-mono">Stage D</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </nav>
 
-          <p className="scope-note">
-            Day 1 contains infrastructure and a Leaflet map shell only. Real
-            Surat raster products are added in the later GIS pipeline.
-          </p>
+          <div className="scope-note">
+            <div className="font-semibold text-slate-700">Stage C Verified</div>
+            <p className="mt-1 text-slate-500">
+              Authoritative 100m analytical grid, multi-temporal persistence (2021–2026), and Landsat thermal observations for SMC Surat.
+            </p>
+          </div>
         </aside>
 
         <section className="workspace">
-          <div className="workspace-heading">
-            <div>
-              <p className="eyebrow">MAP WORKSPACE</p>
-              <h2>GIS foundation</h2>
-            </div>
+          {activeView === "Dashboard" && (
+            <>
+              <div className="workspace-heading">
+                <div>
+                  <p className="eyebrow">STAGE C EXECUTIVE DASHBOARD</p>
+                  <h2>Heat Priority Index Analytics</h2>
+                </div>
+                <p className="muted">
+                  Surat Municipal Corporation · 49,747 Cells
+                </p>
+              </div>
 
-            <p className="muted">
-              React + Vite + TypeScript + Leaflet
-            </p>
-          </div>
+              <HPIDashboardView onSwitchToMap={() => setActiveView("Heat Map")} />
+            </>
+          )}
 
-          <MapShell />
+          {activeView === "Heat Map" && (
+            <>
+              <div className="workspace-heading">
+                <div>
+                  <p className="eyebrow">HEAT PRIORITY MAP</p>
+                  <h2>Stage C Analytical Grid & Observations</h2>
+                </div>
+                <p className="muted">
+                  Interactive 100m Viewport Grid & Landsat LST
+                </p>
+              </div>
+
+              <MapShell initialTool="grid" />
+            </>
+          )}
+
+          {activeView === "Area Analysis" && (
+            <>
+              <div className="workspace-heading">
+                <div>
+                  <p className="eyebrow">ZONAL ANALYSIS</p>
+                  <h2>Custom Polygon Heat Analysis</h2>
+                </div>
+                <p className="muted">
+                  Draw custom polygons & compute Landsat zonal statistics
+                </p>
+              </div>
+
+              <MapShell initialTool="drawing" />
+            </>
+          )}
 
           <div className="connection-panel">
             <div>

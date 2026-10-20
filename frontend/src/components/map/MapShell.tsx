@@ -9,15 +9,21 @@ import {
 } from "react-leaflet";
 
 import type { AnalysisResult } from "../../types/analysis";
+import type {
+  ActiveLayerMode,
+  GridCellScoreItem,
+} from "../../types/heatPriority";
 
 import AreaDrawing from "../AreaDrawing";
-import LSTLegend from "./LSTLegend";
+import CellInspector from "./CellInspector";
+import HPILegend from "./HPILegend";
+import HPIViewportGrid from "./HPIViewportGrid";
+import LayerControls from "./LayerControls";
 
 const SURAT_CENTER: [number, number] = [
   21.1702,
   72.8311,
 ];
-
 
 type AnalysisArea = {
   id: string;
@@ -25,7 +31,21 @@ type AnalysisArea = {
   result: AnalysisResult;
 };
 
-export function MapShell() {
+interface MapShellProps {
+  initialTool?: "grid" | "drawing";
+  initialLayer?: ActiveLayerMode;
+}
+
+export function MapShell({
+  initialTool = "grid",
+  initialLayer = "hpi",
+}: MapShellProps) {
+  const [activeTool, setActiveTool] = useState<"grid" | "drawing">(initialTool);
+  const [layerMode, setLayerMode] = useState<ActiveLayerMode>(initialLayer);
+  const [showRasterTile, setShowRasterTile] = useState(true);
+  const [minHpiFilter, setMinHpiFilter] = useState<number | undefined>(undefined);
+  const [selectedCell, setSelectedCell] = useState<GridCellScoreItem | null>(null);
+
   const [
     analysisAreas,
     setAnalysisAreas,
@@ -122,10 +142,19 @@ const handleAreaRemoved =
           attribution="&copy; OpenStreetMap contributors"
         />
 
-        <TileLayer
-          url="http://127.0.0.1:8000/api/v1/rasters/lst/tiles/{z}/{x}/{y}.png"
-          opacity={0.65}
-          attribution="HEATSENSE AI · Landsat LST"
+        {showRasterTile && (
+          <TileLayer
+            url="http://127.0.0.1:8000/api/v1/rasters/lst/tiles/{z}/{x}/{y}.png"
+            opacity={0.65}
+            attribution="HEATSENSE AI · Landsat LST"
+          />
+        )}
+
+        <HPIViewportGrid
+          layerMode={layerMode}
+          selectedCell={selectedCell}
+          onSelectCell={(cell) => setSelectedCell(cell)}
+          minHpiFilter={minHpiFilter}
         />
 
         <AreaDrawing
@@ -143,51 +172,73 @@ const handleAreaRemoved =
           }
         />
 
-        <LSTLegend />
+        <HPILegend layerMode={layerMode} />
       </MapContainer>
 
-      <div className="map-badge">
-        LST layer active · Landsat
-      </div>
+      <LayerControls
+        layerMode={layerMode}
+        onLayerModeChange={setLayerMode}
+        showRasterTile={showRasterTile}
+        onToggleRasterTile={() => setShowRasterTile((prev) => !prev)}
+        minHpiFilter={minHpiFilter}
+        onToggleMinHpi={() => setMinHpiFilter((prev) => (prev === undefined ? 50 : undefined))}
+        activeTool={activeTool}
+        onSelectTool={setActiveTool}
+      />
 
-      <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-96 max-h-[75%] overflow-y-auto">
-        <div className="pointer-events-auto rounded-lg border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
-          <div className="mb-3">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-              Area Analysis
+      {/* Grid Cell Inspector */}
+      {selectedCell && (
+        <CellInspector
+          cell={selectedCell}
+          onClose={() => setSelectedCell(null)}
+        />
+      )}
+
+      {/* Polygon Drawing Area Analysis Drawer */}
+      {(activeTool === "drawing" || analysisAreas.length > 0) && !selectedCell && (
+        <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-96 max-h-[75%] overflow-y-auto">
+          <div className="pointer-events-auto rounded-lg border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+                  Area Analysis
+                </div>
+                <div className="mt-1 text-sm font-semibold text-slate-900">
+                  Selected Analysis Areas
+                </div>
+              </div>
+              {activeTool === "drawing" && (
+                <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
+                  Draw Tool Active
+                </span>
+              )}
             </div>
 
-            <div className="mt-1 text-sm font-semibold text-slate-900">
-              Selected Analysis Areas
-            </div>
-          </div>
-
-          {analysisError && (
-            <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700">
-              {analysisError}
-            </div>
-          )}
-
-          {analysisAreas.length === 0 && (
-            <div className="text-sm leading-5 text-slate-500">
-              Use the polygon drawing tool
-              on the left side of the map to
-              select an area for LST analysis.
-            </div>
-          )}
-
-          <div className="space-y-3">
-            {analysisAreas.map(
-              (area) => (
-                <AnalysisAreaCard
-                  key={area.id}
-                  area={area}
-                />
-              )
+            {analysisError && (
+              <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700">
+                {analysisError}
+              </div>
             )}
+
+            {analysisAreas.length === 0 && (
+              <div className="text-sm leading-5 text-slate-500">
+                Use the polygon drawing tool on the left toolbar to draw an area for Landsat zonal statistics.
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {analysisAreas.map(
+                (area) => (
+                  <AnalysisAreaCard
+                    key={area.id}
+                    area={area}
+                  />
+                )
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -8,4 +8,14 @@ export default defineConfig({
     port: 5173,
     host: "localhost",
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          leaflet: ["leaflet", "react-leaflet"],
+        },
+      },
+    },
+  },
 });
