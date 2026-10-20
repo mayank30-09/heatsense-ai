@@ -1,10 +1,10 @@
 # HEATSENSE AI — Machine Learning Model Registry
 
-**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform  
-**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)  
-**Document Version:** 1.0  
+**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform
+**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)
+**Document Version:** 1.0
 **Status:** **FROZEN (ML/QC SCIENTIFIC FREEZE)**
-**Date:** September 2026  
+**Date:** September 2026
 
 ---
 
@@ -29,7 +29,7 @@ In accordance with HEATSENSE scientific principles:
 | **Scikit-Learn Version** | 1.9.1 |
 | **Optuna Version** | 5.0.0 |
 | **SHAP Version** | 0.52.0 |
-| **NumPy / Pandas** | 2.4.3 / 3.0.1 |
+| **NumPy / Pandas** | 2.5.3 / 3.0.6 |
 | **Target Variable ($y$)** | `LST_C` (Land Surface Temperature in Celsius, 100m ground resolution) |
 | **Feature Predictors ($X$)** | `NDVI`, `NDBI`, `NDWI`, `LST_OBS_COUNT`, `LST_QA_MEDIAN_K` (`LST_QA_MEDIAN_K` is the seasonal median of the per-scene Landsat ST_QA uncertainty indicator, expressed in Kelvin; provides radiometric retrieval context) |
 | **Predictor Exclusions** | Geographic coordinates (`latitude`, `longitude`, `row`, `col`) are strictly excluded to avoid spatial memorization. |
@@ -135,7 +135,7 @@ In accordance with HEATSENSE scientific principles:
 - **Training Time:** ~37.7 s on full development dataset (720,973 rows)
 - **Empirical Prediction Latency (CPU Batch Inference):**
   - 203,758 samples (test holdout): 1.093 s (~5.36 s per 1M rows under linear extrapolation).
-  - *Note:* In dedicated benchmarks on 924,731 rows, Random Forest demonstrated lower CPU batch inference latency (2.1132 s) than XGBoost (6.5477 s). Tuned XGBoost is selected due to superior spatial accuracy (holdout RMSE 1.7524°C vs RF 1.8024°C) and native TreeExplainer acceleration.
+  - *Note:* In dedicated benchmarks on 924,731 rows, Random Forest demonstrated lower CPU batch inference latency (2.1132 s) than XGBoost (6.5477 s). XGBoost is the frozen operational model based on the tuned development workflow, independent locked test evaluation, and explainability workflow. RF remains an active benchmark. The currently reported RF 5-fold development CV RMSE and XGBoost locked-test RMSE are not directly comparable.
 - **Status:** **FROZEN (CERTIFIED OPERATIONAL MODEL)**
 
 ---

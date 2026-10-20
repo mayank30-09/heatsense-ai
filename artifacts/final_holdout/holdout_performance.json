@@ -1,10 +1,13 @@
 {
   "holdout_type": "independent_spatial_blocks_20pct",
   "n_samples": 203758,
-  "MAE": 1.2595,
-  "RMSE": 1.7342,
-  "R2": 0.9026,
-  "fit_time_seconds": 49.74,
+  "MAE": 1.2726,
+  "RMSE": 1.7524,
+  "R2": 0.9006,
+  "mean_residual_celsius": 0.0521,
+  "mean_model_bias_celsius": -0.0521,
+  "training_time_seconds": 37.74,
+  "inference_time_seconds": 1.093,
   "test_blocks_count": 33,
   "dev_blocks_count": 132
 }
