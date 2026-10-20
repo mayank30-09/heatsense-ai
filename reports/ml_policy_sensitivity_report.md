@@ -1,11 +1,11 @@
 # HEATSENSE AI — Machine Learning Policy Sensitivity & Spatial Validation Report
 
-**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform  
-**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)  
-**Document Version:** 1.0-SCIENTIFIC-EVIDENCE  
-**Stage:** Policy-Sensitive ML Dataset Construction -> Spatial Validation -> RF Baseline -> Policy/FLAG Sensitivity -> Temporal Validation -> XGBoost -> SHAP -> Spatial Residual Analysis -> Scientific QC Policy Review  
-**Date:** September 2026  
-**Status:** **DRAFT / UNDER SCIENTIFIC REVIEW — FINAL QC POLICY NOT YET FROZEN**  
+**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform
+**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)
+**Document Version:** 1.0-SCIENTIFIC-EVIDENCE
+**Stage:** Policy-Sensitive ML Dataset Construction -> Spatial Validation -> RF Baseline -> Policy/FLAG Sensitivity -> Temporal Validation -> XGBoost -> SHAP -> Spatial Residual Analysis -> Scientific QC Policy Review
+**Date:** September 2026
+**Status:** **DRAFT / UNDER SCIENTIFIC REVIEW — FINAL QC POLICY NOT YET FROZEN**
 
 ---
 
@@ -13,7 +13,7 @@
 
 This report establishes the empirical scientific evidence required to determine whether the choice of satellite pixel eligibility policy (Policies A–D) and the treatment of quality-flagged observations materially affect downstream machine learning models, spatial generalization, temporal validation, feature attribution, and spatial error patterns.
 
-Prior to this investigation, Landsat Collection 2 Level-2 Surface Temperature products in Surat revealed that naive thresholding (e.g. clipping $LST > 50^\circ\text{C}$ or enforcing universal $OBS \ge 2$) purges over 62% of monsoon urban heat island hotspots, whereas unconstrained ingestion admits unflagged cloud-shadow artifacts ($LST = 6.47^\circ\text{C}$). 
+Prior to this investigation, Landsat Collection 2 Level-2 Surface Temperature products in Surat revealed that naive thresholding (e.g. clipping $LST > 50^\circ\text{C}$ or enforcing universal $OBS \ge 2$) purges over 62% of monsoon urban heat island hotspots, whereas unconstrained ingestion admits unflagged cloud-shadow artifacts ($LST = 6.47^\circ\text{C}$).
 
 Through a rigorous, vectorized analysis dataset builder, deterministic $2\text{ km} \times 2\text{ km}$ spatial block partitioning, 5-fold spatial cross-validation with zero spatial leakage, Random Forest and XGBoost regression, SHAP TreeExplainer attribution, and spatial residual error mapping across 924,854 pixel-season observations (2022–2026), this study demonstrates:
 
@@ -28,7 +28,7 @@ Through a rigorous, vectorized analysis dataset builder, deterministic $2\text{ 
 ## 1. Dataset Construction
 
 ### 1.1 Input Data & Spatial Coverage
-- **Source Satellite Products:** USGS Landsat 8/9 Collection 2 Level-2 Surface Temperature (Band 10 single-channel atmospheric compensation) and Surface Reflectance (Bands 2–7).
+- **Source Satellite Products:** USGS Landsat 8/9 Collection 2 Level-2 Surface Temperature (ST_B10, derived using USGS-provided scale factor and offset, converted from Kelvin to Celsius) and Surface Reflectance (Bands 2–7).
 - **Spatial Resolution & Grid:** 100m resolution clipped to the official Surat Municipal Corporation boundary (50,752 grid cells).
 - **Temporal Span:** 2022 to 2026 across four climatological seasons:
   - *Winter:* December – February

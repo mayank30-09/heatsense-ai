@@ -1,16 +1,18 @@
-# HEATSENSE AI — Pixel Quality and Eligibility Policy Specification (DRAFT)
+# HEATSENSE AI — Pixel Quality and Eligibility Policy Specification
 
-**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform  
-**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)  
-**Document Version:** 1.0-DRAFT  
-**Status:** **DRAFT / UNDER SCIENTIFIC REVIEW — NOT YET FROZEN**  
-**Date:** September 2026  
+**Project:** HEATSENSE AI — AI-Powered GIS-Based Urban Heat Mitigation & Cooling Decision-Support Platform
+**Target Area:** Surat Municipal Corporation (SMC), Gujarat, India (EPSG:4326 / EPSG:32643)
+**Document Version:** 1.0
+**Status:** **FROZEN — OPERATIONAL POLICY D**
+**Policy:** Policy D
+**Canonical Configuration:** `config/quality_policy_d.yaml`
+**Date:** September 2026
 
 ---
 
 ## 1. Purpose
 
-The objective of the HEATSENSE AI Pixel Eligibility Policy is to establish a rigorous quality-control gate between raw satellite observations and downstream machine learning and spatial optimization pipelines. 
+The objective of the HEATSENSE AI Pixel Eligibility Policy is to establish a rigorous quality-control gate between raw satellite observations and downstream machine learning and spatial optimization pipelines.
 
 In urban heat island (UHI) analytics, satellite thermal observations frequently suffer from localized radiative transfer distortions, unflagged cloud-edge artifacts, and retrieval uncertainties under high atmospheric moisture conditions. A naive filter that simply deletes all extreme values (e.g. clipping $LST > 50^\circ\text{C}$ or enforcing universal $OBS \ge 2$) purges critical real-world industrial heat generators and starves the model of 40% of Surat's landmass during monsoon seasons. Conversely, an unfiltered dataset permits erroneous cold-edge anomalies (such as single-observation $6.47^\circ\text{C}$ minimums) to enter baseline training data.
 
@@ -25,7 +27,7 @@ This policy establishes an evidence-based, tripartite classification:
 
 The policy evaluates a multivariate attribute tuple derived from USGS Landsat 8/9 Collection 2 Level-2 Surface Temperature and Surface Reflectance products:
 
-1. **`LST_C`:** Land Surface Temperature in Celsius derived from Band 10 thermal infrared radiance using single-channel atmospheric compensation.
+1. **`LST_C`:** Land Surface Temperature in Celsius derived from Landsat Collection 2 Level-2 Surface Temperature (ST_B10) using the USGS-provided scale factor and offset, followed by conversion from Kelvin to Celsius.
 2. **`LST_OBS_COUNT`:** Number of clear-sky observations contributing to the seasonal composite.
 3. **`ST_QA_K`:** Pixel-level radiometric surface temperature uncertainty in Kelvin from the USGS Level-2 `ST_QA` band.
 4. **`NDVI` / `NDBI` / `NDWI`:** Seasonal median optical indices representing vegetation abundance, built-up density, and surface water moisture.

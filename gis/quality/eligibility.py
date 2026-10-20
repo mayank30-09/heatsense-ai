@@ -12,8 +12,21 @@ Framework:
 
 from __future__ import annotations
 
+import math
 from enum import Enum
 from typing import Any
+
+
+def _is_invalid_or_zero_obs(obs: float | int | None) -> bool:
+    """Return True if observation count is None, non-finite (NaN/Inf), or < 1."""
+    if obs is None:
+        return True
+    try:
+        if math.isnan(obs) or math.isinf(obs):
+            return True
+        return obs < 1
+    except (TypeError, ValueError):
+        return True
 
 
 class EligibilityStatus(str, Enum):
@@ -39,7 +52,7 @@ def evaluate_policy_a(
     - OBS == 1: FLAG (retained with low-temporal-support warning)
     - OBS < 1 or missing: EXCLUDE
     """
-    if obs_count is None or obs_count < 1:
+    if _is_invalid_or_zero_obs(obs_count):
         return EligibilityStatus.EXCLUDE, "No observation support (OBS < 1)"
 
     if obs_count == 1:
@@ -63,7 +76,7 @@ def evaluate_policy_b(
     - OBS >= 2: ACCEPT (or FLAG if spatial anomaly present)
     - OBS < 2: EXCLUDE
     """
-    if obs_count is None or obs_count < 2:
+    if _is_invalid_or_zero_obs(obs_count) or obs_count < 2:
         return EligibilityStatus.EXCLUDE, "Excluded under Policy B (OBS < 2)"
 
     flags = quality_flags or []
@@ -92,7 +105,7 @@ def evaluate_policy_c(
     - OBS == 1 AND NOT is_persistent_hotspot: EXCLUDE
     - OBS < 1: EXCLUDE
     """
-    if obs_count is None or obs_count < 1:
+    if _is_invalid_or_zero_obs(obs_count):
         return EligibilityStatus.EXCLUDE, "Excluded (OBS < 1)"
 
     if obs_count >= 2:
@@ -131,7 +144,7 @@ def evaluate_policy_d(
     - OBS == 1 AND spatially coherent: FLAG (retained with low-support warning)
     - OBS < 1: EXCLUDE
     """
-    if obs_count is None or obs_count < 1:
+    if _is_invalid_or_zero_obs(obs_count):
         return EligibilityStatus.EXCLUDE, "Excluded (OBS < 1)"
 
     flags = quality_flags or []

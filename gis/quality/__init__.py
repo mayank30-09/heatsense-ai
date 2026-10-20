@@ -33,6 +33,15 @@ from gis.quality.hotspot_definitions import (
     is_persistent_hotspot,
     persistent_hotspot_mask,
 )
+from gis.quality.imputation import (
+    impute_optical_raster,
+    is_disqualified_from_ml_scenario,
+    is_optical_invalid,
+    FLAG_CLEAN,
+    FLAG_MEDIAN,
+    FLAG_BOUNDARY,
+    FLAG_NEUTRAL,
+)
 
 __all__ = [
     "classify_temporal_support",
@@ -57,4 +66,11 @@ __all__ = [
     "is_non_hotspot",
     "is_persistent_hotspot",
     "persistent_hotspot_mask",
+    "impute_optical_raster",
+    "is_disqualified_from_ml_scenario",
+    "is_optical_invalid",
+    "FLAG_CLEAN",
+    "FLAG_MEDIAN",
+    "FLAG_BOUNDARY",
+    "FLAG_NEUTRAL",
 ]
