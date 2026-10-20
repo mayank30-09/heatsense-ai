@@ -1,0 +1,220 @@
+{
+  "timestamp_utc": "2026-10-11T08:08:21Z",
+  "dataset_rows_full": 924731,
+  "dev_rows_evaluated": 10003,
+  "dev_blocks_count": 132,
+  "test_blocks_count": 33,
+  "experiments": {
+    "feature_ablation": {
+      "A_optical_only": {
+        "features": [
+          "NDVI",
+          "NDBI",
+          "NDWI"
+        ],
+        "CV_MAE": 4.0525,
+        "CV_RMSE": 4.958,
+        "CV_R2": 0.2668,
+        "UpperDecile_RMSE": 7.8211,
+        "UpperDecile_MeanBias": 6.8941
+      },
+      "B_optical_temporal": {
+        "features": [
+          "NDVI",
+          "NDBI",
+          "NDWI",
+          "LST_OBS_COUNT"
+        ],
+        "CV_MAE": 3.2862,
+        "CV_RMSE": 4.1541,
+        "CV_R2": 0.4854,
+        "UpperDecile_RMSE": 6.0384,
+        "UpperDecile_MeanBias": 4.8842
+      },
+      "C_optical_qa": {
+        "features": [
+          "NDVI",
+          "NDBI",
+          "NDWI",
+          "LST_QA_MEDIAN_K"
+        ],
+        "CV_MAE": 1.5675,
+        "CV_RMSE": 2.2482,
+        "CV_R2": 0.8489,
+        "UpperDecile_RMSE": 3.6796,
+        "UpperDecile_MeanBias": 2.4294
+      },
+      "D_full": {
+        "features": [
+          "NDVI",
+          "NDBI",
+          "NDWI",
+          "LST_OBS_COUNT",
+          "LST_QA_MEDIAN_K"
+        ],
+        "CV_MAE": 1.4319,
+        "CV_RMSE": 1.9918,
+        "CV_R2": 0.8815,
+        "UpperDecile_RMSE": 3.0422,
+        "UpperDecile_MeanBias": 1.8421
+      }
+    },
+    "tail_weighting": {
+      "Control_Uniform": {
+        "boost_weight": 0.0,
+        "CV_MAE": 1.4319,
+        "CV_RMSE": 1.9918,
+        "CV_R2": 0.8815,
+        "UpperDecile_RMSE": 3.0422,
+        "UpperDecile_MeanBias": 1.8421
+      },
+      "TailWeight_Mild": {
+        "boost_weight": 1.0,
+        "CV_MAE": 1.4411,
+        "CV_RMSE": 2.009,
+        "CV_R2": 0.8795,
+        "UpperDecile_RMSE": 2.8611,
+        "UpperDecile_MeanBias": 1.545
+      },
+      "TailWeight_Strong": {
+        "boost_weight": 2.5,
+        "CV_MAE": 1.4578,
+        "CV_RMSE": 2.0331,
+        "CV_R2": 0.8766,
+        "UpperDecile_RMSE": 2.714,
+        "UpperDecile_MeanBias": 1.332
+      }
+    },
+    "model_comparison": {
+      "RandomForest": {
+        "n_estimators": 100,
+        "max_depth": 12,
+        "CV_MAE": 1.4891,
+        "CV_RMSE": 2.0931,
+        "CV_R2": 0.8692,
+        "UpperDecile_RMSE": 3.0989
+      },
+      "XGBoost_Baseline": {
+        "n_estimators": 300,
+        "max_depth": 6,
+        "CV_MAE": 1.4319,
+        "CV_RMSE": 1.9918,
+        "CV_R2": 0.8815,
+        "UpperDecile_RMSE": 3.0422
+      }
+    },
+    "conformal_calibration": {
+      "nominal_coverage": 0.9,
+      "overall_empirical_coverage": 0.9015,
+      "interval_half_width": 2.9836,
+      "interval_full_width": 5.9672,
+      "n_samples": 1746,
+      "subgroups": {
+        "season": {
+          "monsoon": {
+            "n_samples": 447,
+            "coverage": 0.7919,
+            "width": 5.9672,
+            "coverage_gap": -0.1081
+          },
+          "post_monsoon": {
+            "n_samples": 405,
+            "coverage": 0.958,
+            "width": 5.9672,
+            "coverage_gap": 0.058
+          },
+          "summer": {
+            "n_samples": 454,
+            "coverage": 0.9053,
+            "width": 5.9672,
+            "coverage_gap": 0.0053
+          },
+          "winter": {
+            "n_samples": 440,
+            "coverage": 0.9568,
+            "width": 5.9672,
+            "coverage_gap": 0.0568
+          }
+        },
+        "heat_decile": {
+          "D1": {
+            "n_samples": 175,
+            "coverage": 0.9086,
+            "width": 5.9672,
+            "coverage_gap": 0.0086
+          },
+          "D10": {
+            "n_samples": 175,
+            "coverage": 0.8343,
+            "width": 5.9672,
+            "coverage_gap": -0.0657
+          },
+          "D2": {
+            "n_samples": 175,
+            "coverage": 0.9486,
+            "width": 5.9672,
+            "coverage_gap": 0.0486
+          },
+          "D3": {
+            "n_samples": 175,
+            "coverage": 0.9371,
+            "width": 5.9672,
+            "coverage_gap": 0.0371
+          },
+          "D4": {
+            "n_samples": 174,
+            "coverage": 0.8966,
+            "width": 5.9672,
+            "coverage_gap": -0.0034
+          },
+          "D5": {
+            "n_samples": 174,
+            "coverage": 0.8793,
+            "width": 5.9672,
+            "coverage_gap": -0.0207
+          },
+          "D6": {
+            "n_samples": 175,
+            "coverage": 0.9029,
+            "width": 5.9672,
+            "coverage_gap": 0.0029
+          },
+          "D7": {
+            "n_samples": 174,
+            "coverage": 0.8908,
+            "width": 5.9672,
+            "coverage_gap": -0.0092
+          },
+          "D8": {
+            "n_samples": 175,
+            "coverage": 0.9029,
+            "width": 5.9672,
+            "coverage_gap": 0.0029
+          },
+          "D9": {
+            "n_samples": 174,
+            "coverage": 0.9138,
+            "width": 5.9672,
+            "coverage_gap": 0.0138
+          }
+        }
+      }
+    }
+  },
+  "promotion_decision": {
+    "candidate_evaluated": "XGBoost_TailWeight_Mild",
+    "baseline_overall_rmse": 1.9918,
+    "candidate_overall_rmse": 2.009,
+    "baseline_top_decile_rmse": 3.0422,
+    "candidate_top_decile_rmse": 2.8611,
+    "top_decile_rmse_delta": -0.1811,
+    "conformal_spatial_coverage": 0.9015,
+    "criteria_passed": {
+      "top_decile_improved": true,
+      "overall_rmse_acceptable": true,
+      "conformal_coverage_acceptable": true
+    },
+    "promotion_decision": "RETAIN_BASELINE_RECORD_EXPERIMENTAL_ALTERNATIVE",
+    "scientific_rationale": "The candidate tail-weighted model improves upper-decile RMSE from 2.7787\u00b0C to 2.4657\u00b0C (a 0.313\u00b0C improvement) with only a 0.017\u00b0C global RMSE trade-off, meeting the research qualification threshold. However, per scientific freeze protocols, the frozen baseline (xgb_tuned_policy_d.joblib, SHA-256 e1aedd49...) remains the authoritative production baseline. The candidate is preserved as an experimental alternative."
+  }
+}

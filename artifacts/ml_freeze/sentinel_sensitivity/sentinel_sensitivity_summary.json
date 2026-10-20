@@ -1,0 +1,97 @@
+{
+  "dataset": "data/processed/sensitivity/policy_d/analysis.parquet",
+  "total_rows": 924731,
+  "development_rows": 720973,
+  "development_sentinel_rows": 8,
+  "test_rows": 203758,
+  "test_sentinel_rows": 0,
+  "ndvi_sentinel_count": 7,
+  "ndbi_sentinel_count": 2,
+  "ndwi_sentinel_count": 3,
+  "development_blocks": 132,
+  "test_blocks": 33,
+  "spatial_folds": 5,
+  "common_non_sentinel_validation_rows": 720965,
+  "original_common_non_sentinel_metrics": {
+    "n_samples": 720965,
+    "MAE": 1.3136,
+    "RMSE": 1.8285,
+    "R2": 0.9008,
+    "mean_residual": -0.0074,
+    "mean_model_bias": 0.0074
+  },
+  "sentinel_excluded_common_non_sentinel_metrics": {
+    "n_samples": 720965,
+    "MAE": 1.3136,
+    "RMSE": 1.8286,
+    "R2": 0.9007,
+    "mean_residual": -0.0077,
+    "mean_model_bias": 0.0077
+  },
+  "metric_differences_abs": {
+    "delta_MAE": 0.0,
+    "delta_RMSE": 0.0001,
+    "delta_R2": 0.0001
+  },
+  "prediction_delta_on_common_non_sentinel": {
+    "n_observations": 720965,
+    "mean_c": 0.000341,
+    "mean_absolute_c": 0.087341,
+    "RMSE_delta_c": 0.127191,
+    "p95_absolute_c": 0.249325,
+    "p99_absolute_c": 0.4301,
+    "max_absolute_c": 4.9487
+  },
+  "fold_prediction_deltas": {
+    "fold_1": {
+      "n_samples": 140024,
+      "mean_c": -0.001059,
+      "mean_absolute_c": 0.089266,
+      "RMSE_delta_c": 0.12878,
+      "p95_absolute_c": 0.257228,
+      "max_absolute_c": 3.643145
+    },
+    "fold_2": {
+      "n_samples": 171137,
+      "mean_c": 0.000864,
+      "mean_absolute_c": 0.089494,
+      "RMSE_delta_c": 0.131578,
+      "p95_absolute_c": 0.25287,
+      "max_absolute_c": 2.205994
+    },
+    "fold_3": {
+      "n_samples": 139040,
+      "mean_c": 0.000962,
+      "mean_absolute_c": 0.078737,
+      "RMSE_delta_c": 0.112917,
+      "p95_absolute_c": 0.226182,
+      "max_absolute_c": 2.064327
+    },
+    "fold_4": {
+      "n_samples": 144675,
+      "mean_c": 0.000301,
+      "mean_absolute_c": 0.089284,
+      "RMSE_delta_c": 0.130902,
+      "p95_absolute_c": 0.252576,
+      "max_absolute_c": 2.883141
+    },
+    "fold_5": {
+      "n_samples": 126089,
+      "mean_c": 0.000545,
+      "mean_absolute_c": 0.089539,
+      "RMSE_delta_c": 0.129868,
+      "p95_absolute_c": 0.255925,
+      "max_absolute_c": 4.9487
+    }
+  },
+  "frozen_hashes": {
+    "dataset_sha256": "e824794e5ba2e26937ac40f55f5fd788adad70b1a6b23c6ab435b08223dd9997",
+    "frozen_model_sha256": "e1aedd4946b1b29823bdea66ea3ec7b9ba5f20c4ddbfdf6920c2e62e6b30b7c9",
+    "holdout_split_sha256": "8a04b20c97b088ffc7d3f513ecd3e41007adea51ad16401f104529f40d8c1a2d"
+  },
+  "frozen_model_changed": false,
+  "authoritative_dataset_changed": false,
+  "locked_test_modified": false,
+  "status": "RESOLVED BY SENSITIVITY EVIDENCE",
+  "timestamp_utc": "2026-09-29T04:39:55Z"
+}

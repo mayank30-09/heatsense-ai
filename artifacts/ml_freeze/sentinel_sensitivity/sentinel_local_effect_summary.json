@@ -1,0 +1,319 @@
+{
+  "analysis": {
+    "original_rows": 720973,
+    "sentinel_excluded_rows": 720973,
+    "matched_rows": 720973
+  },
+  "prediction_difference_c": {
+    "mean": 0.000334,
+    "mean_absolute": 0.087349,
+    "rmse": 0.127227,
+    "p95_absolute": 0.249353,
+    "p99_absolute": 0.430191,
+    "max_absolute": 4.9487,
+    "min_delta": -3.643145,
+    "max_delta": 4.9487
+  },
+  "threshold_counts": {
+    "abs_delta_gt_0_1C": 220374,
+    "abs_delta_gt_0_25C": 35809,
+    "abs_delta_gt_0_5C": 4475,
+    "abs_delta_gt_1_0C": 398,
+    "abs_delta_gt_2_0C": 8,
+    "abs_delta_gt_3_0C": 2,
+    "abs_delta_gt_4_0C": 1
+  },
+  "threshold_percentages": {
+    "abs_delta_gt_0_1C": 30.566193,
+    "abs_delta_gt_0_25C": 4.96676,
+    "abs_delta_gt_0_5C": 0.620689,
+    "abs_delta_gt_1_0C": 0.055203,
+    "abs_delta_gt_2_0C": 0.00111,
+    "abs_delta_gt_3_0C": 0.000277,
+    "abs_delta_gt_4_0C": 0.000139
+  },
+  "affected_blocks": {
+    "total_blocks": 132,
+    "max_abs_delta_gt_1C": 87,
+    "max_abs_delta_gt_2C": 7,
+    "max_abs_delta_gt_4C": 1,
+    "blocks_with_max_delta_gt_1C": 87,
+    "blocks_with_max_delta_gt_2C": 7,
+    "blocks_with_max_delta_gt_4C": 1
+  },
+  "season_effect": {
+    "monsoon": {
+      "rows": 178319,
+      "mean_abs_delta_c": 0.126831,
+      "max_abs_delta_c": 4.9487,
+      "p95_abs_delta_c": 0.341431,
+      "p99_abs_delta_c": 0.55095,
+      "obs_gt_1C": 255,
+      "obs_gt_2C": 7,
+      "obs_gt_4C": 1
+    },
+    "post_monsoon": {
+      "rows": 155044,
+      "mean_abs_delta_c": 0.06968,
+      "max_abs_delta_c": 1.890202,
+      "p95_abs_delta_c": 0.191862,
+      "p99_abs_delta_c": 0.321571,
+      "obs_gt_1C": 30,
+      "obs_gt_2C": 0,
+      "obs_gt_4C": 0
+    },
+    "summer": {
+      "rows": 193805,
+      "mean_abs_delta_c": 0.080509,
+      "max_abs_delta_c": 2.051228,
+      "p95_abs_delta_c": 0.219946,
+      "p99_abs_delta_c": 0.381231,
+      "obs_gt_1C": 56,
+      "obs_gt_2C": 1,
+      "obs_gt_4C": 0
+    },
+    "winter": {
+      "rows": 193805,
+      "mean_abs_delta_c": 0.071996,
+      "max_abs_delta_c": 1.565311,
+      "p95_abs_delta_c": 0.190887,
+      "p99_abs_delta_c": 0.331954,
+      "obs_gt_1C": 57,
+      "obs_gt_2C": 0,
+      "obs_gt_4C": 0
+    }
+  },
+  "season_gt_1C": {
+    "monsoon": 255,
+    "post_monsoon": 30,
+    "summer": 56,
+    "winter": 57
+  },
+  "top_effects": [
+    {
+      "year": 2023,
+      "season": "monsoon",
+      "row": 207,
+      "col": 118,
+      "block_id": "B_10_05",
+      "prediction_original_c": 52.847889,
+      "prediction_clean_c": 57.796589,
+      "prediction_delta_c": 4.9487,
+      "abs_prediction_delta_c": 4.9487
+    },
+    {
+      "year": 2024,
+      "season": "monsoon",
+      "row": 12,
+      "col": 280,
+      "block_id": "B_00_14",
+      "prediction_original_c": 30.604374,
+      "prediction_clean_c": 26.961229,
+      "prediction_delta_c": -3.643145,
+      "abs_prediction_delta_c": 3.643145
+    },
+    {
+      "year": 2024,
+      "season": "monsoon",
+      "row": 110,
+      "col": 181,
+      "block_id": "B_05_09",
+      "prediction_original_c": 39.437572,
+      "prediction_clean_c": 42.320713,
+      "prediction_delta_c": 2.883141,
+      "abs_prediction_delta_c": 2.883141
+    },
+    {
+      "year": 2024,
+      "season": "monsoon",
+      "row": 206,
+      "col": 118,
+      "block_id": "B_10_05",
+      "prediction_original_c": 40.388611,
+      "prediction_clean_c": 42.93531,
+      "prediction_delta_c": 2.5467,
+      "abs_prediction_delta_c": 2.5467
+    },
+    {
+      "year": 2024,
+      "season": "monsoon",
+      "row": 238,
+      "col": 178,
+      "block_id": "B_11_08",
+      "prediction_original_c": 48.196915,
+      "prediction_clean_c": 50.402908,
+      "prediction_delta_c": 2.205994,
+      "abs_prediction_delta_c": 2.205994
+    },
+    {
+      "year": 2025,
+      "season": "monsoon",
+      "row": 120,
+      "col": 150,
+      "block_id": "B_06_07",
+      "prediction_original_c": 45.659691,
+      "prediction_clean_c": 43.487446,
+      "prediction_delta_c": -2.172245,
+      "abs_prediction_delta_c": 2.172245
+    },
+    {
+      "year": 2022,
+      "season": "monsoon",
+      "row": 18,
+      "col": 266,
+      "block_id": "B_00_13",
+      "prediction_original_c": 44.698589,
+      "prediction_clean_c": 42.634262,
+      "prediction_delta_c": -2.064327,
+      "abs_prediction_delta_c": 2.064327
+    },
+    {
+      "year": 2026,
+      "season": "summer",
+      "row": 196,
+      "col": 165,
+      "block_id": "B_09_08",
+      "prediction_original_c": 44.454655,
+      "prediction_clean_c": 46.505882,
+      "prediction_delta_c": 2.051228,
+      "abs_prediction_delta_c": 2.051228
+    },
+    {
+      "year": 2023,
+      "season": "monsoon",
+      "row": 150,
+      "col": 189,
+      "block_id": "B_07_09",
+      "prediction_original_c": 50.307606,
+      "prediction_clean_c": 48.347202,
+      "prediction_delta_c": -1.960403,
+      "abs_prediction_delta_c": 1.960403
+    },
+    {
+      "year": 2024,
+      "season": "monsoon",
+      "row": 118,
+      "col": 152,
+      "block_id": "B_05_07",
+      "prediction_original_c": 48.927612,
+      "prediction_clean_c": 50.867023,
+      "prediction_delta_c": 1.939411,
+      "abs_prediction_delta_c": 1.939411
+    },
+    {
+      "year": 2025,
+      "season": "post_monsoon",
+      "row": 120,
+      "col": 200,
+      "block_id": "B_06_10",
+      "prediction_original_c": 32.286003,
+      "prediction_clean_c": 34.176205,
+      "prediction_delta_c": 1.890202,
+      "abs_prediction_delta_c": 1.890202
+    },
+    {
+      "year": 2023,
+      "season": "monsoon",
+      "row": 262,
+      "col": 61,
+      "block_id": "B_13_03",
+      "prediction_original_c": 33.911537,
+      "prediction_clean_c": 35.784794,
+      "prediction_delta_c": 1.873257,
+      "abs_prediction_delta_c": 1.873257
+    },
+    {
+      "year": 2023,
+      "season": "monsoon",
+      "row": 128,
+      "col": 146,
+      "block_id": "B_06_07",
+      "prediction_original_c": 38.254307,
+      "prediction_clean_c": 36.407867,
+      "prediction_delta_c": -1.846439,
+      "abs_prediction_delta_c": 1.846439
+    },
+    {
+      "year": 2023,
+      "season": "summer",
+      "row": 210,
+      "col": 27,
+      "block_id": "B_10_01",
+      "prediction_original_c": 32.473263,
+      "prediction_clean_c": 34.313011,
+      "prediction_delta_c": 1.839748,
+      "abs_prediction_delta_c": 1.839748
+    },
+    {
+      "year": 2025,
+      "season": "monsoon",
+      "row": 131,
+      "col": 83,
+      "block_id": "B_06_04",
+      "prediction_original_c": 45.838562,
+      "prediction_clean_c": 44.006557,
+      "prediction_delta_c": -1.832005,
+      "abs_prediction_delta_c": 1.832005
+    },
+    {
+      "year": 2022,
+      "season": "monsoon",
+      "row": 227,
+      "col": 126,
+      "block_id": "B_11_06",
+      "prediction_original_c": 59.159359,
+      "prediction_clean_c": 57.343765,
+      "prediction_delta_c": -1.815594,
+      "abs_prediction_delta_c": 1.815594
+    },
+    {
+      "year": 2022,
+      "season": "monsoon",
+      "row": 105,
+      "col": 223,
+      "block_id": "B_05_11",
+      "prediction_original_c": 43.039146,
+      "prediction_clean_c": 41.253048,
+      "prediction_delta_c": -1.786098,
+      "abs_prediction_delta_c": 1.786098
+    },
+    {
+      "year": 2025,
+      "season": "post_monsoon",
+      "row": 154,
+      "col": 180,
+      "block_id": "B_07_09",
+      "prediction_original_c": 36.795486,
+      "prediction_clean_c": 38.578239,
+      "prediction_delta_c": 1.782753,
+      "abs_prediction_delta_c": 1.782753
+    },
+    {
+      "year": 2023,
+      "season": "monsoon",
+      "row": 18,
+      "col": 251,
+      "block_id": "B_00_12",
+      "prediction_original_c": 40.510845,
+      "prediction_clean_c": 42.261116,
+      "prediction_delta_c": 1.750271,
+      "abs_prediction_delta_c": 1.750271
+    },
+    {
+      "year": 2023,
+      "season": "monsoon",
+      "row": 52,
+      "col": 266,
+      "block_id": "B_02_13",
+      "prediction_original_c": 38.583069,
+      "prediction_clean_c": 40.326557,
+      "prediction_delta_c": 1.743488,
+      "abs_prediction_delta_c": 1.743488
+    }
+  ],
+  "spatial_concentration_assessment": {
+    "is_spatially_isolated": true,
+    "comment": "The observed prediction sensitivity is highly concentrated in a tiny fraction of observations. Observations with |delta| > 1.0 deg C constitute only 0.0552% (398 rows) of the development population, and only 1 spatial block(s) exhibit a maximum delta exceeding 4.0 deg C. The aggregate spatial CV performance and independent holdout metrics remain completely stable."
+  },
+  "timestamp_utc": "2026-09-29T17:41:24Z"
+}
