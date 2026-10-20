@@ -1,0 +1,23 @@
+# Pin checkout bytes of hash-locked artifacts (see artifacts/ml_freeze/checksums.sha256)
+artifacts/ml_freeze/dataset_validation.json text eol=crlf
+artifacts/ml_freeze/holdout_split.json text eol=crlf
+artifacts/ml_freeze/tuning/spatial_fold_definition.json text eol=crlf
+artifacts/ml_freeze/tuning/best_params.json text eol=crlf
+artifacts/ml_freeze/tuning/xgb_best_params.json text eol=crlf
+artifacts/ml_freeze/tuning/study_summary.json text eol=crlf
+artifacts/ml_freeze/tuning/trial_results.csv text eol=crlf
+artifacts/ml_freeze/feature_schema.json text eol=crlf
+artifacts/ml_freeze/holdout_performance.json text eol=crlf
+artifacts/ml_freeze/holdout_season_performance.csv text eol=crlf
+artifacts/ml_freeze/holdout_hotspot_performance.csv text eol=crlf
+artifacts/ml_freeze/holdout_spatial_residuals.geojson text eol=crlf
+artifacts/ml_freeze/evaluation_manifest.json text eol=crlf
+artifacts/ml_freeze/qc_summary.json text eol=crlf
+artifacts/ml_freeze/production_cog_validation.json text eol=crlf
+artifacts/ml_freeze/pre_implementation_audit.json text eol=lf
+artifacts/ml_freeze/model_metadata.json text eol=lf
+artifacts/ml_freeze/test_results.json text eol=lf
+config/quality_policy_d.yaml text eol=lf
+artifacts/ml_freeze/xgb_tuned_policy_d.joblib binary
+*.tif binary
+*.parquet binary
