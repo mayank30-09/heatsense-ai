@@ -6,7 +6,9 @@ import type {
   OptimizeRequestPayload,
 } from "../types/interventions";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1/interventions";
+import { API_BASE_URL } from "./api";
+
+const INTERVENTIONS_BASE_URL = `${API_BASE_URL}/interventions`;
 
 export async function fetchInterventionCandidates(
   filters: {
@@ -32,7 +34,7 @@ export async function fetchInterventionCandidates(
   params.set("limit", (filters.limit ?? 50).toString());
   params.set("offset", (filters.offset ?? 0).toString());
 
-  const url = `${API_BASE_URL}/candidates?${params.toString()}`;
+  const url = `${INTERVENTIONS_BASE_URL}/candidates?${params.toString()}`;
   const response = await fetch(url, { signal });
   if (!response.ok) {
     throw new Error(`Failed to load intervention candidates: HTTP ${response.status}`);
@@ -44,7 +46,7 @@ export async function fetchCandidateDetail(
   candidateId: string,
   signal?: AbortSignal
 ): Promise<InterventionCandidateItem> {
-  const url = `${API_BASE_URL}/candidates/${encodeURIComponent(candidateId)}`;
+  const url = `${INTERVENTIONS_BASE_URL}/candidates/${encodeURIComponent(candidateId)}`;
   const response = await fetch(url, { signal });
   if (!response.ok) {
     throw new Error(`Failed to load candidate detail: HTTP ${response.status}`);
@@ -56,7 +58,7 @@ export async function runInterventionOptimization(
   payload: OptimizeRequestPayload,
   signal?: AbortSignal
 ): Promise<OptimizationResultResponse> {
-  const url = `${API_BASE_URL}/optimize`;
+  const url = `${INTERVENTIONS_BASE_URL}/optimize`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

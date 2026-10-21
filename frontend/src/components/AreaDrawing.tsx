@@ -2,12 +2,10 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import "@geoman-io/leaflet-geoman-free";
 import type { AnalysisResult } from "../types/analysis";
+import { API_BASE_URL } from "../services/api";
 
-const ZONAL_STATS_URL =
-  "http://127.0.0.1:8000/api/v1/analysis/zonal-stats";
-
-const AREA_NAME_URL =
-  "http://127.0.0.1:8000/api/v1/analysis/resolve-area-name-postgis";
+const ZONAL_STATS_URL = `${API_BASE_URL}/analysis/zonal-stats`;
+const AREA_NAME_URL = `${API_BASE_URL}/analysis/resolve-area-name-postgis`;
 
 type GeomanControls = {
   addControls: (options: {

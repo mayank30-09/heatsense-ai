@@ -19,6 +19,7 @@ import CellInspector from "./CellInspector";
 import HPILegend from "./HPILegend";
 import HPIViewportGrid from "./HPIViewportGrid";
 import LayerControls from "./LayerControls";
+import { API_BASE_URL } from "../../services/api";
 
 const SURAT_CENTER: [number, number] = [
   21.1702,
@@ -144,7 +145,7 @@ const handleAreaRemoved =
 
         {showRasterTile && (
           <TileLayer
-            url="http://127.0.0.1:8000/api/v1/rasters/lst/tiles/{z}/{x}/{y}.png"
+            url={`${API_BASE_URL}/rasters/lst/tiles/{z}/{x}/{y}.png`}
             opacity={0.65}
             attribution="HEATSENSE AI · Landsat LST"
           />

@@ -5,14 +5,16 @@ import type {
   HeatPrioritySummary,
 } from "../types/heatPriority";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/v1/heat-priority";
+import { API_BASE_URL } from "./api";
+
+const HEAT_PRIORITY_BASE_URL = `${API_BASE_URL}/heat-priority`;
 
 export async function fetchHeatPrioritySummary(
   scoringPeriod: string = "2026_summer_operational",
   specVersion: string = "v2.0",
   signal?: AbortSignal
 ): Promise<HeatPrioritySummary> {
-  const url = `${API_BASE_URL}/summary?scoring_period=${encodeURIComponent(
+  const url = `${HEAT_PRIORITY_BASE_URL}/summary?scoring_period=${encodeURIComponent(
     scoringPeriod
   )}&spec_version=${encodeURIComponent(specVersion)}`;
 
@@ -59,7 +61,7 @@ export async function fetchGridCells(
   params.set("limit", (filters.limit ?? 250).toString());
   params.set("offset", (filters.offset ?? 0).toString());
 
-  const response = await fetch(`${API_BASE_URL}/cells?${params.toString()}`, { signal });
+  const response = await fetch(`${HEAT_PRIORITY_BASE_URL}/cells?${params.toString()}`, { signal });
   if (!response.ok) {
     throw new Error(`Failed to load grid cells: HTTP ${response.status}`);
   }
@@ -72,7 +74,7 @@ export async function fetchGridCellDetail(
   specVersion: string = "v2.0",
   signal?: AbortSignal
 ): Promise<GridCellScoreItem> {
-  const url = `${API_BASE_URL}/cell/${encodeURIComponent(pixelId)}?scoring_period=${encodeURIComponent(
+  const url = `${HEAT_PRIORITY_BASE_URL}/cell/${encodeURIComponent(pixelId)}?scoring_period=${encodeURIComponent(
     scoringPeriod
   )}&spec_version=${encodeURIComponent(specVersion)}`;
 
