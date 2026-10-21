@@ -56,12 +56,17 @@ export async function fetchCandidateDetail(
 
 export async function runInterventionOptimization(
   payload: OptimizeRequestPayload,
+  token?: string,
   signal?: AbortSignal
 ): Promise<OptimizationResultResponse> {
   const url = `${INTERVENTIONS_BASE_URL}/optimize`;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
     signal,
   });
@@ -70,3 +75,6 @@ export async function runInterventionOptimization(
   }
   return response.json() as Promise<OptimizationResultResponse>;
 }
+
+export const optimizeInterventions = runInterventionOptimization;
+
