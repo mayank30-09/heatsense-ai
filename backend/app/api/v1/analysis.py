@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel, Field
 
 from ...raster.zonal import calculate_lst_zonal_statistics
@@ -109,10 +109,18 @@ def zonal_statistics(
             detail=f"Unable to calculate zonal statistics: {exc}",
         ) from exc
 
-@router.post("/resolve-area-name")
+@router.post(
+    "/resolve-area-name",
+    deprecated=True,
+    summary="Resolve locality name via Nominatim (Deprecated)",
+    description="Legacy Nominatim-based resolver. Deprecated in favor of /resolve-area-name-postgis.",
+)
 def resolve_area_name(
     request: ZonalStatisticsRequest,
+    response: Response,
 ) -> dict:
+    response.headers["Deprecation"] = "true"
+    response.headers["Link"] = '</api/v1/analysis/resolve-area-name-postgis>; rel="successor-version"'
     try:
         validate_analysis_geometry(request.geometry)
         return reverse_geocode_polygon(

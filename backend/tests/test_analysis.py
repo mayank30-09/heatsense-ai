@@ -58,3 +58,37 @@ def test_resolve_area_name_postgis_contains():
     assert data.get("resolved") is True
     assert data.get("name") == "Udhana"
     assert data.get("method") == "contains"
+
+
+def test_resolve_area_name_openapi_deprecated():
+    schema = app.openapi()
+    endpoint = schema["paths"]["/api/v1/analysis/resolve-area-name"]["post"]
+    assert endpoint.get("deprecated") is True
+
+
+def test_resolve_area_name_deprecation_headers(monkeypatch):
+    from backend.app.api.v1 import analysis
+
+    monkeypatch.setattr(
+        analysis,
+        "reverse_geocode_polygon",
+        lambda geom: {"resolved": True, "name": "Surat Old City", "method": "nominatim_mock"},
+    )
+
+    payload = {
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[
+                [72.82, 21.10],
+                [72.84, 21.10],
+                [72.84, 21.12],
+                [72.82, 21.12],
+                [72.82, 21.10],
+            ]],
+        }
+    }
+    response = client.post("/api/v1/analysis/resolve-area-name", json=payload)
+    assert response.status_code == 200
+    assert response.headers.get("Deprecation") == "true"
+    assert "resolve-area-name-postgis" in response.headers.get("Link", "")
+
