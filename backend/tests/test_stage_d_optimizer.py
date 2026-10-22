@@ -106,3 +106,20 @@ def test_optimizer_determinism_under_fixed_seed(sample_candidates):
     for s1, s2 in zip(run1, run2):
         assert s1.total_cost_inr == s2.total_cost_inr
         assert s1.total_expected_cooling_c == s2.total_expected_cooling_c
+
+
+def test_multi_tier_budget_scenarios(sample_candidates):
+    """Verify standard low, medium, and high budget scenarios scale properly."""
+    low_budget = 500000.0     # ₹5 Lakhs
+    med_budget = 2000000.0    # ₹20 Lakhs
+    high_budget = 5000000.0   # ₹50 Lakhs
+
+    sol_low = run_baseline_greedy_optimizer(sample_candidates, budget_inr=low_budget)
+    sol_med = run_baseline_greedy_optimizer(sample_candidates, budget_inr=med_budget)
+    sol_high = run_baseline_greedy_optimizer(sample_candidates, budget_inr=high_budget)
+
+    assert sol_low.total_cost_inr <= low_budget
+    assert sol_med.total_cost_inr <= med_budget
+    assert sol_high.total_cost_inr <= high_budget
+    assert sol_low.interventions_count <= sol_med.interventions_count <= sol_high.interventions_count
+    assert sol_low.portfolio_thermal_benefit_c_m2 <= sol_med.portfolio_thermal_benefit_c_m2 <= sol_high.portfolio_thermal_benefit_c_m2
