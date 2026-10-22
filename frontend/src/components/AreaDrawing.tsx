@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import "@geoman-io/leaflet-geoman-free";
 import type { AnalysisResult } from "../types/analysis";
+import type { SeasonName } from "../types/heatPriority";
 import { API_BASE_URL } from "../services/api";
 
 const ZONAL_STATS_URL = `${API_BASE_URL}/analysis/zonal-stats`;
@@ -32,6 +33,8 @@ type GeomanMap = ReturnType<typeof useMap> & {
 };
 
 type Props = {
+  season?: SeasonName;
+  year?: number;
   onAreaCreated: (
     areaId: string,
     name: string,
@@ -70,6 +73,8 @@ type AreaNameResult = {
 };
 
 export default function AreaDrawing({
+  season = "summer",
+  year = 2026,
   onAreaCreated,
   onAreaUpdated,
   onAreaRemoved,
@@ -79,6 +84,13 @@ export default function AreaDrawing({
 
   const initialized = useRef(false);
   const areaCounter = useRef(0);
+  const seasonRef = useRef(season);
+  const yearRef = useRef(year);
+
+  useEffect(() => {
+    seasonRef.current = season;
+    yearRef.current = year;
+  }, [season, year]);
 
   useEffect(() => {
     if (initialized.current) {
@@ -133,6 +145,8 @@ export default function AreaDrawing({
           },
           body: JSON.stringify({
             geometry,
+            season: seasonRef.current,
+            year: yearRef.current,
           }),
         });
 

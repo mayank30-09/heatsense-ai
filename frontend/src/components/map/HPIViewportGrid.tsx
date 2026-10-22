@@ -3,6 +3,7 @@ import { CircleMarker, Tooltip, useMap, useMapEvents } from "react-leaflet";
 import type {
   ActiveLayerMode,
   GridCellScoreItem,
+  SeasonName,
   ViewportBBox,
 } from "../../types/heatPriority";
 import { fetchGridCells } from "../../services/heatPriorityApi";
@@ -17,6 +18,8 @@ interface HPIViewportGridProps {
   selectedCell: GridCellScoreItem | null;
   onSelectCell: (cell: GridCellScoreItem) => void;
   minHpiFilter?: number;
+  season?: SeasonName;
+  year?: number;
 }
 
 const MIN_ZOOM_FOR_CELLS = 12;
@@ -26,6 +29,8 @@ export default function HPIViewportGrid({
   selectedCell,
   onSelectCell,
   minHpiFilter,
+  season = "summer",
+  year,
 }: HPIViewportGridProps) {
   const map = useMap();
   const [cells, setCells] = useState<GridCellScoreItem[]>([]);
@@ -36,6 +41,8 @@ export default function HPIViewportGrid({
 
   const debounceTimer = useRef<number | null>(null);
   const abortController = useRef<AbortController | null>(null);
+
+  const effectiveYear = year ?? (season === "post_monsoon" ? 2025 : 2026);
 
   const loadViewportCells = useCallback(() => {
     const currentZoom = map.getZoom();
@@ -77,6 +84,8 @@ export default function HPIViewportGrid({
             bbox: layerMode === "chronic" && currentZoom < MIN_ZOOM_FOR_CELLS ? undefined : bbox,
             is_chronic_hotspot: layerMode === "chronic" ? true : undefined,
             min_hpi: minHpiFilter,
+            season: season,
+            year: effectiveYear,
             limit: 350,
           },
           abortController.current.signal
@@ -94,7 +103,7 @@ export default function HPIViewportGrid({
         setIsLoading(false);
       }
     }, 250);
-  }, [map, layerMode, minHpiFilter]);
+  }, [map, layerMode, minHpiFilter, season, effectiveYear]);
 
   // Hook into Leaflet map events for bounded viewport loading
   useMapEvents({
@@ -220,13 +229,18 @@ export default function HPIViewportGrid({
               <div className="font-sans text-xs">
                 <div className="font-bold text-slate-900 font-mono">{cell.pixel_id}</div>
                 {layerMode === "hpi" && (
-                  <div>
-                    HPI: <strong>{cell.heat_priority_score !== null ? cell.heat_priority_score.toFixed(1) : "Unavailable"}</strong>
-                  </div>
+                  <>
+                    <div>
+                      HPI: <strong>{cell.heat_priority_score !== null ? cell.heat_priority_score.toFixed(1) : "Unavailable"}</strong>
+                    </div>
+                    <div className="text-[11px] text-slate-600">
+                      LST ({season}): <strong>{cell.observed_lst_c !== null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}</strong>
+                    </div>
+                  </>
                 )}
                 {layerMode === "lst" && (
                   <div>
-                    LST: <strong>{cell.observed_lst_c !== null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}</strong>
+                    LST ({season} {effectiveYear}): <strong>{cell.observed_lst_c !== null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}</strong>
                   </div>
                 )}
                 {layerMode === "confidence" && (

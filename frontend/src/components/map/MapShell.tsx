@@ -12,6 +12,7 @@ import type { AnalysisResult } from "../../types/analysis";
 import type {
   ActiveLayerMode,
   GridCellScoreItem,
+  SeasonName,
 } from "../../types/heatPriority";
 
 import AreaDrawing from "../AreaDrawing";
@@ -43,9 +44,21 @@ export function MapShell({
 }: MapShellProps) {
   const [activeTool, setActiveTool] = useState<"grid" | "drawing">(initialTool);
   const [layerMode, setLayerMode] = useState<ActiveLayerMode>(initialLayer);
+  const [season, setSeason] = useState<SeasonName>("summer");
+  const [year, setYear] = useState<number>(2026);
   const [showRasterTile, setShowRasterTile] = useState(true);
   const [minHpiFilter, setMinHpiFilter] = useState<number | undefined>(undefined);
   const [selectedCell, setSelectedCell] = useState<GridCellScoreItem | null>(null);
+
+  const effectiveYear = year ?? (season === "post_monsoon" ? 2025 : 2026);
+
+  const handleSeasonChange = useCallback((newSeason: SeasonName) => {
+    setSeason(newSeason);
+    // If user changes season and was on HPI layer, switch to LST mode so the seasonal temperature layer is immediately visual
+    if (layerMode === "hpi") {
+      setLayerMode("lst");
+    }
+  }, [layerMode]);
 
   const [
     analysisAreas,
@@ -145,7 +158,8 @@ const handleAreaRemoved =
 
         {showRasterTile && (
           <TileLayer
-            url={`${API_BASE_URL}/rasters/lst/tiles/{z}/{x}/{y}.png`}
+            key={`lst-raster-${season}-${effectiveYear}`}
+            url={`${API_BASE_URL}/rasters/lst/tiles/{z}/{x}/{y}.png?season=${season}&year=${effectiveYear}`}
             opacity={0.65}
             attribution="HEATSENSE AI · Landsat LST"
           />
@@ -156,9 +170,13 @@ const handleAreaRemoved =
           selectedCell={selectedCell}
           onSelectCell={(cell) => setSelectedCell(cell)}
           minHpiFilter={minHpiFilter}
+          season={season}
+          year={effectiveYear}
         />
 
         <AreaDrawing
+          season={season}
+          year={effectiveYear}
           onAreaCreated={
             handleAreaCreated
           }
@@ -173,8 +191,19 @@ const handleAreaRemoved =
           }
         />
 
-        <HPILegend layerMode={layerMode} />
+        <HPILegend layerMode={layerMode} season={season} year={effectiveYear} />
       </MapContainer>
+
+      {/* Monsoon Cloud Contamination Banner */}
+      {season === "monsoon" && (
+        <div className="pointer-events-none absolute top-16 left-1/2 z-[1000] -translate-x-1/2">
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1.5 shadow-md backdrop-blur">
+            <span className="text-amber-800 text-xs font-semibold">
+              ⚠️ Monsoon Layer: Low reliability due to cloud contamination (QA filtering in progress)
+            </span>
+          </div>
+        </div>
+      )}
 
       <LayerControls
         layerMode={layerMode}
@@ -183,6 +212,8 @@ const handleAreaRemoved =
         onToggleRasterTile={() => setShowRasterTile((prev) => !prev)}
         minHpiFilter={minHpiFilter}
         onToggleMinHpi={() => setMinHpiFilter((prev) => (prev === undefined ? 50 : undefined))}
+        season={season}
+        onSeasonChange={handleSeasonChange}
         activeTool={activeTool}
         onSelectTool={setActiveTool}
       />
@@ -270,14 +301,44 @@ function AnalysisAreaCard({
         </div>
       </div>
 
-      {result.status === "no_data" ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
-          No valid Landsat LST data
-          available for this selected
-          area.
+      {result.status === "outside_study_area" ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+          <div className="font-bold">Outside Study Area</div>
+          Selected area lies completely outside the official 461.63 km² SMC study boundary.
+        </div>
+      ) : result.status === "no_valid_observations" || result.status === "no_data" ? (
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          <div className="font-bold">No Valid Observations</div>
+          No cloud-free Landsat thermal pixels available in this area for {result.season ? result.season.replace("_", " ") : "selected season"}.
         </div>
       ) : (
         <>
+          {/* Active Season / Source Badge */}
+          <div className="mb-2 flex items-center justify-between">
+            <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-900">
+              {result.season ? result.season.replace("_", " ") : "Season"} {result.effective_year ?? ""}
+            </span>
+            {result.source_file && (
+              <span className="max-w-[170px] truncate font-mono text-[9px] text-slate-400" title={result.source_file}>
+                {result.source_file}
+              </span>
+            )}
+          </div>
+
+          {/* Partially Outside SMC Warning */}
+          {result.status === "partially_outside" && (
+            <div className="mb-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[10.5px] leading-snug text-amber-900">
+              ⚠️ Partially outside SMC ({((result.inside_smc_fraction ?? 1) * 100).toFixed(0)}% inside boundary). Statistics reflect interior pixels only.
+            </div>
+          )}
+
+          {/* Water Body Warning */}
+          {result.water_warning && (
+            <div className="mb-2 rounded border border-blue-200 bg-blue-50 px-2 py-1.5 text-[10.5px] leading-snug text-blue-900">
+              🌊 Open water detected ({((result.ndwi_water_fraction ?? 0) * 100).toFixed(0)}% NDWI &gt; 0.05). LST reflects evaporative surface cooling rather than land heat risk.
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-2">
             <Metric
               label="Area"
@@ -287,8 +348,7 @@ function AnalysisAreaCard({
             <Metric
               label="Coverage"
               value={
-                result.data_coverage_percentage !==
-                undefined
+                result.data_coverage_percentage !== undefined
                   ? `${result.data_coverage_percentage.toFixed(1)}%`
                   : "N/A"
               }
@@ -309,45 +369,86 @@ function AnalysisAreaCard({
           </div>
 
           {result.statistics && (
-            <>
-              <div className="mt-3 border-t border-slate-100 pt-3">
-                <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-                  LST Statistics
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <Metric
-                    label="Mean"
-                    value={`${result.statistics.mean_c.toFixed(2)}°C`}
-                  />
-
-                  <Metric
-                    label="Median"
-                    value={`${result.statistics.median_c.toFixed(2)}°C`}
-                  />
-
-                  <Metric
-                    label="Minimum"
-                    value={`${result.statistics.min_c.toFixed(2)}°C`}
-                  />
-
-                  <Metric
-                    label="Maximum"
-                    value={`${result.statistics.max_c.toFixed(2)}°C`}
-                  />
-
-                  <Metric
-                    label="P90"
-                    value={`${result.statistics.p90_c.toFixed(2)}°C`}
-                  />
-
-                  <Metric
-                    label="Std. deviation"
-                    value={`${result.statistics.std_c.toFixed(2)}°C`}
-                  />
-                </div>
+            <div className="mt-3 border-t border-slate-100 pt-3">
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                LST Statistics ({result.season ? result.season.replace("_", " ") : "Selected"})
               </div>
-            </>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Metric
+                  label="Mean"
+                  value={`${result.statistics.mean_c.toFixed(2)}°C`}
+                />
+
+                <Metric
+                  label="Median"
+                  value={`${result.statistics.median_c.toFixed(2)}°C`}
+                />
+
+                <Metric
+                  label="Minimum"
+                  value={`${result.statistics.min_c.toFixed(2)}°C`}
+                />
+
+                <Metric
+                  label="Maximum"
+                  value={`${result.statistics.max_c.toFixed(2)}°C`}
+                />
+
+                <Metric
+                  label="P90"
+                  value={`${result.statistics.p90_c.toFixed(2)}°C`}
+                />
+
+                <Metric
+                  label="Std. deviation"
+                  value={`${result.statistics.std_c.toFixed(2)}°C`}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Multi-Season Comparison Table */}
+          {result.seasons_table && result.seasons_table.length > 0 && (
+            <div className="mt-3 border-t border-slate-100 pt-3">
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                Multi-Season Comparison
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[11px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500">
+                      <th className="pb-1 font-medium">Season</th>
+                      <th className="pb-1 font-medium">Year</th>
+                      <th className="pb-1 text-right font-medium">Mean</th>
+                      <th className="pb-1 text-right font-medium">Max</th>
+                      <th className="pb-1 text-right font-medium">Cover</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {result.seasons_table.map((row) => (
+                      <tr
+                        key={`${row.season}-${row.year}`}
+                        className={row.season === result.season ? "bg-amber-50/70 font-semibold" : ""}
+                      >
+                        <td className="py-1 capitalize">{row.season.replace("_", " ")}</td>
+                        <td className="py-1 text-slate-500">{row.effective_year}</td>
+                        <td className="py-1 text-right text-blue-700">
+                          {row.mean_c !== null ? `${row.mean_c.toFixed(1)}°C` : "N/A"}
+                        </td>
+                        <td className="py-1 text-right text-red-700">
+                          {row.max_c !== null ? `${row.max_c.toFixed(1)}°C` : "N/A"}
+                        </td>
+                        <td className="py-1 text-right text-slate-500">
+                          {row.data_coverage_percentage.toFixed(0)}%
+                          {row.is_partial && <span className="ml-0.5 text-amber-600" title="Partial coverage">⚠️</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
 
           {result.geometry && (
@@ -360,23 +461,14 @@ function AnalysisAreaCard({
                 <div className="flex justify-between">
                   <span>Perimeter</span>
                   <span className="font-medium text-slate-900">
-                    {result.geometry.perimeter_km.toFixed(
-                      2
-                    )}{" "}
-                    km
+                    {result.geometry.perimeter_km.toFixed(2)} km
                   </span>
                 </div>
 
                 <div className="flex justify-between">
                   <span>Centroid</span>
                   <span className="font-medium text-slate-900">
-                    {result.geometry.centroid.latitude.toFixed(
-                      5
-                    )}
-                    ,{" "}
-                    {result.geometry.centroid.longitude.toFixed(
-                      5
-                    )}
+                    {result.geometry.centroid.latitude.toFixed(5)}, {result.geometry.centroid.longitude.toFixed(5)}
                   </span>
                 </div>
 
@@ -391,10 +483,7 @@ function AnalysisAreaCard({
           )}
 
           <div className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-500">
-            Land Surface Temperature derived
-            from Landsat thermal observations.
-            This represents surface temperature,
-            not air temperature.
+            Landsat radiant skin temperature (T<sub>skin</sub>) at ~10:30 AM IST, distinct from ambient 2 m air temperature (T<sub>air</sub>).
           </div>
         </>
       )}

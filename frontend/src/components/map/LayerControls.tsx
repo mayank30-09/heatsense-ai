@@ -1,4 +1,4 @@
-import type { ActiveLayerMode } from "../../types/heatPriority";
+import type { ActiveLayerMode, SeasonName } from "../../types/heatPriority";
 
 interface LayerControlsProps {
   layerMode: ActiveLayerMode;
@@ -7,6 +7,8 @@ interface LayerControlsProps {
   onToggleRasterTile: () => void;
   minHpiFilter: number | undefined;
   onToggleMinHpi: () => void;
+  season?: SeasonName;
+  onSeasonChange?: (season: SeasonName) => void;
   activeTool?: "grid" | "drawing";
   onSelectTool?: (tool: "grid" | "drawing") => void;
 }
@@ -18,6 +20,8 @@ export default function LayerControls({
   onToggleRasterTile,
   minHpiFilter,
   onToggleMinHpi,
+  season = "summer",
+  onSeasonChange,
   activeTool = "grid",
   onSelectTool,
 }: LayerControlsProps) {
@@ -53,7 +57,7 @@ export default function LayerControls({
       </div>
 
       {/* Layer Options / Filter Bar */}
-      <div className="pointer-events-auto flex items-center gap-2">
+      <div className="pointer-events-auto flex items-center gap-2 flex-wrap">
         <button
           type="button"
           onClick={onToggleRasterTile}
@@ -79,6 +83,57 @@ export default function LayerControls({
           <span>🎯</span>
           <span>{minHpiFilter !== undefined ? "HPI ≥ 50 Active" : "Filter: HPI ≥ 50"}</span>
         </button>
+
+        {onSeasonChange && (
+          <div className="flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm">
+            <button
+              type="button"
+              onClick={() => onSeasonChange("summer")}
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
+                season === "summer"
+                  ? "bg-amber-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              ☀️ Summer
+            </button>
+            <button
+              type="button"
+              onClick={() => onSeasonChange("winter")}
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
+                season === "winter"
+                  ? "bg-sky-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              ❄️ Winter
+            </button>
+            <button
+              type="button"
+              onClick={() => onSeasonChange("post_monsoon")}
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
+                season === "post_monsoon"
+                  ? "bg-orange-700 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              🍂 Post-Monsoon
+            </button>
+            <button
+              type="button"
+              onClick={() => onSeasonChange("monsoon")}
+              title="Low reliability: high cloud contamination risk"
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all flex items-center gap-1 ${
+                season === "monsoon"
+                  ? "bg-teal-700 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <span>🌧️ Monsoon</span>
+              <span className="rounded bg-amber-500/80 px-1 py-0.2 text-[9px] font-bold text-white">⚠️</span>
+            </button>
+          </div>
+        )}
 
         {onSelectTool && (
           <div className="flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm">

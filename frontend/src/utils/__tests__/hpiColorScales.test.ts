@@ -47,24 +47,21 @@ describe("hpiColorScales", () => {
       expect(getLSTColor(NaN)).toBe("#94a3b8");
     });
 
-    it("returns thermal color gradient correctly across 28°C to 48°C", () => {
-      // Extreme heat >= 46°C
-      expect(getLSTColor(47)).toBe("#7f1d1d");
+    it("returns thermal color gradient correctly across standardized 20°C to 60°C scale", () => {
+      // Deep Crimson >= 55°C
+      expect(getLSTColor(56)).toBe("#7f1d1d");
 
-      // Very Hot >= 43°C
-      expect(getLSTColor(44)).toBe("#b91c1c");
+      // Burnt Orange / Red >= 45°C
+      expect(getLSTColor(47)).toBe("#ea580c");
 
-      // Hot >= 40°C
-      expect(getLSTColor(41)).toBe("#c2410c");
+      // Yellow / Amber >= 35°C
+      expect(getLSTColor(38)).toBe("#f59e0b");
 
-      // Warm >= 34°C
-      expect(getLSTColor(35)).toBe("#f59e0b");
+      // Cyan / Emerald >= 25°C
+      expect(getLSTColor(28)).toBe("#10b981");
 
-      // Moderate >= 30°C
-      expect(getLSTColor(31)).toBe("#eab308");
-
-      // Coolest < 30°C
-      expect(getLSTColor(28)).toBe("#3b82f6");
+      // Deep Blue < 25°C
+      expect(getLSTColor(22)).toBe("#3b82f6");
     });
   });
 
