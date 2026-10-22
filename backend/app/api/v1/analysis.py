@@ -4,6 +4,7 @@ import math
 from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel, Field
 
+from ...raster.catalog import Season
 from ...raster.zonal import calculate_lst_zonal_statistics
 from ...geocoding.nominatim import reverse_geocode_polygon
 from ...geocoding.postgis_locality import resolve_polygon_locality
@@ -78,6 +79,14 @@ class ZonalStatisticsRequest(BaseModel):
         ...,
         description="GeoJSON Polygon geometry in EPSG:4326",
     )
+    season: Season = Field(
+        default=Season.summer,
+        description="Analysis season (summer, winter, monsoon, post_monsoon)",
+    )
+    year: int | None = Field(
+        default=None,
+        description="Observation year (defaults to authoritative effective year)",
+    )
 
 
 @router.post("/zonal-stats")
@@ -88,7 +97,9 @@ def zonal_statistics(
     try:
         validate_analysis_geometry(request.geometry)
         return calculate_lst_zonal_statistics(
-            request.geometry
+            request.geometry,
+            season=request.season,
+            year=request.year,
         )
 
     except ValueError as exc:
