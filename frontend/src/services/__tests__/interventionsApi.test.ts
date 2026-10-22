@@ -45,6 +45,45 @@ describe("interventionsApi", () => {
       expect(url).toContain("limit=10");
       expect(result).toEqual(mockResponse);
     });
+
+    it("fetches candidates with feasibility_status and offset filters", async () => {
+      const mockResponse = {
+        total_count: 5,
+        limit: 25,
+        offset: 10,
+        items: [],
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      });
+
+      const result = await fetchInterventionCandidates({
+        feasibility_status: "FEASIBLE",
+        limit: 25,
+        offset: 10,
+      });
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("feasibility_status=FEASIBLE");
+      expect(url).toContain("limit=25");
+      expect(url).toContain("offset=10");
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("throws error when candidate listing request fails", async () => {
+      (fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      await expect(fetchInterventionCandidates()).rejects.toThrow(
+        "Failed to load intervention candidates: HTTP 500"
+      );
+    });
   });
 
   describe("fetchCandidateDetail", () => {
@@ -66,6 +105,17 @@ describe("interventionsApi", () => {
       const [url] = (fetch as any).mock.calls[0];
       expect(url).toContain("/api/v1/interventions/candidates/SURAT_ROOF_001");
       expect(result).toEqual(mockCandidate);
+    });
+
+    it("throws error when candidate detail fails", async () => {
+      (fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      });
+
+      await expect(fetchCandidateDetail("NON_EXISTENT_ID")).rejects.toThrow(
+        "Failed to load candidate detail: HTTP 404"
+      );
     });
   });
 

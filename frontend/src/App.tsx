@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import HPIDashboardView from "./components/dashboard/HPIDashboardView";
+import InterventionExplorer from "./components/interventions/InterventionExplorer";
 import { MapShell } from "./components/map/MapShell";
 import { getHealth, type HealthResponse } from "./services/api";
 import "./styles.css";
@@ -72,7 +73,8 @@ export default function App() {
               const isEnabled =
                 view === "Dashboard" ||
                 view === "Heat Map" ||
-                view === "Area Analysis";
+                view === "Area Analysis" ||
+                view === "Intervention Explorer";
               const isActive = activeView === view;
 
               return (
@@ -95,9 +97,9 @@ export default function App() {
           </nav>
 
           <div className="scope-note">
-            <div className="font-semibold text-slate-700">Stage C Verified</div>
+            <div className="font-semibold text-slate-700">Stage C & D Verified</div>
             <p className="mt-1 text-slate-500">
-              Authoritative 100m analytical grid, multi-temporal persistence (2021–2026), and Landsat thermal observations for SMC Surat.
+              Authoritative 100m analytical grid, multi-temporal persistence (2021–2026), and physics-informed cooling recommendations for SMC Surat.
             </p>
           </div>
         </aside>
@@ -148,6 +150,24 @@ export default function App() {
               </div>
 
               <MapShell initialTool="drawing" />
+            </>
+          )}
+
+          {activeView === "Intervention Explorer" && (
+            <>
+              <div className="workspace-heading">
+                <div>
+                  <p className="eyebrow">STAGE D PRESCRIPTIVE CATALOG</p>
+                  <h2>Intervention Candidate Explorer</h2>
+                </div>
+                <p className="muted">
+                  Physics-calibrated cooling interventions for Surat Municipal Corporation
+                </p>
+              </div>
+
+              <InterventionExplorer
+                onSwitchToMap={() => setActiveView("Heat Map")}
+              />
             </>
           )}
 
