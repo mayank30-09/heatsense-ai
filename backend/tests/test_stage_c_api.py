@@ -319,3 +319,20 @@ def test_heat_priority_lst_stats_missing_year_404() -> None:
     assert resp.status_code == 404
     assert "No LST observation records found" in resp.json()["detail"]
 
+
+def test_heat_priority_model_validation_endpoint() -> None:
+    """Test retrieving frozen ML model validation summary and quality control records."""
+    resp = client.get("/api/v1/heat-priority/model-validation")
+    assert resp.status_code == 200, resp.text
+    data = json.loads(resp.text)
+    assert "qc_summary" in data
+    assert "model_metadata" in data
+    qc = data["qc_summary"]
+    assert qc["status"] == "PASS"
+    assert qc["holdout_evaluation"]["test_rows"] == 203758
+    assert qc["holdout_evaluation"]["r2"] > 0.89
+    assert qc["holdout_evaluation"]["mae"] < 1.35
+    assert "spatial_split_integrity" in qc
+    assert qc["spatial_split_integrity"]["disjointness_verified"] is True
+
+

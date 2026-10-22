@@ -3,6 +3,7 @@ import {
   fetchGridCellDetail,
   fetchGridCells,
   fetchHeatPrioritySummary,
+  fetchModelValidation,
 } from "../heatPriorityApi";
 
 describe("heatPriorityApi", () => {
@@ -113,4 +114,49 @@ describe("heatPriorityApi", () => {
       );
     });
   });
+
+  describe("fetchModelValidation", () => {
+    it("fetches model validation and qc summary successfully", async () => {
+      const mockValidation = {
+        qc_summary: {
+          status: "PASS",
+          holdout_evaluation: {
+            test_rows: 203758,
+            mae: 1.27,
+            rmse: 1.76,
+            r2: 0.9006,
+          },
+        },
+        model_metadata: {
+          model_id: "surat_operational_rf_v2",
+        },
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockValidation,
+      });
+
+      const result = await fetchModelValidation();
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const callUrl = (fetch as any).mock.calls[0][0];
+      expect(callUrl).toContain("/api/v1/heat-priority/model-validation");
+      expect(result.qc_summary.status).toBe("PASS");
+      expect(result.qc_summary.holdout_evaluation.test_rows).toBe(203758);
+    });
+
+    it("throws when server returns error response", async () => {
+      (fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      await expect(fetchModelValidation()).rejects.toThrow(
+        "Failed to load model validation metadata: HTTP 500"
+      );
+    });
+  });
 });
+

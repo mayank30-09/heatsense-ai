@@ -79,3 +79,63 @@ export interface LSTStats {
   is_partial: boolean;
 }
 
+export interface ModelValidationSummary {
+  qc_summary: {
+    status: string;
+    dataset_integrity: {
+      dataset_path: string;
+      row_count: number;
+      spatial_blocks: number;
+      target: string;
+      policy: string;
+    };
+    spatial_split_integrity: {
+      total_blocks: number;
+      development_blocks: number;
+      test_blocks: number;
+      test_ratio: number;
+      disjointness_verified: boolean;
+      coverage_verified: boolean;
+      deterministic: boolean;
+    };
+    leakage_controls: Record<string, boolean>;
+    feature_schema: {
+      target: string;
+      features: string[];
+      coordinates_excluded: boolean;
+    };
+    holdout_evaluation: {
+      evaluation_count: number;
+      test_blocks: number;
+      test_rows: number;
+      mae: number;
+      rmse: number;
+      r2: number;
+      inference_latency_seconds: number;
+    };
+    seasonal_performance: Record<
+      string,
+      { n: number; mae: number; rmse: number; r2: number; bias: number }
+    >;
+    hotspot_performance: Record<
+      string,
+      { n: number; mae: number; rmse: number; r2: number; bias: number }
+    >;
+    residual_diagnostics: {
+      cold_bias_in_chronic_hotspots: number;
+      spatial_clustering_of_residuals: string;
+      primary_evidence_retained: string;
+    };
+    known_limitations: string[];
+  };
+  model_metadata: {
+    model_id: string;
+    git_commit?: string;
+    timestamp_utc?: string;
+    best_development_cv_rmse?: number;
+    best_parameters?: Record<string, any>;
+    environment?: Record<string, string>;
+  };
+}
+
+

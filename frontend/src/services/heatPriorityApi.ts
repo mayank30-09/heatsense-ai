@@ -4,6 +4,7 @@ import type {
   GridCellsPaginatedResponse,
   HeatPrioritySummary,
   LSTStats,
+  ModelValidationSummary,
   SeasonName,
 } from "../types/heatPriority";
 
@@ -115,3 +116,13 @@ export async function fetchLSTStats(
   }
   return response.json() as Promise<LSTStats>;
 }
+
+export async function fetchModelValidation(signal?: AbortSignal): Promise<ModelValidationSummary> {
+  const url = `${HEAT_PRIORITY_BASE_URL}/model-validation`;
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(`Failed to load model validation metadata: HTTP ${response.status}`);
+  }
+  return response.json() as Promise<ModelValidationSummary>;
+}
+

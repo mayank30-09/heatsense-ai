@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import HPIDashboardView from "./components/dashboard/HPIDashboardView";
+import ValidationTrust from "./components/dashboard/ValidationTrust";
 import InterventionExplorer from "./components/interventions/InterventionExplorer";
 import Optimization from "./components/interventions/Optimization";
 import ScenarioLab from "./components/interventions/ScenarioLab";
 import { MapShell } from "./components/map/MapShell";
 import { getHealth, type HealthResponse } from "./services/api";
 import "./styles.css";
+
 
 const views = [
   "Dashboard",
@@ -73,13 +75,7 @@ export default function App() {
 
           <nav>
             {views.map((view) => {
-              const isEnabled =
-                view === "Dashboard" ||
-                view === "Heat Map" ||
-                view === "Area Analysis" ||
-                view === "Intervention Explorer" ||
-                view === "Scenario Lab" ||
-                view === "Optimization";
+              const isEnabled = true;
               const isActive = activeView === view;
 
               return (
@@ -87,14 +83,10 @@ export default function App() {
                   className={isActive ? "nav-item active" : "nav-item"}
                   key={view}
                   type="button"
-                  disabled={!isEnabled}
-                  onClick={() => isEnabled && setActiveView(view)}
+                  onClick={() => setActiveView(view)}
                 >
                   <div className="flex items-center justify-between">
                     <span>{view}</span>
-                    {!isEnabled && (
-                      <span className="text-[10px] text-slate-400 font-mono">Stage D</span>
-                    )}
                   </div>
                 </button>
               );
@@ -212,6 +204,24 @@ export default function App() {
 
               <Optimization
                 initialBudgetInr={scenarioBudget}
+                onSwitchToMap={() => setActiveView("Heat Map")}
+              />
+            </>
+          )}
+
+          {activeView === "Validation / Trust" && (
+            <>
+              <div className="workspace-heading">
+                <div>
+                  <p className="eyebrow">STAGE C & D TRANSPARENCY</p>
+                  <h2>Model Validation & Trust Center</h2>
+                </div>
+                <p className="muted">
+                  Spatial cross-validation, independent holdouts, error diagnostics & sensor provenance
+                </p>
+              </div>
+
+              <ValidationTrust
                 onSwitchToMap={() => setActiveView("Heat Map")}
               />
             </>

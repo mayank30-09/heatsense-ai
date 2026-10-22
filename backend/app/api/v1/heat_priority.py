@@ -7,7 +7,9 @@ confidence ratings, and chronic hotspot status.
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path as FilePath
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel
@@ -22,10 +24,13 @@ from backend.app.db.models.stage_c import (
 from backend.app.db.session import get_db
 from backend.app.raster.catalog import Season
 
+PROJECT_ROOT = FilePath(__file__).resolve().parents[4]
+
 router = APIRouter(
     prefix="/heat-priority",
     tags=["heat-priority"],
 )
+
 
 
 def safe_float(val: Any, decimals: int | None = None) -> float | None:
@@ -445,3 +450,29 @@ def get_grid_cell_detail(
         observed_lst_c=safe_float(r.observed_lst_c, 2),
         optical_imputation_flag=r.optical_imputation_flag,
     )
+
+
+@router.get("/model-validation", response_model=dict[str, Any])
+def get_model_validation_summary() -> dict[str, Any]:
+    """Retrieve frozen ML model quality control, spatial holdout benchmarks, and sensor provenance."""
+    qc_path = PROJECT_ROOT / "artifacts" / "ml_freeze" / "qc_summary.json"
+    meta_path = PROJECT_ROOT / "artifacts" / "ml_freeze" / "model_metadata.json"
+    if not qc_path.exists():
+        raise HTTPException(
+            status_code=500,
+            detail="Model validation artifact qc_summary.json not found.",
+        )
+    with open(qc_path, encoding="utf-8") as f:
+        qc_data = json.load(f)
+    model_meta: dict[str, Any] = {}
+    if meta_path.exists():
+        try:
+            with open(meta_path, encoding="utf-8") as f:
+                model_meta = json.load(f)
+        except Exception:
+            pass
+    return {
+        "qc_summary": qc_data,
+        "model_metadata": model_meta,
+    }
+
