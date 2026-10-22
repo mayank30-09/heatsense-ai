@@ -257,3 +257,65 @@ def test_heat_priority_cells_bbox_viewport_filtering() -> None:
         assert "observed_lst_c" in item
         assert "optical_imputation_flag" in item
 
+
+def test_heat_priority_lst_stats_default_summer() -> None:
+    """Test retrieving authoritative summer 2026 LST stats across SMC grid."""
+    resp = client.get("/api/v1/heat-priority/lst-stats")
+    assert resp.status_code == 200, resp.text
+    data = json.loads(resp.text)
+
+    assert data["season"] == "summer"
+    assert data["year"] == 2026
+    assert data["effective_year"] == 2026
+    assert data["n_cells"] == 49747
+    assert data["n_valid"] == 49747
+    assert data["is_partial"] is False
+    assert data["source"] == "stage_c_grid_observations"
+    assert round(data["mean_c"], 2) == 43.79
+    assert round(data["min_c"], 2) == 29.64
+    assert round(data["max_c"], 2) == 58.65
+    assert round(data["p90_c"], 2) == 47.40
+
+
+@pytest.mark.parametrize(
+    "season_param,req_year,expected_effective_year,expected_valid,expected_is_partial,expected_mean",
+    [
+        ("winter", 2026, 2026, 49747, False, 31.30),
+        ("post_monsoon", 2026, 2025, 49747, False, 33.55),
+        ("post_monsoon", 2025, 2025, 49747, False, 33.55),
+        ("monsoon", 2026, 2026, 36168, True, 42.98),
+    ],
+)
+def test_heat_priority_lst_stats_all_seasons(
+    season_param: str,
+    req_year: int,
+    expected_effective_year: int,
+    expected_valid: int,
+    expected_is_partial: bool,
+    expected_mean: float,
+) -> None:
+    """Test retrieving LST stats for all valid operational seasons."""
+    resp = client.get(f"/api/v1/heat-priority/lst-stats?season={season_param}&year={req_year}")
+    assert resp.status_code == 200, resp.text
+    data = json.loads(resp.text)
+
+    assert data["season"] == season_param
+    assert data["effective_year"] == expected_effective_year
+    assert data["n_cells"] == 49747
+    assert data["n_valid"] == expected_valid
+    assert data["is_partial"] is expected_is_partial
+    assert round(data["mean_c"], 2) == expected_mean
+
+
+def test_heat_priority_lst_stats_invalid_season_422() -> None:
+    """Test invalid season string rejected with 422 Unprocessable Entity."""
+    resp = client.get("/api/v1/heat-priority/lst-stats?season=autumn")
+    assert resp.status_code == 422
+
+
+def test_heat_priority_lst_stats_missing_year_404() -> None:
+    """Test requesting a year without observations returns 404."""
+    resp = client.get("/api/v1/heat-priority/lst-stats?season=summer&year=2021")
+    assert resp.status_code == 404
+    assert "No LST observation records found" in resp.json()["detail"]
+

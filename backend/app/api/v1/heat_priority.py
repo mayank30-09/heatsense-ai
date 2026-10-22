@@ -20,6 +20,7 @@ from backend.app.db.models.stage_c import (
     StageCHeatPriorityScore,
 )
 from backend.app.db.session import get_db
+from backend.app.raster.catalog import Season
 
 router = APIRouter(
     prefix="/heat-priority",
@@ -51,6 +52,20 @@ class HeatPrioritySummaryResponse(BaseModel):
     chronic_hotspots_count: int
     confidence_tier_counts: dict[str, int]
     persistence_tier_counts: dict[str, int]
+
+
+class LSTStatsResponse(BaseModel):
+    season: Season
+    year: int
+    effective_year: int
+    n_cells: int
+    n_valid: int
+    mean_c: float | None = None
+    min_c: float | None = None
+    max_c: float | None = None
+    p90_c: float | None = None
+    source: str = "stage_c_grid_observations"
+    is_partial: bool = False
 
 
 class GridCellScoreItem(BaseModel):
@@ -145,10 +160,68 @@ def get_heat_priority_summary(
     )
 
 
+@router.get("/lst-stats", response_model=LSTStatsResponse)
+def get_heat_priority_lst_stats(
+    season: Season = Query(Season.summer, description="Observation season (summer, winter, post_monsoon, monsoon)"),
+    year: int | None = Query(None, ge=2020, le=2030, description="Observation year (defaults to 2026, or 2025 for post_monsoon)"),
+    db: Session = Depends(get_db),
+) -> LSTStatsResponse:
+    """Retrieve dynamic aggregate LST statistics across the authoritative SMC grid domain.
+
+    Computes count, mean, min, max, and p90 from stage_c_grid_observations joined to stage_c_grid_cells.
+    """
+    total_cells = db.scalar(select(func.count(StageCGridCell.pixel_id))) or 49747
+
+    if season == Season.post_monsoon and (year is None or year == 2026):
+        effective_year = 2025
+        req_year = year or 2026
+    else:
+        effective_year = year or 2026
+        req_year = effective_year
+
+    q = (
+        select(
+            func.count(StageCGridObservation.observed_lst_c).label("n_valid"),
+            func.avg(StageCGridObservation.observed_lst_c).label("mean_c"),
+            func.min(StageCGridObservation.observed_lst_c).label("min_c"),
+            func.max(StageCGridObservation.observed_lst_c).label("max_c"),
+            func.percentile_cont(0.90).within_group(StageCGridObservation.observed_lst_c).label("p90_c"),
+        )
+        .join(StageCGridCell, StageCGridCell.pixel_id == StageCGridObservation.pixel_id)
+        .where(StageCGridObservation.season == season.value)
+        .where(StageCGridObservation.year == effective_year)
+    )
+    res = db.execute(q).one()
+
+    if not res or res.n_valid == 0:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No LST observation records found for season '{season.value}' and year {effective_year}.",
+        )
+
+    is_partial = bool(res.n_valid < total_cells)
+
+    return LSTStatsResponse(
+        season=season,
+        year=req_year,
+        effective_year=effective_year,
+        n_cells=total_cells,
+        n_valid=res.n_valid,
+        mean_c=safe_float(res.mean_c, 2),
+        min_c=safe_float(res.min_c, 2),
+        max_c=safe_float(res.max_c, 2),
+        p90_c=safe_float(res.p90_c, 2),
+        source="stage_c_grid_observations",
+        is_partial=is_partial,
+    )
+
+
 @router.get("/cells", response_model=GridCellsPaginatedResponse)
 def get_grid_cells(
     scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
     spec_version: str = Query("v2.0", description="Specification version"),
+    season: Season = Query(Season.summer, description="Observation season to join (summer, winter, post_monsoon, monsoon)"),
+    year: int = Query(2026, ge=2020, le=2030, description="Observation year to join"),
     min_hpi: float | None = Query(None, ge=0.0, le=100.0, description="Filter cells with HPI >= min_hpi"),
     is_chronic_hotspot: bool | None = Query(None, description="Filter by chronic hotspot flag"),
     confidence_tier: str | None = Query(
@@ -172,6 +245,7 @@ def get_grid_cells(
     db: Session = Depends(get_db),
 ) -> GridCellsPaginatedResponse:
     """Retrieve paginated grid cells with their HPI scores, observations, and spatial properties."""
+    effective_year = 2025 if season == Season.post_monsoon and year == 2026 else year
     query = (
         select(
             StageCGridCell.pixel_id,
@@ -202,8 +276,8 @@ def get_grid_cells(
         .outerjoin(
             StageCGridObservation,
             (StageCGridCell.pixel_id == StageCGridObservation.pixel_id)
-            & (StageCGridObservation.year == 2026)
-            & (StageCGridObservation.season == "summer"),
+            & (StageCGridObservation.year == effective_year)
+            & (StageCGridObservation.season == season.value),
         )
         .where(StageCHeatPriorityScore.scoring_period == scoring_period)
         .where(StageCHeatPriorityScore.spec_version == spec_version)
@@ -298,9 +372,12 @@ def get_grid_cell_detail(
     pixel_id: str = Path(..., min_length=1, max_length=16, description="Canonical grid cell identifier (e.g., R045_C067)"),
     scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
     spec_version: str = Query("v2.0", description="Specification version"),
+    season: Season = Query(Season.summer, description="Observation season to join"),
+    year: int = Query(2026, ge=2020, le=2030, description="Observation year to join"),
     db: Session = Depends(get_db),
 ) -> GridCellScoreItem:
     """Retrieve detailed Stage C HPI score and components for a specific grid cell."""
+    effective_year = 2025 if season == Season.post_monsoon and year == 2026 else year
     cell_query = (
         select(
             StageCGridCell.pixel_id,
@@ -333,8 +410,8 @@ def get_grid_cell_detail(
         .outerjoin(
             StageCGridObservation,
             (StageCGridCell.pixel_id == StageCGridObservation.pixel_id)
-            & (StageCGridObservation.year == 2026)
-            & (StageCGridObservation.season == "summer"),
+            & (StageCGridObservation.year == effective_year)
+            & (StageCGridObservation.season == season.value),
         )
         .where(StageCGridCell.pixel_id == pixel_id)
     )
