@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import HPIDashboardView from "./components/dashboard/HPIDashboardView";
 import InterventionExplorer from "./components/interventions/InterventionExplorer";
+import ScenarioLab from "./components/interventions/ScenarioLab";
 import { MapShell } from "./components/map/MapShell";
 import { getHealth, type HealthResponse } from "./services/api";
 import "./styles.css";
@@ -17,6 +18,7 @@ const views = [
 
 export default function App() {
   const [activeView, setActiveView] = useState("Dashboard");
+  const [scenarioBudget, setScenarioBudget] = useState<number | undefined>(undefined);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -74,7 +76,8 @@ export default function App() {
                 view === "Dashboard" ||
                 view === "Heat Map" ||
                 view === "Area Analysis" ||
-                view === "Intervention Explorer";
+                view === "Intervention Explorer" ||
+                view === "Scenario Lab";
               const isActive = activeView === view;
 
               return (
@@ -167,6 +170,28 @@ export default function App() {
 
               <InterventionExplorer
                 onSwitchToMap={() => setActiveView("Heat Map")}
+              />
+            </>
+          )}
+
+          {activeView === "Scenario Lab" && (
+            <>
+              <div className="workspace-heading">
+                <div>
+                  <p className="eyebrow">STAGE D SCENARIO PLANNING</p>
+                  <h2>Urban Heat Mitigation Scenario Lab</h2>
+                </div>
+                <p className="muted">
+                  Multi-tier capital budget benchmarks & custom portfolio simulator for SMC Surat
+                </p>
+              </div>
+
+              <ScenarioLab
+                onSwitchToMap={() => setActiveView("Heat Map")}
+                onSwitchToOptimization={(budget) => {
+                  setScenarioBudget(budget);
+                  setActiveView("Optimization");
+                }}
               />
             </>
           )}

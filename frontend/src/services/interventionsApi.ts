@@ -4,6 +4,7 @@ import type {
   InterventionType,
   OptimizationResultResponse,
   OptimizeRequestPayload,
+  PlanningScenario,
 } from "../types/interventions";
 
 import { API_BASE_URL } from "./api";
@@ -77,4 +78,13 @@ export async function runInterventionOptimization(
 }
 
 export const optimizeInterventions = runInterventionOptimization;
+
+export async function fetchScenarios(signal?: AbortSignal): Promise<PlanningScenario[]> {
+  const url = `${INTERVENTIONS_BASE_URL}/scenarios`;
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(`Failed to load planning scenarios: HTTP ${response.status}`);
+  }
+  return response.json() as Promise<PlanningScenario[]>;
+}
 

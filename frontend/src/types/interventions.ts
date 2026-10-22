@@ -78,3 +78,21 @@ export interface OptimizationResultResponse {
   solutions_count: number;
   solutions: ScenarioSolutionItem[];
 }
+
+export interface PlanningScenario {
+  scenario_name: string;
+  tier?: "low" | "medium" | "high";
+  budget_inr: number;
+  target_focus: string;
+  recommended_types: InterventionType[];
+  treated_cells?: number;
+  total_treated_m2?: number;
+  mean_dlst_treated?: [number, number, number];
+  peak_hotspot_dlst?: [number, number, number];
+  breakdown?: {
+    cool_roof_m2: number;
+    cool_paver_m2: number;
+    green_roof_m2: number;
+    trees_count: number;
+  };
+}

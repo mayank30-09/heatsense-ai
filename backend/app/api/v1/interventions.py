@@ -363,15 +363,55 @@ def list_available_scenarios():
     """List reference urban heat mitigation budget scenarios for Surat Municipal Corporation."""
     return [
         {
-            "scenario_name": "SMC Smart City Phase 1: High-Priority Hotspots",
-            "budget_inr": 25000000.0,  # 2.5 Crore INR
-            "target_focus": "Chronic hotspots and central commercial wards",
+            "scenario_name": "SMC Neighborhood Cool Corridors (Pilot Tier)",
+            "tier": "low",
+            "budget_inr": 5000000.0,  # 50 Lakhs INR
+            "target_focus": "Targeted pilot cooling for extreme chronic hotspots in vulnerable wards",
             "recommended_types": ["tree_canopy", "cool_roof"],
+            "treated_cells": 39,
+            "total_treated_m2": 36915.0,
+            "mean_dlst_treated": [-0.5, -0.73, -1.0],
+            "peak_hotspot_dlst": [-0.54, -0.78, -1.07],
+            "breakdown": {
+                "cool_roof_m2": 7500.0,
+                "cool_paver_m2": 0.0,
+                "green_roof_m2": 0.0,
+                "trees_count": 585,
+            },
+        },
+        {
+            "scenario_name": "SMC Smart City Phase 1: High-Priority Hotspots",
+            "tier": "medium",
+            "budget_inr": 25000000.0,  # 2.5 Crore INR
+            "target_focus": "Chronic hotspots and central commercial wards across core municipal zones",
+            "recommended_types": ["tree_canopy", "cool_roof", "cool_pavement"],
+            "treated_cells": 138,
+            "total_treated_m2": 152130.0,
+            "mean_dlst_treated": [-0.57, -0.83, -1.14],
+            "peak_hotspot_dlst": [-0.62, -0.9, -1.23],
+            "breakdown": {
+                "cool_roof_m2": 30240.0,
+                "cool_paver_m2": 10800.0,
+                "green_roof_m2": 0.0,
+                "trees_count": 2208,
+            },
         },
         {
             "scenario_name": "SMC Full Urban Heat Action Plan (UHAP 2026)",
+            "tier": "high",
             "budget_inr": 100000000.0,  # 10 Crore INR
             "target_focus": "Citywide comprehensive deployment across all 7 administrative zones",
             "recommended_types": ["tree_canopy", "cool_roof", "green_roof", "cool_pavement"],
+            "treated_cells": 371,
+            "total_treated_m2": 465355.0,
+            "mean_dlst_treated": [-0.64, -0.94, -1.29],
+            "peak_hotspot_dlst": [-0.76, -1.12, -1.53],
+            "breakdown": {
+                "cool_roof_m2": 86800.0,
+                "cool_paver_m2": 36000.0,
+                "green_roof_m2": 6800.0,
+                "trees_count": 6678,
+            },
         },
     ]
+

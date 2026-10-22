@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fetchCandidateDetail,
   fetchInterventionCandidates,
+  fetchScenarios,
   optimizeInterventions,
   runInterventionOptimization,
 } from "../interventionsApi";
@@ -209,4 +210,42 @@ describe("interventionsApi", () => {
       );
     });
   });
+
+  describe("fetchScenarios", () => {
+    it("fetches reference planning scenarios", async () => {
+      const mockScenarios = [
+        {
+          scenario_name: "SMC Neighborhood Cool Corridors",
+          budget_inr: 5000000,
+          target_focus: "Pilot cooling",
+          recommended_types: ["tree_canopy", "cool_roof"],
+        },
+      ];
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockScenarios,
+      });
+
+      const result = await fetchScenarios();
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/scenarios");
+      expect(result).toEqual(mockScenarios);
+    });
+
+    it("throws error when fetching scenarios fails", async () => {
+      (fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      await expect(fetchScenarios()).rejects.toThrow(
+        "Failed to load planning scenarios: HTTP 500"
+      );
+    });
+  });
 });
+
