@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import HPIDashboardView from "./components/dashboard/HPIDashboardView";
 import InterventionExplorer from "./components/interventions/InterventionExplorer";
+import Optimization from "./components/interventions/Optimization";
 import ScenarioLab from "./components/interventions/ScenarioLab";
 import { MapShell } from "./components/map/MapShell";
 import { getHealth, type HealthResponse } from "./services/api";
@@ -77,7 +78,8 @@ export default function App() {
                 view === "Heat Map" ||
                 view === "Area Analysis" ||
                 view === "Intervention Explorer" ||
-                view === "Scenario Lab";
+                view === "Scenario Lab" ||
+                view === "Optimization";
               const isActive = activeView === view;
 
               return (
@@ -192,6 +194,25 @@ export default function App() {
                   setScenarioBudget(budget);
                   setActiveView("Optimization");
                 }}
+              />
+            </>
+          )}
+
+          {activeView === "Optimization" && (
+            <>
+              <div className="workspace-heading">
+                <div>
+                  <p className="eyebrow">STAGE D CONSTRAINED OPTIMIZATION</p>
+                  <h2>Multi-Objective Cooling Optimization</h2>
+                </div>
+                <p className="muted">
+                  NSGA-II Pareto genetic algorithm & greedy knapsack budget allocation for SMC Surat
+                </p>
+              </div>
+
+              <Optimization
+                initialBudgetInr={scenarioBudget}
+                onSwitchToMap={() => setActiveView("Heat Map")}
               />
             </>
           )}

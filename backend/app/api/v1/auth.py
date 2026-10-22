@@ -101,3 +101,29 @@ def refresh_token(
         expires_in_minutes=settings.access_token_expire_minutes,
         user=current_user,
     )
+
+
+@router.post("/dev-token", response_model=TokenResponse)
+def get_development_token(role: str = "planner") -> TokenResponse:
+    """Issue a development JWT access token when running in non-production environments."""
+    if settings.app_env.lower() == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Development token generation is prohibited in production.",
+        )
+    username = "smc_admin" if role == "admin" else "planner_officer"
+    user = DEV_USERS_DB.get(username)
+    if not user:
+        raise HTTPException(status_code=404, detail="Default dev user not found.")
+    token = create_access_token(
+        subject=user.username,
+        role=user.role.value,
+        additional_claims={"email": user.email, "dept": user.department},
+    )
+    return TokenResponse(
+        access_token=token,
+        token_type="Bearer",
+        expires_in_minutes=settings.access_token_expire_minutes,
+        user=User(**user.model_dump()),
+    )
+
