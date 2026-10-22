@@ -21,14 +21,12 @@ export function getLSTColor(tempC: number | null): string {
   if (tempC === null || isNaN(tempC)) {
     return "#94a3b8";
   }
-  // Surat summer LST range: 28°C to 48°C+
-  if (tempC >= 46.0) return "#7f1d1d"; // Extreme heat: Dark Maroon
-  if (tempC >= 43.0) return "#b91c1c"; // Very Hot: Red
-  if (tempC >= 40.0) return "#c2410c"; // Hot: Burnt Orange
-  if (tempC >= 37.0) return "#ea580c"; // Orange
-  if (tempC >= 34.0) return "#f59e0b"; // Warm: Amber
-  if (tempC >= 30.0) return "#eab308"; // Moderate: Yellow
-  return "#3b82f6"; // Coolest: Blue
+  // Standardized 20°C - 60°C thermal scale
+  if (tempC >= 55.0) return "#7f1d1d"; // >= 55°C: Deep Crimson
+  if (tempC >= 45.0) return "#ea580c"; // 45°C - 55°C: Burnt Orange / Red
+  if (tempC >= 35.0) return "#f59e0b"; // 35°C - 45°C: Yellow / Amber
+  if (tempC >= 25.0) return "#10b981"; // 25°C - 35°C: Cyan / Emerald
+  return "#3b82f6"; // < 25°C: Deep Blue
 }
 
 export function getConfidenceColor(tier: string | null): string {

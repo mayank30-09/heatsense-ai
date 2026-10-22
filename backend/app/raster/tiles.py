@@ -7,37 +7,45 @@ from rio_tiler.errors import TileOutsideBounds
 from rio_tiler.io import COGReader
 from rio_tiler.utils import render
 
-
-COG_PATH = (
-    Path(__file__).resolve().parents[3]
-    / "data"
-    / "processed"
-    / "rasters"
-    / "surat_landsat_lst_first_scene_cog.tif"
-)
+from .catalog import Season, resolve_seasonal_cog
 
 LST_MIN_C = 20.0
-LST_MAX_C = 50.0
+LST_MAX_C = 60.0
+
+# Fixed 20°C - 60°C Thermal Color Palette:
+# 20°C: #3b82f6 (59, 130, 246)
+# 30°C: #10b981 (16, 185, 129)
+# 40°C: #f59e0b (245, 158, 11)
+# 50°C: #ea580c (234, 88, 12)
+# 60°C: #7f1d1d (127, 29, 29)
+_STOPS = np.array([0.0, 0.25, 0.5, 0.75, 1.0], dtype=np.float32)
+_R_POINTS = np.array([59, 16, 245, 234, 127], dtype=np.float32)
+_G_POINTS = np.array([130, 185, 158, 88, 29], dtype=np.float32)
+_B_POINTS = np.array([246, 129, 11, 12, 29], dtype=np.float32)
+
+_INDEX_256 = np.linspace(0.0, 1.0, 256, dtype=np.float32)
+LUT_R = np.interp(_INDEX_256, _STOPS, _R_POINTS).astype(np.uint8)
+LUT_G = np.interp(_INDEX_256, _STOPS, _G_POINTS).astype(np.uint8)
+LUT_B = np.interp(_INDEX_256, _STOPS, _B_POINTS).astype(np.uint8)
 
 
 def get_lst_tile(
     x: int,
     y: int,
     z: int,
+    season: Season | str = Season.summer,
+    year: int | None = None,
     tilesize: int = 256,
 ) -> bytes:
-
-    if not COG_PATH.exists():
-        raise FileNotFoundError(
-            f"LST COG not found: {COG_PATH}"
-        )
+    resolved = resolve_seasonal_cog(season=season, year=year)
 
     try:
-        with COGReader(str(COG_PATH)) as cog:
+        with COGReader(str(resolved.path)) as cog:
             image = cog.tile(
                 x,
                 y,
                 z,
+                indexes=1,
                 tilesize=tilesize,
             )
     except TileOutsideBounds:
@@ -51,17 +59,13 @@ def get_lst_tile(
         )
 
     data = image.data[0].astype(np.float32)
-
-    # Do not use image.mask directly.
-    # rio-tiler is returning an unusual float32 mask for this COG.
-    # Build the alpha mask from the actual NoData value instead.
     nodata = -9999.0
 
     valid = (
         np.isfinite(data)
         & (data != nodata)
-        & (data >= LST_MIN_C)
-        & (data <= LST_MAX_C)
+        & (data > 0.0)
+        & (data < 100.0)
     )
 
     normalized = np.zeros_like(
@@ -80,37 +84,19 @@ def get_lst_tile(
         1.0,
     )
 
-    values = (
-        normalized * 255.0
-    ).astype(np.uint8)
+    values = (normalized * 255.0).astype(np.uint8)
 
     rgba = np.zeros(
         (4, data.shape[0], data.shape[1]),
         dtype=np.uint8,
     )
 
-    # Blue → green → red style thermal gradient.
-    rgba[0] = np.clip(
-        values.astype(np.int16) * 2,
-        0,
-        255,
-    ).astype(np.uint8)
+    # Standardized 20°C - 60°C thermal LUT ramp
+    rgba[0] = LUT_R[values]
+    rgba[1] = LUT_G[values]
+    rgba[2] = LUT_B[values]
 
-    rgba[1] = np.clip(
-        255 - np.abs(
-            values.astype(np.int16) - 128
-        ) * 2,
-        0,
-        255,
-    ).astype(np.uint8)
-
-    rgba[2] = np.clip(
-        255 - values.astype(np.int16) * 2,
-        0,
-        255,
-    ).astype(np.uint8)
-
-    # Transparent where the LST pixel is invalid.
+    # Transparent where the LST pixel is invalid/unobserved
     rgba[3] = np.where(
         valid,
         255,

@@ -50,6 +50,8 @@ export interface ViewportBBox {
 
 export type ActiveLayerMode = "hpi" | "lst" | "confidence" | "chronic";
 
+export type SeasonName = "summer" | "winter" | "monsoon" | "post_monsoon";
+
 export interface CellQueryFilters {
   bbox?: ViewportBBox;
   min_hpi?: number;
@@ -57,6 +59,23 @@ export interface CellQueryFilters {
   confidence_tier?: string;
   persistence_tier?: string;
   locality?: string;
+  season?: SeasonName;
+  year?: number;
   limit?: number;
   offset?: number;
 }
+
+export interface LSTStats {
+  season: SeasonName;
+  year: number;
+  effective_year: number;
+  n_cells: number;
+  n_valid: number;
+  mean_c: number | null;
+  min_c: number | null;
+  max_c: number | null;
+  p90_c: number | null;
+  source: string;
+  is_partial: boolean;
+}
+

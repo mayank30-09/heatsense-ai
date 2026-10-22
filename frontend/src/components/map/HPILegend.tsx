@@ -1,19 +1,149 @@
-import type { ActiveLayerMode } from "../../types/heatPriority";
+import { useEffect, useState } from "react";
+import type { ActiveLayerMode, LSTStats, SeasonName } from "../../types/heatPriority";
+import { fetchLSTStats } from "../../services/heatPriorityApi";
 
 interface HPILegendProps {
   layerMode: ActiveLayerMode;
+  season?: SeasonName;
+  year?: number;
   chronicCount?: number;
   totalCells?: number;
 }
 
+interface SeasonalStats {
+  label: string;
+  year: number;
+  meanLst: number;
+  minLst: number;
+  maxLst: number;
+  p90Lst: number;
+  isFlagged?: boolean;
+  flagMessage?: string;
+}
+
+const SEASON_FALLBACKS: Record<SeasonName, SeasonalStats> = {
+  summer: {
+    label: "Summer",
+    year: 2026,
+    meanLst: 43.8,
+    minLst: 29.6,
+    maxLst: 58.6,
+    p90Lst: 47.4,
+  },
+  winter: {
+    label: "Winter",
+    year: 2026,
+    meanLst: 31.3,
+    minLst: 23.7,
+    maxLst: 44.4,
+    p90Lst: 33.5,
+  },
+  post_monsoon: {
+    label: "Post-Monsoon",
+    year: 2025,
+    meanLst: 33.5,
+    minLst: 26.3,
+    maxLst: 46.5,
+    p90Lst: 35.9,
+    isFlagged: true,
+    flagMessage: "Year 2026 incomplete; validated 2025 observation data is shown.",
+  },
+  monsoon: {
+    label: "Monsoon",
+    year: 2026,
+    meanLst: 43.0,
+    minLst: 27.1,
+    maxLst: 59.0,
+    p90Lst: 47.2,
+    isFlagged: true,
+    flagMessage: "Partial coverage due to persistent monsoon cloud masking.",
+  },
+};
+
 export default function HPILegend({
   layerMode,
+  season = "summer",
+  year,
   chronicCount = 223,
   totalCells = 49747,
 }: HPILegendProps) {
+  const fallback = SEASON_FALLBACKS[season] || SEASON_FALLBACKS.summer;
+  const [stats, setStats] = useState<LSTStats | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+
+    fetchLSTStats(season, year, controller.signal)
+      .then((data) => {
+        if (mounted) setStats(data);
+      })
+      .catch(() => {
+        // Fallback remains active on network error
+      });
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, [season, year]);
+
+  const displayYear = stats?.effective_year ?? year ?? fallback.year;
+  const meanLst = stats?.mean_c ?? fallback.meanLst;
+  const minLst = stats?.min_c ?? fallback.minLst;
+  const maxLst = stats?.max_c ?? fallback.maxLst;
+
+  const isPostMonsoonNotice = season === "post_monsoon";
+  const isMonsoonPartial = season === "monsoon" || (stats?.is_partial ?? false);
+
   return (
-    <div className="pointer-events-none absolute bottom-8 left-3 z-[1000] w-72">
+    <div className="pointer-events-none absolute bottom-8 left-3 z-[1000] w-80">
       <div className="pointer-events-auto rounded-lg border border-slate-200/90 bg-white/95 p-3.5 shadow-md backdrop-blur">
+        {/* Visible Season / Year and Layer LST Statistics Card */}
+        <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-2.5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Active Layer
+            </span>
+            <span className="rounded bg-slate-200/80 px-2 py-0.5 font-mono text-[11px] font-bold text-slate-800">
+              {fallback.label} / {displayYear}
+            </span>
+          </div>
+
+          <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+            <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
+              <div className="text-[9px] uppercase tracking-wide text-slate-400">Mean LST</div>
+              <div className="text-sm font-bold text-blue-700">
+                {meanLst.toFixed(1)}°C
+              </div>
+            </div>
+            <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
+              <div className="text-[9px] uppercase tracking-wide text-slate-400">Max LST</div>
+              <div className="text-sm font-bold text-red-700">
+                {maxLst.toFixed(1)}°C
+              </div>
+            </div>
+          </div>
+
+          {isPostMonsoonNotice && (
+            <div className="mt-2 flex items-center gap-1.5 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-800">
+              <span>ℹ️</span>
+              <span>Year 2026 incomplete; validated 2025 observation data is shown.</span>
+            </div>
+          )}
+
+          {isMonsoonPartial && (
+            <div className="mt-2 flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-900">
+              <span>⚠️</span>
+              <span>
+                {stats?.n_valid
+                  ? `Partial coverage: cloud masked (${stats.n_valid.toLocaleString()} of ${totalCells.toLocaleString()} valid cells)`
+                  : "Partial coverage due to persistent monsoon cloud masking."}
+              </span>
+            </div>
+          )}
+        </div>
+
         {/* Layer Mode: HPI Priority */}
         {layerMode === "hpi" && (
           <div>
@@ -58,9 +188,9 @@ export default function HPILegend({
               </div>
             </div>
 
-            <p className="mt-2.5 text-[10px] leading-tight text-slate-500">
-              Composite score: Thermal (40%) + Persistence (30%) + Veg Deficit (15%) + Built Density (15%).
-            </p>
+            <div className="mt-2.5 rounded bg-slate-50 p-2 border border-slate-200 text-[9.5px] leading-tight text-slate-600">
+              <span className="font-bold">HPI Baseline:</span> The HPI composite score represents baseline Summer 2026 heat vulnerability and is invariant to the seasonal LST layer selector.
+            </div>
           </div>
         )}
 
@@ -69,37 +199,45 @@ export default function HPILegend({
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                Observed Summer LST
+                Observed {fallback.label} LST
               </span>
               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                Landsat 8/9
+                Landsat 8/9 · 10:30 AM
               </span>
             </div>
 
+            {/* Unified 20°C - 60°C standard thermal gradient */}
             <div
               className="mt-2 h-3.5 w-full rounded"
               style={{
                 background:
-                  "linear-gradient(to right, #3b82f6, #eab308, #ea580c, #c2410c, #b91c1c, #7f1d1d)",
+                  "linear-gradient(to right, rgb(59,130,246), rgb(16,185,129), rgb(245,158,11), rgb(234,88,12), rgb(127,29,29))",
               }}
             />
 
             <div className="mt-1 flex justify-between text-[10px] font-semibold text-slate-600">
-              <span>&lt;32°C</span>
-              <span>38°C</span>
-              <span>42°C</span>
-              <span>&gt;46°C</span>
+              <span>20°C</span>
+              <span>30°C</span>
+              <span>40°C</span>
+              <span>50°C</span>
+              <span>60°C</span>
             </div>
 
             <div className="mt-2.5 space-y-1 border-t border-slate-100 pt-2 text-[10px] text-slate-600">
               <div className="flex justify-between">
-                <span>Normalization Baseline:</span>
-                <span className="font-medium text-slate-800">28.0°C – 48.0°C</span>
+                <span>Observed Range:</span>
+                <span className="font-medium text-slate-800">
+                  {minLst.toFixed(1)}°C – {maxLst.toFixed(1)}°C
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Study Area Extent:</span>
                 <span className="font-medium text-slate-800">{totalCells.toLocaleString()} cells (100m)</span>
               </div>
+            </div>
+
+            <div className="mt-2 rounded bg-amber-50/90 p-2 border border-amber-200/70 text-[9.5px] leading-snug text-amber-900">
+              <span className="font-bold">Physical Note:</span> Landsat-derived Land Surface Temperature (LST) measures radiant skin temperature (T<sub>skin</sub>) at the satellite overpass (~10:30 AM IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
             </div>
           </div>
         )}

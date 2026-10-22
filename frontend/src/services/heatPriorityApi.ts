@@ -3,6 +3,8 @@ import type {
   GridCellScoreItem,
   GridCellsPaginatedResponse,
   HeatPrioritySummary,
+  LSTStats,
+  SeasonName,
 } from "../types/heatPriority";
 
 import { API_BASE_URL } from "./api";
@@ -58,6 +60,14 @@ export async function fetchGridCells(
     params.set("locality", filters.locality);
   }
 
+  if (filters.season) {
+    params.set("season", filters.season);
+  }
+
+  if (filters.year) {
+    params.set("year", filters.year.toString());
+  }
+
   params.set("limit", (filters.limit ?? 250).toString());
   params.set("offset", (filters.offset ?? 0).toString());
 
@@ -86,4 +96,22 @@ export async function fetchGridCellDetail(
     throw new Error(`Failed to load cell detail: HTTP ${response.status}`);
   }
   return response.json() as Promise<GridCellScoreItem>;
+}
+
+export async function fetchLSTStats(
+  season: SeasonName = "summer",
+  year?: number,
+  signal?: AbortSignal
+): Promise<LSTStats> {
+  const params = new URLSearchParams();
+  params.set("season", season);
+  if (year !== undefined && year !== null) {
+    params.set("year", year.toString());
+  }
+
+  const response = await fetch(`${HEAT_PRIORITY_BASE_URL}/lst-stats?${params.toString()}`, { signal });
+  if (!response.ok) {
+    throw new Error(`Failed to load LST statistics: HTTP ${response.status}`);
+  }
+  return response.json() as Promise<LSTStats>;
 }
