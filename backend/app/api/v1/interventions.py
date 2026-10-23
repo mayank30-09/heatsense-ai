@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field
 import pandas as pd
 from sqlalchemy import select, and_
@@ -149,26 +149,67 @@ class OptimizationResultResponse(BaseModel):
     solutions: list[SolutionResponse]
 
 
+class DiminishingReturnsRequest(BaseModel):
+    budgets_inr: list[float] | None = Field(
+        default=None,
+        description="List of budget ceilings in INR to evaluate. Defaults to [50L, 1Cr, 2.5Cr, 5Cr, 7.5Cr, 10Cr]",
+    )
+    max_candidates: int = Field(default=80, ge=10, le=300)
+    target_types: list[str] | None = None
+
+
+class DiminishingReturnsPoint(BaseModel):
+    budget_inr: float
+    total_cost_inr: float
+    treated_cells_count: int
+    treated_area_m2: float
+    mean_local_cooling_c: float
+    citywide_cooling_c: float
+    heat_priority_weighted_benefit_c_m2: float
+    chronic_hotspots_count: int
+    trees_count: int
+    cool_roof_m2: float
+    cool_paver_m2: float
+    green_roof_m2: float
+
+
+class DiminishingReturnsResponse(BaseModel):
+    algorithm: str
+    curve_points: list[DiminishingReturnsPoint]
+    parameters: dict[str, Any]
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
 
 @router.get("/candidates", response_model=CandidateListResponse)
 def get_candidates(
+    response: Response,
     bbox: str | None = Query(None, description="min_lon,min_lat,max_lon,max_lat"),
     intervention_type: str | None = Query(None, description="Filter by type (tree_canopy, cool_roof, etc.)"),
     feasibility_status: str = Query("FEASIBLE", description="FEASIBLE or REJECTED"),
+    min_hpi: float = Query(35.0, ge=0.0, le=100.0, description="Filter cells with HPI >= min_hpi"),
+    locality: str | None = Query(None, description="Filter by nearest OSM locality substring"),
+    max_budget: float | None = Query(None, ge=0.0, description="Filter candidates by max cost in INR"),
+    sort_by: str = Query("hpi_desc", description="Sort order: hpi_desc, cost_asc, cost_desc, cooling_desc"),
+    cell_id: str | None = Query(None, description="Filter candidates by specific grid cell ID"),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
-    """Retrieve intervention candidates within viewport or citywide."""
-    # Query database Stage C scores and cells to construct/fetch candidates dynamically
+    """Retrieve intervention candidates with server-side filtering, sorting, and pagination."""
     query = (
         select(StageCHeatPriorityScore, StageCGridCell)
         .join(StageCGridCell, StageCHeatPriorityScore.pixel_id == StageCGridCell.pixel_id)
-        .where(StageCHeatPriorityScore.heat_priority_score >= 35.0)
+        .where(StageCHeatPriorityScore.heat_priority_score >= min_hpi)
     )
+
+    if cell_id:
+        query = query.where(StageCGridCell.pixel_id == cell_id)
+
+    if locality:
+        query = query.where(StageCGridCell.nearest_osm_place_name.ilike(f"%{locality}%"))
 
     if bbox:
         try:
@@ -230,8 +271,22 @@ def get_candidates(
             if cand.feasibility_status.value == feasibility_status:
                 candidates.append(cand)
 
+    if max_budget is not None:
+        candidates = [c for c in candidates if c.cost_inr <= max_budget]
+
+    if sort_by == "cost_asc":
+        candidates.sort(key=lambda c: c.cost_inr)
+    elif sort_by == "cost_desc":
+        candidates.sort(key=lambda c: c.cost_inr, reverse=True)
+    elif sort_by == "cooling_desc":
+        candidates.sort(key=lambda c: c.expected_cooling_c, reverse=True)
+    else:  # hpi_desc default
+        candidates.sort(key=lambda c: (c.baseline_hpi or 0.0), reverse=True)
+
     total_count = len(candidates)
     sliced = candidates[offset : offset + limit]
+
+    response.headers["Cache-Control"] = "public, max-age=300, must-revalidate"
 
     return CandidateListResponse(
         total_count=total_count,
@@ -244,10 +299,10 @@ def get_candidates(
 @router.get("/candidates/{candidate_id}", response_model=CandidateResponse)
 def get_candidate_detail(
     candidate_id: str,
+    response: Response,
     db: Session = Depends(get_db),
 ):
     """Retrieve detailed metadata, cost breakdown, and evidence provenance for a candidate."""
-    # Parse candidate ID: e.g. CAND_TREE_CANOPY_R120_C150
     try:
         parts = candidate_id.split("_")
         itype_str = "_".join(parts[1:-2]).lower()
@@ -259,19 +314,42 @@ def get_candidate_detail(
     except Exception:
         raise HTTPException(status_code=400, detail=f"Invalid candidate_id format: {candidate_id}")
 
+    cell_record = db.execute(
+        select(StageCHeatPriorityScore, StageCGridCell)
+        .join(StageCGridCell, StageCHeatPriorityScore.pixel_id == StageCGridCell.pixel_id)
+        .where(StageCGridCell.row_idx == row_idx, StageCGridCell.col_idx == col_idx)
+    ).first()
+
+    if cell_record:
+        score_obj, cell_obj = cell_record
+        raw_score = score_obj.heat_priority_score
+        hpi_val = (raw_score / 100.0) if raw_score is not None else 0.65
+        lst_val = 38.0 + (hpi_val * 8.0)
+        is_chr = score_obj.is_chronic_hotspot
+        zone_val = cell_obj.nearest_osm_place_name or "Central Zone"
+        inside_smc = cell_obj.is_centroid_inside
+    else:
+        hpi_val = 0.65
+        lst_val = 39.5
+        is_chr = True
+        zone_val = "Central Zone"
+        inside_smc = True
+
     cand = generate_candidate_for_cell(
         row=row_idx,
         col=col_idx,
         cell_id=f"R{row_idx:03d}_C{col_idx:03d}",
         intervention_type=itype,
-        baseline_hpi=0.65,
-        baseline_lst_c=39.5,
-        is_chronic_hotspot=True,
-        administrative_zone="Central Zone",
+        baseline_hpi=hpi_val,
+        baseline_lst_c=lst_val,
+        is_chronic_hotspot=is_chr,
+        administrative_zone=zone_val,
         usable_area_m2=1500.0,
         tree_count=50,
-        is_inside_smc=True,
+        is_inside_smc=inside_smc,
     )
+
+    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
 
     return CandidateResponse(**cand.to_dict())
 
@@ -414,4 +492,102 @@ def list_available_scenarios():
             },
         },
     ]
+
+
+@router.post("/diminishing-returns", response_model=DiminishingReturnsResponse)
+def get_diminishing_returns(
+    payload: DiminishingReturnsRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_planner_or_admin),
+):
+    """Compute real diminishing-returns curve by executing greedy knapsack optimizer across budget thresholds."""
+    budgets = payload.budgets_inr or [
+        5_000_000.0,    # ₹50L
+        10_000_000.0,   # ₹1Cr
+        25_000_000.0,   # ₹2.5Cr
+        50_000_000.0,   # ₹5Cr
+        75_000_000.0,   # ₹7.5Cr
+        100_000_000.0,  # ₹10Cr
+    ]
+    budgets = sorted(budgets)
+
+    query = (
+        select(StageCHeatPriorityScore, StageCGridCell)
+        .join(StageCGridCell, StageCHeatPriorityScore.pixel_id == StageCGridCell.pixel_id)
+        .where(StageCHeatPriorityScore.heat_priority_score >= 35.0)
+        .order_by(StageCHeatPriorityScore.heat_priority_score.desc())
+        .limit(payload.max_candidates)
+    )
+    rows = db.execute(query).all()
+
+    target_types = (
+        [InterventionType(t) for t in payload.target_types]
+        if payload.target_types
+        else [InterventionType.TREE_CANOPY, InterventionType.COOL_ROOF, InterventionType.COOL_PAVEMENT]
+    )
+
+    pool: list[InterventionCandidate] = []
+    for score_obj, cell_obj in rows:
+        raw_score = score_obj.heat_priority_score
+        hpi_val = (raw_score / 100.0) if raw_score is not None else 0.5
+        lst_val = 38.0 + (hpi_val * 8.0)
+        is_chr = score_obj.is_chronic_hotspot
+        zone_val = cell_obj.nearest_osm_place_name or "Central Zone"
+
+        for itype in target_types:
+            cand = generate_candidate_for_cell(
+                row=cell_obj.row_idx,
+                col=cell_obj.col_idx,
+                cell_id=f"R{cell_obj.row_idx:03d}_C{cell_obj.col_idx:03d}",
+                intervention_type=itype,
+                baseline_hpi=hpi_val,
+                baseline_lst_c=lst_val,
+                is_chronic_hotspot=is_chr,
+                administrative_zone=zone_val,
+                usable_area_m2=1500.0,
+                tree_count=45,
+                is_inside_smc=cell_obj.is_centroid_inside,
+            )
+            if cand.feasibility_status == FeasibilityStatus.FEASIBLE:
+                pool.append(cand)
+
+    curve_points: list[DiminishingReturnsPoint] = []
+    for b in budgets:
+        sol = run_baseline_greedy_optimizer(
+            candidates=pool,
+            budget_inr=b,
+            enforce_cell_exclusivity=True,
+        )
+        trees = sum(c.tree_count for c in sol.selected_candidates)
+        cool_roof = sum(c.usable_area_m2 for c in sol.selected_candidates if c.intervention_type == InterventionType.COOL_ROOF)
+        cool_paver = sum(c.usable_area_m2 for c in sol.selected_candidates if c.intervention_type == InterventionType.COOL_PAVEMENT)
+        green_roof = sum(c.usable_area_m2 for c in sol.selected_candidates if c.intervention_type == InterventionType.GREEN_ROOF)
+
+        curve_points.append(
+            DiminishingReturnsPoint(
+                budget_inr=b,
+                total_cost_inr=sol.total_cost_inr,
+                treated_cells_count=sol.interventions_count,
+                treated_area_m2=sol.treated_area_m2,
+                mean_local_cooling_c=round(sol.mean_local_cooling_c, 3),
+                citywide_cooling_c=round(sol.citywide_cooling_c, 4),
+                heat_priority_weighted_benefit_c_m2=round(sol.heat_priority_weighted_benefit_c_m2, 2),
+                chronic_hotspots_count=sol.chronic_hotspots_count,
+                trees_count=trees,
+                cool_roof_m2=cool_roof,
+                cool_paver_m2=cool_paver,
+                green_roof_m2=green_roof,
+            )
+        )
+
+    return DiminishingReturnsResponse(
+        algorithm="GREEDY_KNAPSACK",
+        curve_points=curve_points,
+        parameters={
+            "max_candidates": payload.max_candidates,
+            "target_types": [t.value for t in target_types],
+            "enforce_cell_exclusivity": True,
+            "domain_area_m2": 461630791.0,
+        },
+    )
 

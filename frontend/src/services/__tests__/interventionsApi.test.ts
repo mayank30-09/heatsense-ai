@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fetchCandidateDetail,
+  fetchDiminishingReturns,
   fetchInterventionCandidates,
   fetchScenarios,
   optimizeInterventions,
@@ -244,6 +245,44 @@ describe("interventionsApi", () => {
 
       await expect(fetchScenarios()).rejects.toThrow(
         "Failed to load planning scenarios: HTTP 500"
+      );
+    });
+  });
+
+  describe("fetchDiminishingReturns", () => {
+    it("posts request to diminishing-returns endpoint and returns curve points", async () => {
+      const mockCurve = {
+        algorithm: "GREEDY_KNAPSACK",
+        curve_points: [
+          { budget_inr: 5000000, total_cost_inr: 4950000, treated_cells_count: 35 },
+          { budget_inr: 25000000, total_cost_inr: 24800000, treated_cells_count: 120 },
+        ],
+        parameters: { max_candidates: 40 },
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockCurve,
+      });
+
+      const result = await fetchDiminishingReturns({ max_candidates: 40 }, "test-token");
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url, options] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/diminishing-returns");
+      expect(options.method).toBe("POST");
+      expect(options.headers["Authorization"]).toBe("Bearer test-token");
+      expect(result).toEqual(mockCurve);
+    });
+
+    it("throws error when diminishing-returns request fails", async () => {
+      (fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      await expect(fetchDiminishingReturns()).rejects.toThrow(
+        "Failed to load diminishing returns curve: HTTP 500"
       );
     });
   });

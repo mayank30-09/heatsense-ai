@@ -62,10 +62,12 @@ export default function Optimization({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<OptimizationResultResponse | null>(null);
   const [selectedSolutionIdx, setSelectedSolutionIdx] = useState<number>(0);
+  const [executionDurationMs, setExecutionDurationMs] = useState<number | null>(null);
 
   const handleRunOptimization = async () => {
     setRunning(true);
     setError(null);
+    const startTime = performance.now();
 
     const activeTypes = (Object.keys(allowedTypes) as InterventionType[]).filter(
       (t) => allowedTypes[t]
@@ -85,6 +87,8 @@ export default function Optimization({
         return;
       }
       const res = await runInterventionOptimization(payload, token);
+      const endTime = performance.now();
+      setExecutionDurationMs(Math.round(endTime - startTime));
       setResult(res);
       setSelectedSolutionIdx(0);
     } catch (err: unknown) {
@@ -106,6 +110,50 @@ export default function Optimization({
     result && result.solutions.length > 0
       ? result.solutions[selectedSolutionIdx] || result.solutions[0]
       : null;
+
+  // CSV Export Handler
+  const handleExportCSV = () => {
+    if (!activeSolution) return;
+
+    const headers = [
+      "Candidate ID",
+      "Intervention Type",
+      "Cell ID",
+      "Total Cost (INR)",
+      "Mean Local Cooling (deg C)",
+      "Treated Area (m2)",
+      "Portfolio Benefit (deg C * m2)",
+      "Pareto Rank",
+    ];
+
+    const rows = activeSolution.selected_candidate_ids.map((id) => {
+      const parts = id.split("_");
+      const type = parts.slice(0, 2).join("_").toLowerCase();
+      const cellId = parts.slice(-2).join("_");
+      return [
+        id,
+        type,
+        cellId,
+        activeSolution.total_cost_inr,
+        activeSolution.mean_local_cooling_c,
+        activeSolution.treated_area_m2,
+        activeSolution.portfolio_thermal_benefit_c_m2,
+        activeSolution.pareto_rank,
+      ].join(",");
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `surat_optimization_${activeSolution.solution_id || "solution"}_budget_${budget}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Unauthenticated or Non-Planner/Admin: show login panel and DO NOT call API
   if (!isPlannerOrAdmin) {
@@ -165,7 +213,7 @@ export default function Optimization({
               <button
                 type="button"
                 onClick={onSwitchToMap}
-                className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all"
+                className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all cursor-pointer"
               >
                 <span>View Heat Map</span>
               </button>
@@ -207,7 +255,7 @@ export default function Optimization({
                 key={p.label}
                 type="button"
                 onClick={() => setBudget(p.value)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
+                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
                   budget === p.value
                     ? "bg-emerald-600 text-white font-bold shadow-xs"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -250,7 +298,7 @@ export default function Optimization({
               <button
                 type="button"
                 onClick={() => setAlgorithm("nsga2")}
-                className={`flex flex-col p-3 rounded-lg border text-left transition-all ${
+                className={`flex flex-col p-3 rounded-lg border text-left transition-all cursor-pointer ${
                   algorithm === "nsga2"
                     ? "border-emerald-600 bg-emerald-50/50 shadow-xs ring-1 ring-emerald-500"
                     : "border-slate-200 bg-white hover:bg-slate-50"
@@ -265,7 +313,7 @@ export default function Optimization({
               <button
                 type="button"
                 onClick={() => setAlgorithm("greedy")}
-                className={`flex flex-col p-3 rounded-lg border text-left transition-all ${
+                className={`flex flex-col p-3 rounded-lg border text-left transition-all cursor-pointer ${
                   algorithm === "greedy"
                     ? "border-emerald-600 bg-emerald-50/50 shadow-xs ring-1 ring-emerald-500"
                     : "border-slate-200 bg-white hover:bg-slate-50"
@@ -332,14 +380,20 @@ export default function Optimization({
 
           <div className="mt-5 border-t border-slate-100 pt-4">
             <span className="text-[11px] font-bold text-slate-500 uppercase">
-              Planner Authentication:
+              Solver Determinism & Seed:
             </span>
-            <div className="mt-1 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-slate-700 font-medium">
-                SMC Town Planning Officer (Authenticated)
-              </span>
+            <div className="mt-1 flex items-center justify-between text-xs">
+              <span className="text-slate-600">Deterministic Seed:</span>
+              <span className="font-mono font-bold text-slate-800">seed = 42</span>
             </div>
+            {executionDurationMs !== null && (
+              <div className="mt-1 flex items-center justify-between text-xs">
+                <span className="text-slate-600">Last Runtime:</span>
+                <span className="font-mono font-bold text-emerald-600">
+                  {executionDurationMs} ms
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -355,12 +409,12 @@ export default function Optimization({
                 {
                   key: "tree_canopy",
                   label: "🌳 Native Urban Forestry",
-                  desc: "Neem, Peepal, Gulmohar crown shading & evapotranspiration",
+                  desc: "Neem, Peepal, Gulmohar crown shading & evapotranspiration (qualitative palette from literature)",
                 },
                 {
                   key: "cool_roof",
                   label: "⚪ High-Albedo Cool Roof",
-                  desc: "Aged reflective coating (Δα = +0.45) on RCC roofs",
+                  desc: "Aged reflective coating (Δα = +0.45) on RCC roofs (structural survey required)",
                 },
                 {
                   key: "cool_pavement",
@@ -370,7 +424,7 @@ export default function Optimization({
                 {
                   key: "green_roof",
                   label: "🌿 Extensive Green Roof",
-                  desc: "Sedum vegetated buffer (verified load-bearing RCC only)",
+                  desc: "Sedum vegetated buffer (verified load-bearing RCC only; survey required)",
                 },
               ] as const
             ).map((item) => {
@@ -393,7 +447,7 @@ export default function Optimization({
                         [item.key]: !prev[item.key],
                       }))
                     }
-                    className="mt-0.5 accent-emerald-600 rounded"
+                    className="mt-0.5 accent-emerald-600 rounded cursor-pointer"
                   />
                   <div>
                     <div className="text-xs font-bold text-slate-900">{item.label}</div>
@@ -430,26 +484,37 @@ export default function Optimization({
                 </h3>
               </div>
 
-              {/* Solution Picker Chips (for NSGA-II Pareto Frontier) */}
-              {result.solutions.length > 1 && (
-                <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1">
-                  <span className="text-xs font-bold text-slate-500 mr-1">Pareto Set:</span>
-                  {result.solutions.map((sol, idx) => (
-                    <button
-                      key={sol.solution_id || idx}
-                      type="button"
-                      onClick={() => setSelectedSolutionIdx(idx)}
-                      className={`rounded-lg px-2.5 py-1 text-xs font-mono font-bold transition-all ${
-                        selectedSolutionIdx === idx
-                          ? "bg-slate-900 text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      #{idx + 1} ({formatINR(sol.total_cost_inr)})
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                {/* Solution Picker Chips (for NSGA-II Pareto Frontier) */}
+                {result.solutions.length > 1 && (
+                  <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1">
+                    <span className="text-xs font-bold text-slate-500 mr-1">Pareto Set:</span>
+                    {result.solutions.map((sol, idx) => (
+                      <button
+                        key={sol.solution_id || idx}
+                        type="button"
+                        onClick={() => setSelectedSolutionIdx(idx)}
+                        className={`rounded-lg px-2.5 py-1 text-xs font-mono font-bold transition-all cursor-pointer ${
+                          selectedSolutionIdx === idx
+                            ? "bg-slate-900 text-white shadow-xs"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        #{idx + 1} ({formatINR(sol.total_cost_inr)})
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* CSV Export Button */}
+                <button
+                  type="button"
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-xs cursor-pointer"
+                >
+                  <span>📥 Export CSV</span>
+                </button>
+              </div>
             </div>
 
             {/* KPI Cards for Active Solution */}
@@ -577,6 +642,9 @@ export default function Optimization({
               complete municipal domain (461.63 km²), preserving physical conservation of energy and
               strictly avoiding additive temperature summation.
             </p>
+            <div className="mt-2 text-[11px] text-indigo-800">
+              <strong>Native planting palette:</strong> Neem (Azadirachta indica), Peepal (Ficus religiosa), Gulmohar (Delonix regia) — qualitative reference from literature, to be verified.
+            </div>
           </div>
         </div>
       )}
@@ -595,7 +663,7 @@ export default function Optimization({
           <button
             type="button"
             onClick={handleRunOptimization}
-            className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-all"
+            className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 shadow-sm transition-all cursor-pointer"
           >
             Run With Current Settings ({formatINR(budget)}) →
           </button>

@@ -185,3 +185,45 @@ def test_optimize_endpoint_auth_and_dev_token_removal():
     finally:
         planner = DEV_USERS_DB["planner_officer"]
         app.dependency_overrides[require_planner_or_admin] = lambda: User(**planner.model_dump())
+
+
+def test_candidates_filtering_sorting_and_caching():
+    """Verify server-side sorting, locality filter, and Cache-Control headers."""
+    resp = client.get("/api/v1/interventions/candidates?sort_by=cost_asc&limit=15")
+    assert resp.status_code == 200
+    assert "cache-control" in resp.headers
+    assert "public" in resp.headers["cache-control"]
+    data = resp.json()
+    items = data["items"]
+    assert len(items) > 1
+    # Check cost ascending
+    costs = [i["cost_inr"] for i in items]
+    assert costs == sorted(costs)
+
+    # Test filtering by locality substring
+    resp_loc = client.get("/api/v1/interventions/candidates?locality=Surat&limit=5")
+    assert resp_loc.status_code == 200
+
+
+def test_diminishing_returns_endpoint():
+    """Verify real diminishing returns curve calculation across budget tiers."""
+    payload = {
+        "budgets_inr": [5000000.0, 25000000.0, 100000000.0],
+        "max_candidates": 20,
+    }
+    resp = client.post("/api/v1/interventions/diminishing-returns", json=payload)
+    assert resp.status_code == 200
+    res = resp.json()
+    assert res["algorithm"] == "GREEDY_KNAPSACK"
+    points = res["curve_points"]
+    assert len(points) == 3
+
+    # Check diminishing returns properties: higher budget yields >= treated cells and higher cost
+    assert points[0]["budget_inr"] == 5000000.0
+    assert points[1]["budget_inr"] == 25000000.0
+    assert points[2]["budget_inr"] == 100000000.0
+    assert points[0]["total_cost_inr"] <= 5000000.0
+    assert points[1]["total_cost_inr"] <= 25000000.0
+    assert points[2]["total_cost_inr"] <= 100000000.0
+    assert points[0]["treated_cells_count"] <= points[1]["treated_cells_count"]
+    assert points[1]["treated_cells_count"] <= points[2]["treated_cells_count"]

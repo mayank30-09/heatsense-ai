@@ -96,3 +96,30 @@ export interface PlanningScenario {
     trees_count: number;
   };
 }
+
+export interface DiminishingReturnsPoint {
+  budget_inr: number;
+  total_cost_inr: number;
+  treated_cells_count: number;
+  treated_area_m2: number;
+  mean_local_cooling_c: number;
+  citywide_cooling_c: number;
+  heat_priority_weighted_benefit_c_m2: number;
+  chronic_hotspots_count: number;
+  trees_count: number;
+  cool_roof_m2: number;
+  cool_paver_m2: number;
+  green_roof_m2: number;
+}
+
+export interface DiminishingReturnsResponse {
+  algorithm: string;
+  curve_points: DiminishingReturnsPoint[];
+  parameters: Record<string, unknown>;
+}
+
+export interface DiminishingReturnsRequestPayload {
+  budgets_inr?: number[];
+  max_candidates?: number;
+  target_types?: InterventionType[];
+}

@@ -1,5 +1,7 @@
 import type {
   CandidateListResponse,
+  DiminishingReturnsRequestPayload,
+  DiminishingReturnsResponse,
   InterventionCandidateItem,
   InterventionType,
   OptimizationResultResponse,
@@ -16,6 +18,11 @@ export async function fetchInterventionCandidates(
     bbox?: { min_lon: number; min_lat: number; max_lon: number; max_lat: number };
     intervention_type?: InterventionType;
     feasibility_status?: string;
+    min_hpi?: number;
+    locality?: string;
+    max_budget?: number;
+    sort_by?: "hpi_desc" | "cost_asc" | "cost_desc" | "cooling_desc";
+    cell_id?: string;
     limit?: number;
     offset?: number;
   } = {},
@@ -31,6 +38,21 @@ export async function fetchInterventionCandidates(
   }
   if (filters.feasibility_status) {
     params.set("feasibility_status", filters.feasibility_status);
+  }
+  if (filters.min_hpi !== undefined) {
+    params.set("min_hpi", filters.min_hpi.toString());
+  }
+  if (filters.locality) {
+    params.set("locality", filters.locality);
+  }
+  if (filters.max_budget !== undefined) {
+    params.set("max_budget", filters.max_budget.toString());
+  }
+  if (filters.sort_by) {
+    params.set("sort_by", filters.sort_by);
+  }
+  if (filters.cell_id) {
+    params.set("cell_id", filters.cell_id);
   }
   params.set("limit", (filters.limit ?? 50).toString());
   params.set("offset", (filters.offset ?? 0).toString());
@@ -86,6 +108,28 @@ export async function fetchScenarios(signal?: AbortSignal): Promise<PlanningScen
     throw new Error(`Failed to load planning scenarios: HTTP ${response.status}`);
   }
   return response.json() as Promise<PlanningScenario[]>;
+}
+
+export async function fetchDiminishingReturns(
+  payload: DiminishingReturnsRequestPayload = {},
+  token?: string,
+  signal?: AbortSignal
+): Promise<DiminishingReturnsResponse> {
+  const url = `${INTERVENTIONS_BASE_URL}/diminishing-returns`;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+    signal,
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to load diminishing returns curve: HTTP ${response.status}`);
+  }
+  return response.json() as Promise<DiminishingReturnsResponse>;
 }
 
 
