@@ -579,7 +579,7 @@ function AnalysisAreaCard({
           )}
 
           <div className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-500">
-            Landsat radiant skin temperature (T<sub>skin</sub>) at ~10:30 AM IST, distinct from ambient 2 m air temperature (T<sub>air</sub>).
+            Landsat radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (about 11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
           </div>
         </>
       )}

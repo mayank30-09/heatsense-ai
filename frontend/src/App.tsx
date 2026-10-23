@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
-import HPIDashboardView from "./components/dashboard/HPIDashboardView";
-import ValidationTrust from "./components/dashboard/ValidationTrust";
-import InterventionExplorer from "./components/interventions/InterventionExplorer";
-import Optimization from "./components/interventions/Optimization";
-import ScenarioLab from "./components/interventions/ScenarioLab";
-import { MapShell } from "./components/map/MapShell";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { getHealth, type HealthResponse } from "./services/api";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import ScienceGlossaryModal from "./components/common/ScienceGlossaryModal";
 import "./styles.css";
 
+// Lazy-loaded route-level views for efficient code-splitting
+const HPIDashboardView = lazy(() => import("./components/dashboard/HPIDashboardView"));
+const ValidationTrust = lazy(() => import("./components/dashboard/ValidationTrust"));
+const InterventionExplorer = lazy(() => import("./components/interventions/InterventionExplorer"));
+const Optimization = lazy(() => import("./components/interventions/Optimization"));
+const ScenarioLab = lazy(() => import("./components/interventions/ScenarioLab"));
+const MapShell = lazy(() =>
+  import("./components/map/MapShell").then((m) => ({ default: m.MapShell }))
+);
 
 const views = [
   "Dashboard",
@@ -20,34 +24,39 @@ const views = [
   "Validation / Trust",
 ];
 
+function ViewLoadingSkeleton({ viewName }: { viewName: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[420px] rounded-xl border border-slate-200 bg-white p-12 text-slate-500 shadow-xs">
+      <div className="h-8 w-8 animate-spin rounded-full border-3 border-indigo-600 border-t-transparent mb-3" />
+      <span className="text-sm font-semibold text-slate-700">Loading {viewName}…</span>
+      <span className="text-xs text-slate-400 mt-1">Fetching component chunk and satellite datasets</span>
+    </div>
+  );
+}
+
 function AppContent() {
   const { user, role, isAuthenticated, logout } = useAuth();
   const [activeView, setActiveView] = useState("Dashboard");
   const [scenarioBudget, setScenarioBudget] = useState<number | undefined>(undefined);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [showGlossary, setShowGlossary] = useState<boolean>(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
+  const checkHealth = () => {
     getHealth()
       .then((data) => {
-        if (!cancelled) {
-          setHealth(data);
-          setApiError(null);
-        }
+        setHealth(data);
+        setApiError(null);
       })
       .catch((error: unknown) => {
-        if (!cancelled) {
-          setApiError(
-            error instanceof Error ? error.message : "Backend unavailable",
-          );
-        }
+        setApiError(
+          error instanceof Error ? error.message : "Backend unavailable"
+        );
       });
+  };
 
-    return () => {
-      cancelled = true;
-    };
+  useEffect(() => {
+    checkHealth();
   }, []);
 
   const backendConnected = health?.status === "ok";
@@ -62,8 +71,18 @@ function AppContent() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowGlossary(true)}
+            aria-label="Open science and metric glossary"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <span>📖</span>
+            <span>Science Glossary</span>
+          </button>
+
           {isAuthenticated && user && (
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs shadow-sm">
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs shadow-xs">
               <span className="font-semibold text-slate-800">{user.username}</span>
               <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-800">
                 {role}
@@ -71,13 +90,19 @@ function AppContent() {
               <button
                 type="button"
                 onClick={logout}
-                className="ml-1 text-slate-400 hover:text-slate-700 text-xs font-semibold cursor-pointer"
+                aria-label="Sign out of account"
+                className="ml-1 text-slate-400 hover:text-slate-700 text-xs font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-300 rounded"
               >
                 Logout
               </button>
             </div>
           )}
-          <div className="status-pill">
+
+          <div
+            className="status-pill"
+            role="status"
+            aria-label={`API status: ${backendConnected ? "Connected" : "Offline"}`}
+          >
             <span
               className={
                 backendConnected ? "status-dot" : "status-dot offline"
@@ -92,13 +117,15 @@ function AppContent() {
         <aside className="sidebar" aria-label="Application navigation">
           <h2>Workspace</h2>
 
-          <nav>
+          <nav role="tablist" aria-label="Workspace views">
             {views.map((view) => {
-              const isEnabled = true;
               const isActive = activeView === view;
 
               return (
                 <button
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-label={`Switch to ${view} view`}
                   className={isActive ? "nav-item active" : "nav-item"}
                   key={view}
                   type="button"
@@ -113,138 +140,140 @@ function AppContent() {
           </nav>
 
           <div className="scope-note">
-            <div className="font-semibold text-slate-700">Stage C & D Verified</div>
-            <p className="mt-1 text-slate-500">
-              Authoritative 100m analytical grid, multi-temporal persistence (2021–2026), and physics-informed cooling recommendations for SMC Surat.
+            <div className="font-semibold text-slate-700">Stage C & D Specification</div>
+            <p className="mt-1 text-slate-500 text-xs leading-relaxed">
+              Authoritative 100m analytical grid, multi-temporal Landsat thermal observations, and surface energy balance cooling optimization for SMC Surat.
             </p>
           </div>
         </aside>
 
-        <section className="workspace">
-          {activeView === "Dashboard" && (
-            <>
-              <div className="workspace-heading">
-                <div>
-                  <p className="eyebrow">STAGE C EXECUTIVE DASHBOARD</p>
-                  <h2>Heat Priority Index Analytics</h2>
+        <section className="workspace" role="region" aria-label={`${activeView} content`}>
+          <Suspense fallback={<ViewLoadingSkeleton viewName={activeView} />}>
+            {activeView === "Dashboard" && (
+              <>
+                <div className="workspace-heading">
+                  <div>
+                    <p className="eyebrow">STAGE C EXECUTIVE DASHBOARD</p>
+                    <h2>Heat Priority Index Analytics</h2>
+                  </div>
+                  <p className="muted">
+                    Surat Municipal Corporation · 49,747 Cells
+                  </p>
                 </div>
-                <p className="muted">
-                  Surat Municipal Corporation · 49,747 Cells
-                </p>
-              </div>
 
-              <HPIDashboardView onSwitchToMap={() => setActiveView("Heat Map")} />
-            </>
-          )}
+                <HPIDashboardView onSwitchToMap={() => setActiveView("Heat Map")} />
+              </>
+            )}
 
-          {activeView === "Heat Map" && (
-            <>
-              <div className="workspace-heading">
-                <div>
-                  <p className="eyebrow">HEAT PRIORITY MAP</p>
-                  <h2>Stage C Analytical Grid & Observations</h2>
+            {activeView === "Heat Map" && (
+              <>
+                <div className="workspace-heading">
+                  <div>
+                    <p className="eyebrow">HEAT PRIORITY MAP</p>
+                    <h2>Stage C Analytical Grid & Observations</h2>
+                  </div>
+                  <p className="muted">
+                    Interactive 100m Viewport Grid & Landsat LST
+                  </p>
                 </div>
-                <p className="muted">
-                  Interactive 100m Viewport Grid & Landsat LST
-                </p>
-              </div>
 
-              <MapShell initialTool="grid" />
-            </>
-          )}
+                <MapShell initialTool="grid" />
+              </>
+            )}
 
-          {activeView === "Area Analysis" && (
-            <>
-              <div className="workspace-heading">
-                <div>
-                  <p className="eyebrow">ZONAL ANALYSIS</p>
-                  <h2>Custom Polygon Heat Analysis</h2>
+            {activeView === "Area Analysis" && (
+              <>
+                <div className="workspace-heading">
+                  <div>
+                    <p className="eyebrow">ZONAL ANALYSIS</p>
+                    <h2>Custom Polygon Heat Analysis</h2>
+                  </div>
+                  <p className="muted">
+                    Draw custom polygons & compute Landsat zonal statistics
+                  </p>
                 </div>
-                <p className="muted">
-                  Draw custom polygons & compute Landsat zonal statistics
-                </p>
-              </div>
 
-              <MapShell initialTool="drawing" />
-            </>
-          )}
+                <MapShell initialTool="drawing" />
+              </>
+            )}
 
-          {activeView === "Intervention Explorer" && (
-            <>
-              <div className="workspace-heading">
-                <div>
-                  <p className="eyebrow">STAGE D PRESCRIPTIVE CATALOG</p>
-                  <h2>Intervention Candidate Explorer</h2>
+            {activeView === "Intervention Explorer" && (
+              <>
+                <div className="workspace-heading">
+                  <div>
+                    <p className="eyebrow">STAGE D PRESCRIPTIVE CATALOG</p>
+                    <h2>Intervention Candidate Explorer</h2>
+                  </div>
+                  <p className="muted">
+                    Surface energy balance cooling interventions for Surat Municipal Corporation
+                  </p>
                 </div>
-                <p className="muted">
-                  Physics-calibrated cooling interventions for Surat Municipal Corporation
-                </p>
-              </div>
 
-              <InterventionExplorer
-                onSwitchToMap={() => setActiveView("Heat Map")}
-              />
-            </>
-          )}
+                <InterventionExplorer
+                  onSwitchToMap={() => setActiveView("Heat Map")}
+                />
+              </>
+            )}
 
-          {activeView === "Scenario Lab" && (
-            <>
-              <div className="workspace-heading">
-                <div>
-                  <p className="eyebrow">STAGE D SCENARIO PLANNING</p>
-                  <h2>Urban Heat Mitigation Scenario Lab</h2>
+            {activeView === "Scenario Lab" && (
+              <>
+                <div className="workspace-heading">
+                  <div>
+                    <p className="eyebrow">STAGE D SCENARIO PLANNING</p>
+                    <h2>Urban Heat Mitigation Scenario Lab</h2>
+                  </div>
+                  <p className="muted">
+                    Multi-tier capital budget benchmarks & custom portfolio simulator for SMC Surat
+                  </p>
                 </div>
-                <p className="muted">
-                  Multi-tier capital budget benchmarks & custom portfolio simulator for SMC Surat
-                </p>
-              </div>
 
-              <ScenarioLab
-                onSwitchToMap={() => setActiveView("Heat Map")}
-                onSwitchToOptimization={(budget) => {
-                  setScenarioBudget(budget);
-                  setActiveView("Optimization");
-                }}
-              />
-            </>
-          )}
+                <ScenarioLab
+                  onSwitchToMap={() => setActiveView("Heat Map")}
+                  onSwitchToOptimization={(budget) => {
+                    setScenarioBudget(budget);
+                    setActiveView("Optimization");
+                  }}
+                />
+              </>
+            )}
 
-          {activeView === "Optimization" && (
-            <>
-              <div className="workspace-heading">
-                <div>
-                  <p className="eyebrow">STAGE D CONSTRAINED OPTIMIZATION</p>
-                  <h2>Multi-Objective Cooling Optimization</h2>
+            {activeView === "Optimization" && (
+              <>
+                <div className="workspace-heading">
+                  <div>
+                    <p className="eyebrow">STAGE D CONSTRAINED OPTIMIZATION</p>
+                    <h2>Multi-Objective Cooling Optimization</h2>
+                  </div>
+                  <p className="muted">
+                    NSGA-II Pareto genetic algorithm & greedy knapsack budget allocation for SMC Surat
+                  </p>
                 </div>
-                <p className="muted">
-                  NSGA-II Pareto genetic algorithm & greedy knapsack budget allocation for SMC Surat
-                </p>
-              </div>
 
-              <Optimization
-                initialBudgetInr={scenarioBudget}
-                onSwitchToMap={() => setActiveView("Heat Map")}
-              />
-            </>
-          )}
+                <Optimization
+                  initialBudgetInr={scenarioBudget}
+                  onSwitchToMap={() => setActiveView("Heat Map")}
+                />
+              </>
+            )}
 
-          {activeView === "Validation / Trust" && (
-            <>
-              <div className="workspace-heading">
-                <div>
-                  <p className="eyebrow">STAGE C & D TRANSPARENCY</p>
-                  <h2>Model Validation & Trust Center</h2>
+            {activeView === "Validation / Trust" && (
+              <>
+                <div className="workspace-heading">
+                  <div>
+                    <p className="eyebrow">STAGE C & D TRANSPARENCY</p>
+                    <h2>Model Validation & Trust Center</h2>
+                  </div>
+                  <p className="muted">
+                    Spatial cross-validation, independent holdouts, error diagnostics & sensor provenance
+                  </p>
                 </div>
-                <p className="muted">
-                  Spatial cross-validation, independent holdouts, error diagnostics & sensor provenance
-                </p>
-              </div>
 
-              <ValidationTrust
-                onSwitchToMap={() => setActiveView("Heat Map")}
-              />
-            </>
-          )}
+                <ValidationTrust
+                  onSwitchToMap={() => setActiveView("Heat Map")}
+                />
+              </>
+            )}
+          </Suspense>
 
           <div className="connection-panel">
             <div>
@@ -262,14 +291,29 @@ function AppContent() {
             </div>
 
             {apiError && (
-              <div>
-                <span className="connection-label">Error</span>
-                <strong>{apiError}</strong>
+              <div className="flex items-center gap-2">
+                <div>
+                  <span className="connection-label">Error</span>
+                  <strong>{apiError}</strong>
+                </div>
+                <button
+                  type="button"
+                  onClick={checkHealth}
+                  className="rounded bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-800 hover:bg-slate-300 cursor-pointer"
+                >
+                  Retry
+                </button>
               </div>
             )}
           </div>
         </section>
       </main>
+
+      {/* Persistent Science & Metric Glossary Modal */}
+      <ScienceGlossaryModal
+        isOpen={showGlossary}
+        onClose={() => setShowGlossary(false)}
+      />
     </div>
   );
 }

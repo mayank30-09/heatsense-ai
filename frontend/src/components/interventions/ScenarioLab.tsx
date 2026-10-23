@@ -276,7 +276,7 @@ export default function ScenarioLab({
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                Calibrated SMC UHAP Benchmarks (Physics-Informed Optimization Model)
+                Calibrated SMC UHAP Benchmarks (Surface Energy Balance Optimization Model)
               </h3>
               <span className="text-xs text-slate-500">
                 Select a benchmark scenario to inspect physics & resource allocation

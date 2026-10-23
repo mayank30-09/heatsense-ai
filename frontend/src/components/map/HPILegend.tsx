@@ -274,7 +274,7 @@ export default function HPILegend({
                 Observed {fallback.label} LST
               </span>
               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                Landsat 8/9 · 10:30 AM
+                Landsat 8/9 · ~10:30 LST (~11:00 IST)
               </span>
             </div>
 
@@ -309,7 +309,7 @@ export default function HPILegend({
             </div>
 
             <div className="mt-2 rounded bg-amber-50/90 p-2 border border-amber-200/70 text-[9.5px] leading-snug text-amber-900">
-              <span className="font-bold">Physical Note:</span> Landsat-derived Land Surface Temperature (LST) measures radiant skin temperature (T<sub>skin</sub>) at the satellite overpass (~10:30 AM IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
+              <span className="font-bold">Physical Note:</span> Landsat-derived Land Surface Temperature (LST) measures radiant skin temperature (T<sub>skin</sub>) at the satellite overpass (~10:30 local solar time, about 11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
             </div>
           </div>
         )}
@@ -359,7 +359,7 @@ export default function HPILegend({
                 Chronic Hotspots Only
               </span>
               <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-800">
-                {chronicCount} Verified
+                {chronicCount} Persistent Hotspots
               </span>
             </div>
 
@@ -445,7 +445,7 @@ export default function HPILegend({
             )}
 
             <div className="mt-2.5 border-t border-slate-100 pt-2 text-[10px] font-medium text-slate-700 leading-4">
-              Skin temperature at ~10:30 IST, single scene, not a seasonal composite.
+              Skin temperature at ~10:30 local solar time (about 11:00 IST), single scene, not a seasonal composite.
             </div>
 
             <div className="mt-1 text-[9px] text-slate-400">

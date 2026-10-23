@@ -52,7 +52,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
           <div>
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-teal-500/20 px-2.5 py-0.5 text-xs font-bold text-teal-300 border border-teal-500/30">
-                QC Status: {qc?.status || "PASS"} Verified
+                QC Status: {qc?.status || "PASS"} (Audit Validated)
               </span>
               <span className="text-xs font-mono text-slate-300">
                 Commit: {meta?.git_commit ? meta.git_commit.substring(0, 10) : "c91bc69038"}
@@ -144,7 +144,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 {qc.spatial_split_integrity.test_blocks} / {qc.spatial_split_integrity.total_blocks}
               </div>
               <p className="mt-1 text-xs text-slate-500">
-                2km spatial blocks · Zero spatial leakage verified
+                2km spatial blocks · Disjoint spatial blocks partition
               </p>
             </div>
           </div>
@@ -477,7 +477,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                       </div>
                     </div>
                     <div>
-                      <strong>Overpass Time:</strong> ~10:30 AM Local Solar Time (~11:03 AM IST)
+                      <strong>Overpass Time:</strong> ~10:30 local solar time (about 11:00 IST)
                     </div>
                     <div>
                       <strong>QA Masking:</strong> QA_PIXEL bits 0–5 (cloud, shadow, cirrus, snow)

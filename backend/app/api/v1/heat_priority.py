@@ -12,7 +12,7 @@ import math
 from pathlib import Path as FilePath
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -46,6 +46,22 @@ def safe_float(val: Any, decimals: int | None = None) -> float | None:
         return None
 
 
+class NormalizationConstants(BaseModel):
+    t_min_c: float = 30.0
+    t_max_c: float = 50.0
+    ndvi_min: float = 0.05
+    ndvi_target: float = 0.45
+    ndbi_min: float = -0.25
+    ndbi_max: float = 0.15
+    w_thermal: float = 0.40
+    w_persistence: float = 0.30
+    w_vegetation: float = 0.15
+    w_builtup: float = 0.15
+    formula: str = "HPI = 100 * (0.40 * T_norm + 0.30 * P_persist + 0.15 * V_deficit + 0.15 * B_density)"
+    data_observation_years: str = "2021-2026 (Summer, Winter, Monsoon); 2021-2025 (Post-Monsoon)"
+    overpass_solar_time: str = "~10:30 local solar time (about 11:00 IST)"
+
+
 class HeatPrioritySummaryResponse(BaseModel):
     scoring_period: str
     spec_version: str
@@ -57,6 +73,7 @@ class HeatPrioritySummaryResponse(BaseModel):
     chronic_hotspots_count: int
     confidence_tier_counts: dict[str, int]
     persistence_tier_counts: dict[str, int]
+    normalization_constants: NormalizationConstants = Field(default_factory=NormalizationConstants)
 
 
 class LSTStatsResponse(BaseModel):
@@ -199,6 +216,7 @@ def get_heat_priority_summary(
         chronic_hotspots_count=score_stats.chronic_count or 0,
         confidence_tier_counts=conf_counts,
         persistence_tier_counts=pers_counts,
+        normalization_constants=NormalizationConstants(),
     )
 
 

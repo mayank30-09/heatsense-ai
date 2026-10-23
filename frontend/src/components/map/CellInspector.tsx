@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { GridCellScoreItem } from "../../types/heatPriority";
 import {
   getConfidenceColor,
@@ -13,6 +14,16 @@ interface CellInspectorProps {
 }
 
 export default function CellInspector({ cell, onClose }: CellInspectorProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   if (!cell) return null;
 
   const hpiColor = getHPIColor(cell.heat_priority_score, cell.is_chronic_hotspot);

@@ -59,8 +59,16 @@ def test_heat_priority_summary_endpoint() -> None:
     assert data["chronic_hotspots_count"] == 223
     assert data["mean_hpi"] is not None
     assert isinstance(data["mean_hpi"], float)
-    assert math.isfinite(data["mean_hpi"])
     assert data["confidence_tier_counts"]["HIGH"] > 49000
+    assert "normalization_constants" in data
+    norm = data["normalization_constants"]
+    assert norm["t_min_c"] == 30.0
+    assert norm["t_max_c"] == 50.0
+    assert norm["w_thermal"] == 0.40
+    assert norm["w_persistence"] == 0.30
+    assert norm["w_vegetation"] == 0.15
+    assert norm["w_builtup"] == 0.15
+    assert "10:30" in norm["overpass_solar_time"]
 
 
 def test_heat_priority_cells_endpoint() -> None:

@@ -47,15 +47,22 @@ export default function LayerControls({
   return (
     <div className="pointer-events-none absolute top-3 left-14 z-[1000] flex flex-col gap-2">
       {/* Primary Layer Selector */}
-      <div className="pointer-events-auto flex items-center rounded-lg border border-slate-200/90 bg-white/95 p-1 shadow-md backdrop-blur">
+      <div
+        role="tablist"
+        aria-label="Map thermal and priority layer modes"
+        className="pointer-events-auto flex items-center rounded-lg border border-slate-200/90 bg-white/95 p-1 shadow-md backdrop-blur"
+      >
         {modes.map((mode) => {
           const isActive = layerMode === mode.id;
           return (
             <button
               key={mode.id}
+              role="tab"
+              aria-selected={isActive}
+              aria-label={`${mode.label} layer`}
               type="button"
               onClick={() => onLayerModeChange(mode.id)}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
                 isActive
                   ? "bg-slate-900 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -80,7 +87,8 @@ export default function LayerControls({
             <select
               value={selectedSceneId || scenes[0]?.scene_id}
               onChange={(e) => onSelectScene?.(e.target.value)}
-              className="rounded border border-indigo-200 bg-indigo-50/50 px-2 py-0.5 text-xs font-medium text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none"
+              aria-label="Select near-real-time Landsat overpass scene"
+              className="rounded border border-indigo-200 bg-indigo-50/50 px-2 py-0.5 text-xs font-medium text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none cursor-pointer"
             >
               {scenes.map((s) => (
                 <option key={s.scene_id} value={s.scene_id}>
@@ -113,8 +121,10 @@ export default function LayerControls({
       <div className="pointer-events-auto flex items-center gap-2 flex-wrap">
         <button
           type="button"
+          aria-pressed={showRasterTile}
+          aria-label="Toggle Landsat surface temperature raster layer"
           onClick={onToggleRasterTile}
-          className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all backdrop-blur shadow-sm ${
+          className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all backdrop-blur shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
             showRasterTile
               ? "border-blue-300 bg-blue-50 text-blue-800"
               : "border-slate-200 bg-white/95 text-slate-600 hover:bg-slate-50"
@@ -126,8 +136,10 @@ export default function LayerControls({
 
         <button
           type="button"
+          aria-pressed={minHpiFilter !== undefined}
+          aria-label="Filter grid cells by HPI greater than or equal to 50"
           onClick={onToggleMinHpi}
-          className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all backdrop-blur shadow-sm ${
+          className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all backdrop-blur shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
             minHpiFilter !== undefined
               ? "border-amber-300 bg-amber-50 text-amber-900 font-bold"
               : "border-slate-200 bg-white/95 text-slate-600 hover:bg-slate-50"
@@ -139,6 +151,8 @@ export default function LayerControls({
 
         {onSeasonChange && (
           <div
+            role="group"
+            aria-label="Observation season selection"
             className={`flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm transition-opacity ${
               layerMode === "latest_scene" ? "opacity-40 cursor-not-allowed" : ""
             }`}
@@ -150,48 +164,56 @@ export default function LayerControls({
           >
             <button
               type="button"
+              aria-label="Summer season observations"
+              aria-pressed={season === "summer"}
               disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("summer")}
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
                 layerMode === "latest_scene"
                   ? "cursor-not-allowed text-slate-400"
                   : season === "summer"
-                  ? "bg-amber-600 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-amber-600 text-white shadow-sm cursor-pointer"
+                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
               }`}
             >
               ☀️ Summer
             </button>
             <button
               type="button"
+              aria-label="Winter season observations"
+              aria-pressed={season === "winter"}
               disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("winter")}
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
                 layerMode === "latest_scene"
                   ? "cursor-not-allowed text-slate-400"
                   : season === "winter"
-                  ? "bg-sky-600 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-sky-600 text-white shadow-sm cursor-pointer"
+                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
               }`}
             >
               ❄️ Winter
             </button>
             <button
               type="button"
+              aria-label="Post-Monsoon season observations"
+              aria-pressed={season === "post_monsoon"}
               disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("post_monsoon")}
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
                 layerMode === "latest_scene"
                   ? "cursor-not-allowed text-slate-400"
                   : season === "post_monsoon"
-                  ? "bg-orange-700 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-orange-700 text-white shadow-sm cursor-pointer"
+                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
               }`}
             >
               🍂 Post-Monsoon
             </button>
             <button
               type="button"
+              aria-label="Monsoon season observations"
+              aria-pressed={season === "monsoon"}
               disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("monsoon")}
               title={
@@ -199,12 +221,12 @@ export default function LayerControls({
                   ? undefined
                   : "Low reliability: high cloud contamination risk"
               }
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all flex items-center gap-1 ${
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
                 layerMode === "latest_scene"
                   ? "cursor-not-allowed text-slate-400"
                   : season === "monsoon"
-                  ? "bg-teal-700 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-teal-700 text-white shadow-sm cursor-pointer"
+                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
               }`}
             >
               <span>🌧️ Monsoon</span>
@@ -214,11 +236,17 @@ export default function LayerControls({
         )}
 
         {onSelectTool && (
-          <div className="flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm">
+          <div
+            role="group"
+            aria-label="Map interaction tools"
+            className="flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm"
+          >
             <button
               type="button"
+              aria-pressed={activeTool === "grid"}
+              aria-label="Grid cells inspection tool"
               onClick={() => onSelectTool("grid")}
-              className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-all ${
+              className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-all cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
                 activeTool === "grid"
                   ? "bg-slate-800 text-white"
                   : "text-slate-600 hover:bg-slate-100"
@@ -228,8 +256,10 @@ export default function LayerControls({
             </button>
             <button
               type="button"
+              aria-pressed={activeTool === "drawing"}
+              aria-label="Custom polygon drawing tool"
               onClick={() => onSelectTool("drawing")}
-              className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-all ${
+              className={`rounded px-2.5 py-1 text-[11px] font-semibold transition-all cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
                 activeTool === "drawing"
                   ? "bg-slate-800 text-white"
                   : "text-slate-600 hover:bg-slate-100"

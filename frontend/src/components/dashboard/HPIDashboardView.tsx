@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { HeatPrioritySummary } from "../../types/heatPriority";
 import { fetchHeatPrioritySummary } from "../../services/heatPriorityApi";
+import ScienceGlossaryModal from "../common/ScienceGlossaryModal";
 
 interface HPIDashboardViewProps {
   onSwitchToMap: () => void;
@@ -10,30 +11,36 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
   const [summary, setSummary] = useState<HeatPrioritySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showGlossary, setShowGlossary] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadSummary = () => {
     setLoading(true);
     fetchHeatPrioritySummary()
       .then((data) => {
-        if (!cancelled) {
-          setSummary(data);
-          setError(null);
-        }
+        setSummary(data);
+        setError(null);
       })
       .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load summary statistics");
-        }
+        setError(err instanceof Error ? err.message : "Failed to load summary statistics");
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
+  };
 
-    return () => {
-      cancelled = true;
-    };
+  useEffect(() => {
+    loadSummary();
   }, []);
+
+  const norm = summary?.normalization_constants;
+  const tMin = norm?.t_min_c ?? 30.0;
+  const tMax = norm?.t_max_c ?? 50.0;
+  const ndviMin = norm?.ndvi_min ?? 0.05;
+  const ndviTarget = norm?.ndvi_target ?? 0.45;
+  const ndbiMin = norm?.ndbi_min ?? -0.25;
+  const ndbiMax = norm?.ndbi_max ?? 0.15;
+  const dataRange = norm?.data_observation_years ?? "2021–2026 (Summer, Winter, Monsoon); 2021–2025 (Post-Monsoon)";
+  const overpassTime = norm?.overpass_solar_time ?? "~10:30 local solar time (about 11:00 IST)";
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,46 +48,74 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
       <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 p-6 text-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-red-400">
-              Stage C Verified Release · Operational Summer 2026
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-red-500/20 px-2.5 py-0.5 text-xs font-bold text-red-300 border border-red-500/30">
+                Stage C Specification
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Operational Summer 2026 Release
+              </span>
             </div>
-            <h2 className="mt-1 text-2xl font-extrabold text-white">
+            <h2 className="mt-2 text-2xl font-extrabold text-white">
               Surat Municipal Corporation · Heat Priority Index (HPI)
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-slate-300">
               Authoritative 100m analytical grid multi-criteria prioritization combining Landsat 8/9 thermal severity,
-              5-year multi-seasonal persistence, Landsat Level-2 surface reflectance vegetation deficit, and built-up density.
+              multi-year seasonal persistence ({dataRange}), Landsat Level-2 surface reflectance vegetation deficit, and built-up density.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onSwitchToMap}
-            className="flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-red-500 transition-all focus:outline-none focus:ring-2 focus:ring-red-400"
-          >
-            <span>Explore Interactive Heat Map</span>
-            <span>→</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowGlossary(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/40"
+            >
+              <span>📖 Science Glossary</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onSwitchToMap}
+              className="flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-red-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+            >
+              <span>Explore Interactive Heat Map</span>
+              <span>→</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Loading & Error States */}
+      {/* Loading Skeleton */}
       {loading && (
-        <div className="flex items-center justify-center p-12 text-slate-500">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-red-600 border-t-transparent mr-3" />
-          <span>Loading Stage C authoritative statistics from PostgreSQL…</span>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm animate-pulse">
+              <div className="h-3 w-24 bg-slate-200 rounded mb-3" />
+              <div className="h-8 w-32 bg-slate-300 rounded mb-2" />
+              <div className="h-3 w-40 bg-slate-200 rounded" />
+            </div>
+          ))}
         </div>
       )}
 
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          <div className="font-bold">Error loading summary:</div>
-          <div>{error}</div>
+      {/* Error State with Retry Button */}
+      {error && !loading && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800 shadow-xs">
+          <div className="font-bold text-base text-red-900 mb-1">Failed to Load Dashboard Data</div>
+          <p className="text-red-700">{error}</p>
+          <button
+            type="button"
+            onClick={loadSummary}
+            className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-500 cursor-pointer shadow-sm transition-all"
+          >
+            ↻ Retry Connection
+          </button>
         </div>
       )}
 
       {/* Primary KPI Grid */}
-      {summary && (
+      {summary && !loading && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -136,9 +171,14 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* HPI Mathematical Formulation Card */}
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">
-                Stage C Composite Weight Specification
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+                  Stage C Component Weights & Normalization Bounds
+                </h3>
+                <span className="font-mono text-xs font-semibold text-slate-400">
+                  {overpassTime}
+                </span>
+              </div>
 
               <div className="space-y-4 text-xs">
                 <div>
@@ -149,7 +189,9 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-red-600 rounded-full" style={{ width: "40%" }} />
                   </div>
-                  <p className="mt-1 text-[11px] text-slate-500">Normalized LST over [28°C, 48°C] domain baseline.</p>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Normalized observed summer LST over canonical [{tMin.toFixed(1)}°C, {tMax.toFixed(1)}°C] domain baseline.
+                  </p>
                 </div>
 
                 <div>
@@ -160,7 +202,9 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-orange-500 rounded-full" style={{ width: "30%" }} />
                   </div>
-                  <p className="mt-1 text-[11px] text-slate-500">Multi-temporal hotspot frequency across 19 valid seasons.</p>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    Multi-temporal hotspot recurrence frequency across {dataRange}.
+                  </p>
                 </div>
 
                 <div>
@@ -171,7 +215,9 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-emerald-600 rounded-full" style={{ width: "15%" }} />
                   </div>
-                  <p className="mt-1 text-[11px] text-slate-500">NDVI cooling deficit relative to target threshold.</p>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    NDVI deficit normalized over [{ndviMin.toFixed(2)}, {ndviTarget.toFixed(2)}] urban canopy target.
+                  </p>
                 </div>
 
                 <div>
@@ -182,7 +228,9 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-amber-600 rounded-full" style={{ width: "15%" }} />
                   </div>
-                  <p className="mt-1 text-[11px] text-slate-500">NDBI impervious surface heat trap potential.</p>
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    NDBI density normalized over [{ndbiMin.toFixed(2)}, {ndbiMax.toFixed(2)}] impervious ceiling.
+                  </p>
                 </div>
               </div>
             </div>
@@ -228,6 +276,12 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
           </div>
         </>
       )}
+
+      {/* Science Glossary Modal */}
+      <ScienceGlossaryModal
+        isOpen={showGlossary}
+        onClose={() => setShowGlossary(false)}
+      />
     </div>
   );
 }

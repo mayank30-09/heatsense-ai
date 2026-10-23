@@ -226,10 +226,10 @@ export default function InterventionExplorer({
           <div>
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-emerald-300 border border-emerald-500/30">
-                Stage D Verified
+                Stage D Specification
               </span>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Physics-Informed Cooling Catalog
+                Surface Energy Balance Cooling Catalog
               </span>
             </div>
             <h2 className="mt-2 text-2xl font-extrabold text-white">
@@ -289,7 +289,7 @@ export default function InterventionExplorer({
             {chronicCount} <span className="text-sm font-normal text-slate-500">candidates</span>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Multi-year persistent heat vulnerability (2021–2026)
+            Multi-year persistent heat vulnerability (2021–2026 summer/winter; 2021–2025 post-monsoon)
           </p>
         </div>
 
@@ -964,7 +964,7 @@ export default function InterventionExplorer({
                 <div className="rounded-lg bg-white p-3 border border-slate-200">
                   <span className="text-slate-400 text-[11px]">Incident Solar Irradiance (K↓)</span>
                   <div className="text-sm font-bold text-slate-800 font-mono">
-                    870 W/m² (May 10:30 IST)
+                    870 W/m² (May ~10:30 local solar time / ~11:00 IST)
                   </div>
                 </div>
                 <div className="rounded-lg bg-white p-3 border border-slate-200">

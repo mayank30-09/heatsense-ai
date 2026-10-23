@@ -1,3 +1,19 @@
+export interface NormalizationConstants {
+  t_min_c: number;
+  t_max_c: number;
+  ndvi_min: number;
+  ndvi_target: number;
+  ndbi_min: number;
+  ndbi_max: number;
+  w_thermal: number;
+  w_persistence: number;
+  w_vegetation: number;
+  w_builtup: number;
+  formula: string;
+  data_observation_years: string;
+  overpass_solar_time: string;
+}
+
 export interface HeatPrioritySummary {
   scoring_period: string;
   spec_version: string;
@@ -9,6 +25,7 @@ export interface HeatPrioritySummary {
   chronic_hotspots_count: number;
   confidence_tier_counts: Record<string, number>;
   persistence_tier_counts: Record<string, number>;
+  normalization_constants?: NormalizationConstants;
 }
 
 export interface GridCellScoreItem {
