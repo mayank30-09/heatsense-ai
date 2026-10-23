@@ -65,12 +65,45 @@ class LSTStatsResponse(BaseModel):
     effective_year: int
     n_cells: int
     n_valid: int
+    valid_fraction: float | None = None
     mean_c: float | None = None
     min_c: float | None = None
     max_c: float | None = None
     p90_c: float | None = None
     source: str = "stage_c_grid_observations"
     is_partial: bool = False
+    n_scenes: int | None = None
+    first_acquisition_date: str | None = None
+    last_acquisition_date: str | None = None
+    date_window: str | None = None
+
+
+SEASON_PROVENANCE: dict[tuple[str, int], dict[str, Any]] = {
+    ("summer", 2026): {
+        "n_scenes": 22,
+        "first_acquisition_date": "2026-03-04",
+        "last_acquisition_date": "2026-05-31",
+        "date_window": "2026-03-04 to 2026-05-31",
+    },
+    ("winter", 2026): {
+        "n_scenes": 20,
+        "first_acquisition_date": "2025-12-06",
+        "last_acquisition_date": "2026-02-24",
+        "date_window": "2025-12-06 to 2026-02-24",
+    },
+    ("monsoon", 2026): {
+        "n_scenes": 6,
+        "first_acquisition_date": "2026-06-08",
+        "last_acquisition_date": "2026-09-28",
+        "date_window": "2026-06-08 to 2026-09-28",
+    },
+    ("post_monsoon", 2025): {
+        "n_scenes": 14,
+        "first_acquisition_date": "2025-10-03",
+        "last_acquisition_date": "2025-11-28",
+        "date_window": "2025-10-03 to 2025-11-28",
+    },
+}
 
 
 class GridCellScoreItem(BaseModel):
@@ -205,6 +238,8 @@ def get_heat_priority_lst_stats(
         )
 
     is_partial = bool(res.n_valid < total_cells)
+    valid_fraction = round(float(res.n_valid / total_cells), 4) if total_cells > 0 else 0.0
+    prov = SEASON_PROVENANCE.get((season.value, effective_year), {})
 
     return LSTStatsResponse(
         season=season,
@@ -212,12 +247,17 @@ def get_heat_priority_lst_stats(
         effective_year=effective_year,
         n_cells=total_cells,
         n_valid=res.n_valid,
+        valid_fraction=valid_fraction,
         mean_c=safe_float(res.mean_c, 2),
         min_c=safe_float(res.min_c, 2),
         max_c=safe_float(res.max_c, 2),
         p90_c=safe_float(res.p90_c, 2),
         source="stage_c_grid_observations",
         is_partial=is_partial,
+        n_scenes=prov.get("n_scenes"),
+        first_acquisition_date=prov.get("first_acquisition_date"),
+        last_acquisition_date=prov.get("last_acquisition_date"),
+        date_window=prov.get("date_window"),
     )
 
 

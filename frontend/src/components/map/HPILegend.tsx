@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ActiveLayerMode, LSTStats, SeasonName } from "../../types/heatPriority";
 import { fetchLSTStats } from "../../services/heatPriorityApi";
+import type { SceneItem } from "../../services/scenesApi";
 
 interface HPILegendProps {
   layerMode: ActiveLayerMode;
@@ -8,6 +9,9 @@ interface HPILegendProps {
   year?: number;
   chronicCount?: number;
   totalCells?: number;
+  selectedScene?: SceneItem | null;
+  recentDayThreshold?: number;
+  hasRecentScene?: boolean;
 }
 
 interface SeasonalStats {
@@ -17,6 +21,8 @@ interface SeasonalStats {
   minLst: number;
   maxLst: number;
   p90Lst: number;
+  sceneCount?: number;
+  dateWindow?: string;
   isFlagged?: boolean;
   flagMessage?: string;
 }
@@ -29,6 +35,8 @@ const SEASON_FALLBACKS: Record<SeasonName, SeasonalStats> = {
     minLst: 29.6,
     maxLst: 58.6,
     p90Lst: 47.4,
+    sceneCount: 22,
+    dateWindow: "2026-03-04 to 2026-05-31",
   },
   winter: {
     label: "Winter",
@@ -37,6 +45,8 @@ const SEASON_FALLBACKS: Record<SeasonName, SeasonalStats> = {
     minLst: 23.7,
     maxLst: 44.4,
     p90Lst: 33.5,
+    sceneCount: 20,
+    dateWindow: "2025-12-06 to 2026-02-24",
   },
   post_monsoon: {
     label: "Post-Monsoon",
@@ -45,6 +55,8 @@ const SEASON_FALLBACKS: Record<SeasonName, SeasonalStats> = {
     minLst: 26.3,
     maxLst: 46.5,
     p90Lst: 35.9,
+    sceneCount: 14,
+    dateWindow: "2025-10-03 to 2025-11-28",
     isFlagged: true,
     flagMessage: "Year 2026 incomplete; validated 2025 observation data is shown.",
   },
@@ -55,6 +67,8 @@ const SEASON_FALLBACKS: Record<SeasonName, SeasonalStats> = {
     minLst: 27.1,
     maxLst: 59.0,
     p90Lst: 47.2,
+    sceneCount: 6,
+    dateWindow: "2026-06-08 to 2026-09-28",
     isFlagged: true,
     flagMessage: "Partial coverage due to persistent monsoon cloud masking.",
   },
@@ -66,6 +80,9 @@ export default function HPILegend({
   year,
   chronicCount = 223,
   totalCells = 49747,
+  selectedScene = null,
+  recentDayThreshold = 30,
+  hasRecentScene = true,
 }: HPILegendProps) {
   const fallback = SEASON_FALLBACKS[season] || SEASON_FALLBACKS.summer;
   const [stats, setStats] = useState<LSTStats | null>(null);
@@ -99,50 +116,105 @@ export default function HPILegend({
   return (
     <div className="pointer-events-none absolute bottom-8 left-3 z-[1000] w-80">
       <div className="pointer-events-auto rounded-lg border border-slate-200/90 bg-white/95 p-3.5 shadow-md backdrop-blur">
-        {/* Visible Season / Year and Layer LST Statistics Card */}
-        <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-2.5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Active Layer
-            </span>
-            <span className="rounded bg-slate-200/80 px-2 py-0.5 font-mono text-[11px] font-bold text-slate-800">
-              {fallback.label} / {displayYear}
-            </span>
-          </div>
-
-          <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-            <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
-              <div className="text-[9px] uppercase tracking-wide text-slate-400">Mean LST</div>
-              <div className="text-sm font-bold text-blue-700">
-                {meanLst.toFixed(1)}°C
-              </div>
-            </div>
-            <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
-              <div className="text-[9px] uppercase tracking-wide text-slate-400">Max LST</div>
-              <div className="text-sm font-bold text-red-700">
-                {maxLst.toFixed(1)}°C
-              </div>
-            </div>
-          </div>
-
-          {isPostMonsoonNotice && (
-            <div className="mt-2 flex items-center gap-1.5 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-800">
-              <span>ℹ️</span>
-              <span>Year 2026 incomplete; validated 2025 observation data is shown.</span>
-            </div>
-          )}
-
-          {isMonsoonPartial && (
-            <div className="mt-2 flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-900">
+        {/* Visible Season / Year or Scene LST Statistics Card */}
+        {layerMode === "latest_scene" ? (
+          <div className="mb-3 rounded-md border border-indigo-200 bg-indigo-50/70 p-2.5 shadow-sm">
+            {/* Clear banner */}
+            <div className="mb-2 rounded bg-amber-100/90 border border-amber-300 px-2 py-1 text-[10px] font-bold text-amber-900 flex items-center gap-1.5">
               <span>⚠️</span>
-              <span>
-                {stats?.n_valid
-                  ? `Partial coverage: cloud masked (${stats.n_valid.toLocaleString()} of ${totalCells.toLocaleString()} valid cells)`
-                  : "Partial coverage due to persistent monsoon cloud masking."}
+              <span>single scene, not a seasonal composite, not used in HPI</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-800">
+                Satellite Overpass
+              </span>
+              <span className="rounded bg-indigo-200/80 px-2 py-0.5 font-mono text-[11px] font-bold text-indigo-900">
+                {selectedScene ? selectedScene.acquisition_date : "No Scene"}
               </span>
             </div>
-          )}
-        </div>
+
+            {selectedScene ? (
+              <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="rounded bg-white p-1.5 border border-indigo-100 shadow-2xs">
+                  <div className="text-[9px] uppercase tracking-wide text-slate-400">Mean LST</div>
+                  <div className="text-sm font-bold text-indigo-700">
+                    {selectedScene.mean_lst_c !== null ? `${selectedScene.mean_lst_c.toFixed(1)}°C` : "N/A"}
+                  </div>
+                </div>
+                <div className="rounded bg-white p-1.5 border border-indigo-100 shadow-2xs">
+                  <div className="text-[9px] uppercase tracking-wide text-slate-400">Max LST</div>
+                  <div className="text-sm font-bold text-red-700">
+                    {selectedScene.max_lst_c !== null ? `${selectedScene.max_lst_c.toFixed(1)}°C` : "N/A"}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {!hasRecentScene && (
+              <div className="mt-2 flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-900">
+                <span>⚠️</span>
+                <span>No clear scene in the last {recentDayThreshold} days.</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-2.5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Active Layer
+              </span>
+              <span className="rounded bg-slate-200/80 px-2 py-0.5 font-mono text-[11px] font-bold text-slate-800">
+                {fallback.label} / {displayYear}
+              </span>
+            </div>
+
+            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+              <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
+                <div className="text-[9px] uppercase tracking-wide text-slate-400">Mean LST</div>
+                <div className="text-sm font-bold text-blue-700">
+                  {meanLst.toFixed(1)}°C
+                </div>
+              </div>
+              <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
+                <div className="text-[9px] uppercase tracking-wide text-slate-400">Max LST</div>
+                <div className="text-sm font-bold text-red-700">
+                  {maxLst.toFixed(1)}°C
+                </div>
+              </div>
+            </div>
+
+            {/* Seasonal Scene Provenance */}
+            <div className="mt-2 rounded bg-white p-1.5 border border-slate-100 text-[10px] space-y-0.5 text-slate-600">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Composite:</span>
+                <span className="font-semibold">{stats?.n_scenes ?? fallback.sceneCount} contributing scenes</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Date Window:</span>
+                <span className="font-mono text-[9px]">{stats?.date_window ?? fallback.dateWindow}</span>
+              </div>
+            </div>
+
+            {isPostMonsoonNotice && (
+              <div className="mt-2 flex items-center gap-1.5 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-800">
+                <span>ℹ️</span>
+                <span>Year 2026 incomplete; validated 2025 observation data is shown.</span>
+              </div>
+            )}
+
+            {isMonsoonPartial && (
+              <div className="mt-2 flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-900">
+                <span>⚠️</span>
+                <span>
+                  {stats?.n_valid
+                    ? `Partial coverage: cloud masked (${stats.n_valid.toLocaleString()} of ${totalCells.toLocaleString()} valid cells, ${(stats.valid_fraction ? stats.valid_fraction * 100 : (stats.n_valid / totalCells) * 100).toFixed(1)}%)`
+                    : "Partial coverage due to persistent monsoon cloud masking."}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Layer Mode: HPI Priority */}
         {layerMode === "hpi" && (
@@ -299,6 +371,86 @@ export default function HPILegend({
             <p className="mt-2 text-[10px] leading-tight text-slate-500">
               Criterion: Hotspot frequency ≥50%, ≥3 hot seasons, ≥2 distinct years, and ≥4 qualifying seasons.
             </p>
+          </div>
+        )}
+
+        {/* Layer Mode: Latest Scene */}
+        {layerMode === "latest_scene" && (
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                Observed Single Scene LST
+              </span>
+              <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-800">
+                20°C – 60°C
+              </span>
+            </div>
+
+            <div
+              className="mt-2 h-3.5 w-full rounded"
+              style={{
+                background:
+                  "linear-gradient(to right, rgb(59,130,246), rgb(16,185,129), rgb(245,158,11), rgb(234,88,12), rgb(127,29,29))",
+              }}
+            />
+
+            <div className="mt-1 flex justify-between text-[10px] font-medium text-slate-500">
+              <span>20°C</span>
+              <span>30°C</span>
+              <span>40°C</span>
+              <span>50°C</span>
+              <span>60°C</span>
+            </div>
+
+            {selectedScene && (
+              <div className="mt-2.5 rounded bg-slate-50 p-2 text-[11px] text-slate-700 space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Scene ID:</span>
+                  <span className="font-mono text-[9px] truncate max-w-[170px]" title={selectedScene.scene_id}>
+                    {selectedScene.scene_id}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Sensor:</span>
+                  <span className="font-semibold">{selectedScene.sensor}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Cloud Cover:</span>
+                  <span className="font-semibold">
+                    {selectedScene.cloud_cover !== null ? `${selectedScene.cloud_cover.toFixed(1)}%` : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Clear Pixels (SMC):</span>
+                  <span className="font-semibold text-emerald-700">
+                    {(selectedScene.valid_pixel_fraction * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Acquisition (UTC):</span>
+                  <span className="font-mono text-[9.5px]">{selectedScene.acquisition_time}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Acquisition (IST):</span>
+                  <span className="font-mono text-[9.5px]">
+                    {selectedScene.acquisition_time_ist ||
+                      `${new Date(selectedScene.acquisition_time).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" })} IST`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Units:</span>
+                  <span className="font-semibold">°C (Celsius)</span>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-2.5 border-t border-slate-100 pt-2 text-[10px] font-medium text-slate-700 leading-4">
+              Skin temperature at ~10:30 IST, single scene, not a seasonal composite.
+            </div>
+
+            <div className="mt-1 text-[9px] text-slate-400">
+              Cloud-masked or unobserved pixels render transparent (nodata). Single-scene values do not flow into HPI, predictions, or recommendations.
+            </div>
           </div>
         )}
       </div>

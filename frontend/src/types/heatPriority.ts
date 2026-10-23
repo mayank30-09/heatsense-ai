@@ -48,7 +48,7 @@ export interface ViewportBBox {
   max_lat: number;
 }
 
-export type ActiveLayerMode = "hpi" | "lst" | "confidence" | "chronic";
+export type ActiveLayerMode = "hpi" | "lst" | "confidence" | "chronic" | "latest_scene";
 
 export type SeasonName = "summer" | "winter" | "monsoon" | "post_monsoon";
 
@@ -71,12 +71,17 @@ export interface LSTStats {
   effective_year: number;
   n_cells: number;
   n_valid: number;
+  valid_fraction?: number;
   mean_c: number | null;
   min_c: number | null;
   max_c: number | null;
   p90_c: number | null;
   source: string;
   is_partial: boolean;
+  n_scenes?: number;
+  first_acquisition_date?: string;
+  last_acquisition_date?: string;
+  date_window?: string;
 }
 
 export interface ModelValidationSummary {
