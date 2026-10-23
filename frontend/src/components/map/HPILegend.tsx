@@ -113,10 +113,48 @@ export default function HPILegend({
   const isPostMonsoonNotice = season === "post_monsoon";
   const isMonsoonPartial = season === "monsoon" || (stats?.is_partial ?? false);
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const getLegendTitle = () => {
+    switch (layerMode) {
+      case "hpi":
+        return "Heat Priority Index";
+      case "lst":
+        return `Observed LST (${fallback.label} ${displayYear})`;
+      case "confidence":
+        return "Confidence & Quality";
+      case "chronic":
+        return "Chronic Hotspots (223)";
+      case "latest_scene":
+        return `Latest Scene (${selectedScene?.acquisition_date ?? "NRT"})`;
+      default:
+        return "Map Legend";
+    }
+  };
+
   return (
-    <div className="pointer-events-none absolute bottom-8 left-3 z-[1000] w-80">
-      <div className="pointer-events-auto rounded-lg border border-slate-200/90 bg-white/95 p-3.5 shadow-md backdrop-blur">
-        {/* Visible Season / Year or Scene LST Statistics Card */}
+    <div className="pointer-events-none absolute bottom-3 sm:bottom-6 left-3 z-[1000] w-[calc(100vw-24px)] max-w-[300px] sm:max-w-xs">
+      <div className="pointer-events-auto rounded-lg border border-slate-200/90 bg-white/95 p-3 shadow-md backdrop-blur">
+        {/* Header with Collapse/Expand Toggle */}
+        <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/80 mb-2">
+          <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 truncate">
+            <span>🗺️</span>
+            <span className="truncate">{getLegendTitle()}</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? "Expand map legend" : "Collapse map legend"}
+            className="text-[10px] font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded cursor-pointer transition-colors shrink-0"
+          >
+            {isCollapsed ? "Expand ▲" : "Collapse ▼"}
+          </button>
+        </div>
+
+        {!isCollapsed && (
+          <div className="max-h-[38vh] sm:max-h-[46vh] overflow-y-auto pr-1 space-y-3">
+            {/* Visible Season / Year or Scene LST Statistics Card */}
         {layerMode === "latest_scene" ? (
           <div className="mb-3 rounded-md border border-indigo-200 bg-indigo-50/70 p-2.5 shadow-sm">
             {/* Clear banner */}
@@ -458,6 +496,8 @@ export default function HPILegend({
           </div>
         )}
       </div>
-    </div>
-  );
+    )}
+  </div>
+</div>
+);
 }

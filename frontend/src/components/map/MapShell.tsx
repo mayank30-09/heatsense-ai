@@ -39,14 +39,21 @@ type AnalysisArea = {
 interface MapShellProps {
   initialTool?: "grid" | "drawing";
   initialLayer?: ActiveLayerMode;
+  mode?: "heat_map" | "area_analysis";
 }
 
 export function MapShell({
   initialTool = "grid",
   initialLayer = "hpi",
+  mode = "heat_map",
 }: MapShellProps) {
-  const [activeTool, setActiveTool] = useState<"grid" | "drawing">(initialTool);
-  const [layerMode, setLayerMode] = useState<ActiveLayerMode>(initialLayer);
+  const isAreaAnalysis = mode === "area_analysis";
+  const [activeTool, setActiveTool] = useState<"grid" | "drawing">(
+    isAreaAnalysis ? "drawing" : initialTool
+  );
+  const [layerMode, setLayerMode] = useState<ActiveLayerMode>(
+    isAreaAnalysis ? "lst" : initialLayer
+  );
   const [season, setSeason] = useState<SeasonName>("summer");
   const [year, setYear] = useState<number>(2026);
   const [showRasterTile, setShowRasterTile] = useState(true);
@@ -231,34 +238,30 @@ const handleAreaRemoved =
           />
         )}
 
-        <HPIViewportGrid
-          layerMode={layerMode}
-          selectedCell={selectedCell}
-          onSelectCell={(cell) => setSelectedCell(cell)}
-          minHpiFilter={minHpiFilter}
-          season={season}
-          year={effectiveYear}
-        />
+        {!isAreaAnalysis && (
+          <HPIViewportGrid
+            layerMode={layerMode}
+            selectedCell={selectedCell}
+            onSelectCell={(cell) => setSelectedCell(cell)}
+            minHpiFilter={minHpiFilter}
+            season={season}
+            year={effectiveYear}
+          />
+        )}
 
-        <AreaDrawing
-          season={season}
-          year={effectiveYear}
-          onAreaCreated={
-            handleAreaCreated
-          }
-          onAreaUpdated={
-            handleAreaUpdated
-          }
-          onAreaRemoved={
-            handleAreaRemoved
-          }
-          onAnalysisError={
-            handleAnalysisError
-          }
-        />
+        {isAreaAnalysis && (
+          <AreaDrawing
+            season={season}
+            year={effectiveYear}
+            onAreaCreated={handleAreaCreated}
+            onAreaUpdated={handleAreaUpdated}
+            onAreaRemoved={handleAreaRemoved}
+            onAnalysisError={handleAnalysisError}
+          />
+        )}
 
         <HPILegend
-          layerMode={layerMode}
+          layerMode={isAreaAnalysis ? "lst" : layerMode}
           season={season}
           year={effectiveYear}
           selectedScene={selectedScene}
@@ -279,7 +282,7 @@ const handleAreaRemoved =
       )}
 
       {/* Latest Scene Notice Banner */}
-      {layerMode === "latest_scene" && (
+      {!isAreaAnalysis && layerMode === "latest_scene" && (
         <div className="pointer-events-none absolute top-16 left-1/2 z-[1000] -translate-x-1/2">
           {scenes.length === 0 ? (
             <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-slate-300 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur">
@@ -298,6 +301,7 @@ const handleAreaRemoved =
       )}
 
       <LayerControls
+        isAreaAnalysis={isAreaAnalysis}
         layerMode={layerMode}
         onLayerModeChange={setLayerMode}
         showRasterTile={showRasterTile}
@@ -307,7 +311,6 @@ const handleAreaRemoved =
         season={season}
         onSeasonChange={handleSeasonChange}
         activeTool={activeTool}
-        onSelectTool={setActiveTool}
         scenes={scenes}
         selectedSceneId={selectedSceneId ?? undefined}
         onSelectScene={setSelectedSceneId}
@@ -315,7 +318,7 @@ const handleAreaRemoved =
       />
 
       {/* Grid Cell Inspector */}
-      {selectedCell && (
+      {!isAreaAnalysis && selectedCell && (
         <CellInspector
           cell={selectedCell}
           onClose={() => setSelectedCell(null)}
@@ -323,7 +326,7 @@ const handleAreaRemoved =
       )}
 
       {/* Polygon Drawing Area Analysis Drawer */}
-      {(activeTool === "drawing" || analysisAreas.length > 0) && !selectedCell && (
+      {isAreaAnalysis && (activeTool === "drawing" || analysisAreas.length > 0) && (
         <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-96 max-h-[75%] overflow-y-auto">
           <div className="pointer-events-auto rounded-lg border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
             <div className="mb-3 flex items-center justify-between">

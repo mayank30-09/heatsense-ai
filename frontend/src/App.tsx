@@ -177,7 +177,7 @@ function AppContent() {
                   </p>
                 </div>
 
-                <MapShell initialTool="grid" />
+                <MapShell initialTool="grid" mode="heat_map" />
               </>
             )}
 
@@ -193,7 +193,7 @@ function AppContent() {
                   </p>
                 </div>
 
-                <MapShell initialTool="drawing" />
+                <MapShell initialTool="drawing" mode="area_analysis" />
               </>
             )}
 
@@ -275,37 +275,37 @@ function AppContent() {
             )}
           </Suspense>
 
-          <div className="connection-panel">
-            <div>
-              <span className="connection-label">Backend</span>
-              <strong>
-                {backendConnected ? "Connected" : "Unavailable"}
-              </strong>
+          <footer className="connection-panel" aria-label="System connectivity status">
+            <div className="connection-item">
+              <span className="connection-label">Backend API:</span>
+              <span className={backendConnected ? "connection-badge-connected" : "connection-badge-unavailable"}>
+                <span className={`status-dot ${backendConnected ? "bg-emerald-600" : "bg-rose-600"}`} />
+                <span>{backendConnected ? "Connected (127.0.0.1:8000)" : "Unavailable"}</span>
+              </span>
             </div>
 
-            <div>
-              <span className="connection-label">Database</span>
-              <strong>
-                {databaseConnected ? "Connected" : "Unavailable"}
-              </strong>
+            <div className="connection-item">
+              <span className="connection-label">PostGIS Database:</span>
+              <span className={databaseConnected ? "connection-badge-connected" : "connection-badge-unavailable"}>
+                <span className={`status-dot ${databaseConnected ? "bg-emerald-600" : "bg-rose-600"}`} />
+                <span>{databaseConnected ? "Connected (127.0.0.1:5433)" : "Unavailable"}</span>
+              </span>
             </div>
 
             {apiError && (
-              <div className="flex items-center gap-2">
-                <div>
-                  <span className="connection-label">Error</span>
-                  <strong>{apiError}</strong>
-                </div>
+              <div className="connection-item text-rose-700">
+                <span className="connection-label">Error:</span>
+                <span className="font-medium text-xs">{apiError}</span>
                 <button
                   type="button"
                   onClick={checkHealth}
-                  className="rounded bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-800 hover:bg-slate-300 cursor-pointer"
+                  className="rounded bg-rose-100 hover:bg-rose-200 text-rose-800 px-2 py-0.5 text-xs font-semibold cursor-pointer transition-colors"
                 >
                   Retry
                 </button>
               </div>
             )}
-          </div>
+          </footer>
         </section>
       </main>
 

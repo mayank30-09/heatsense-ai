@@ -16,6 +16,7 @@ interface LayerControlsProps {
   selectedSceneId?: string;
   onSelectScene?: (sceneId: string) => void;
   recentDayThreshold?: number;
+  isAreaAnalysis?: boolean;
 }
 
 export default function LayerControls({
@@ -33,6 +34,7 @@ export default function LayerControls({
   selectedSceneId,
   onSelectScene,
   recentDayThreshold = 30,
+  isAreaAnalysis = false,
 }: LayerControlsProps) {
   const modes: { id: ActiveLayerMode; label: string; icon: string }[] = [
     { id: "hpi", label: "HPI Priority", icon: "🔥" },
@@ -44,13 +46,124 @@ export default function LayerControls({
 
   const selectedScene = scenes.find((s) => s.scene_id === selectedSceneId) || scenes[0];
 
+  const seasonSelector = onSeasonChange && (
+    <div
+      role="group"
+      aria-label="Observation season selection"
+      className={`flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm transition-opacity ${
+        !isAreaAnalysis && layerMode === "latest_scene" ? "opacity-40 cursor-not-allowed" : ""
+      }`}
+      title={
+        !isAreaAnalysis && layerMode === "latest_scene"
+          ? "Season selection disabled in Latest Scene mode (single-scene observations are active)."
+          : undefined
+      }
+    >
+      <button
+        type="button"
+        aria-label="Summer season observations"
+        aria-pressed={season === "summer"}
+        disabled={!isAreaAnalysis && layerMode === "latest_scene"}
+        onClick={() => onSeasonChange("summer")}
+        className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
+          !isAreaAnalysis && layerMode === "latest_scene"
+            ? "cursor-not-allowed text-slate-400"
+            : season === "summer"
+            ? "bg-amber-600 text-white shadow-sm cursor-pointer"
+            : "text-slate-600 hover:bg-slate-100 cursor-pointer"
+        }`}
+      >
+        ☀️ Summer
+      </button>
+      <button
+        type="button"
+        aria-label="Winter season observations"
+        aria-pressed={season === "winter"}
+        disabled={!isAreaAnalysis && layerMode === "latest_scene"}
+        onClick={() => onSeasonChange("winter")}
+        className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
+          !isAreaAnalysis && layerMode === "latest_scene"
+            ? "cursor-not-allowed text-slate-400"
+            : season === "winter"
+            ? "bg-sky-600 text-white shadow-sm cursor-pointer"
+            : "text-slate-600 hover:bg-slate-100 cursor-pointer"
+        }`}
+      >
+        ❄️ Winter
+      </button>
+      <button
+        type="button"
+        aria-label="Post-Monsoon season observations"
+        aria-pressed={season === "post_monsoon"}
+        disabled={!isAreaAnalysis && layerMode === "latest_scene"}
+        onClick={() => onSeasonChange("post_monsoon")}
+        className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
+          !isAreaAnalysis && layerMode === "latest_scene"
+            ? "cursor-not-allowed text-slate-400"
+            : season === "post_monsoon"
+            ? "bg-orange-700 text-white shadow-sm cursor-pointer"
+            : "text-slate-600 hover:bg-slate-100 cursor-pointer"
+        }`}
+      >
+        🍂 Post-Monsoon
+      </button>
+      <button
+        type="button"
+        aria-label="Monsoon season observations"
+        aria-pressed={season === "monsoon"}
+        disabled={!isAreaAnalysis && layerMode === "latest_scene"}
+        onClick={() => onSeasonChange("monsoon")}
+        title={
+          !isAreaAnalysis && layerMode === "latest_scene"
+            ? undefined
+            : "Low reliability: high cloud contamination risk"
+        }
+        className={`rounded px-2 py-1 text-[11px] font-semibold transition-all flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
+          !isAreaAnalysis && layerMode === "latest_scene"
+            ? "cursor-not-allowed text-slate-400"
+            : season === "monsoon"
+            ? "bg-teal-700 text-white shadow-sm cursor-pointer"
+            : "text-slate-600 hover:bg-slate-100 cursor-pointer"
+        }`}
+      >
+        <span>🌧️ Monsoon</span>
+        <span className="rounded bg-amber-500/80 px-1 py-0.2 text-[9px] font-bold text-white">⚠️</span>
+      </button>
+    </div>
+  );
+
+  // In Area Analysis mode: render ONLY season selector and thermal-raster toggle
+  if (isAreaAnalysis) {
+    return (
+      <div className="pointer-events-none absolute top-3 left-3 sm:left-14 z-[1000] flex flex-col gap-1.5 max-w-[calc(100vw-24px)] sm:max-w-xl">
+        <div className="pointer-events-auto flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            aria-pressed={showRasterTile}
+            aria-label="Toggle Landsat surface temperature raster layer"
+            onClick={onToggleRasterTile}
+            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all backdrop-blur shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
+              showRasterTile
+                ? "border-blue-300 bg-blue-50 text-blue-800"
+                : "border-slate-200 bg-white/95 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            <span className={`h-2 w-2 rounded-full ${showRasterTile ? "bg-blue-600" : "bg-slate-300"}`} />
+            <span>Thermal Raster</span>
+          </button>
+          {seasonSelector}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="pointer-events-none absolute top-3 left-14 z-[1000] flex flex-col gap-2">
+    <div className="pointer-events-none absolute top-3 left-3 sm:left-14 z-[1000] flex flex-col gap-2 max-w-[calc(100vw-24px)] sm:max-w-xl">
       {/* Primary Layer Selector */}
       <div
         role="tablist"
         aria-label="Map thermal and priority layer modes"
-        className="pointer-events-auto flex items-center rounded-lg border border-slate-200/90 bg-white/95 p-1 shadow-md backdrop-blur"
+        className="pointer-events-auto flex items-center rounded-lg border border-slate-200/90 bg-white/95 p-1 shadow-md backdrop-blur flex-wrap gap-1"
       >
         {modes.map((mode) => {
           const isActive = layerMode === mode.id;
@@ -62,7 +175,7 @@ export default function LayerControls({
               aria-label={`${mode.label} layer`}
               type="button"
               onClick={() => onLayerModeChange(mode.id)}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
                 isActive
                   ? "bg-slate-900 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -149,91 +262,7 @@ export default function LayerControls({
           <span>{minHpiFilter !== undefined ? "HPI ≥ 50 Active" : "Filter: HPI ≥ 50"}</span>
         </button>
 
-        {onSeasonChange && (
-          <div
-            role="group"
-            aria-label="Observation season selection"
-            className={`flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm transition-opacity ${
-              layerMode === "latest_scene" ? "opacity-40 cursor-not-allowed" : ""
-            }`}
-            title={
-              layerMode === "latest_scene"
-                ? "Season selection disabled in Latest Scene mode (single-scene observations are active)."
-                : undefined
-            }
-          >
-            <button
-              type="button"
-              aria-label="Summer season observations"
-              aria-pressed={season === "summer"}
-              disabled={layerMode === "latest_scene"}
-              onClick={() => onSeasonChange("summer")}
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
-                layerMode === "latest_scene"
-                  ? "cursor-not-allowed text-slate-400"
-                  : season === "summer"
-                  ? "bg-amber-600 text-white shadow-sm cursor-pointer"
-                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
-              }`}
-            >
-              ☀️ Summer
-            </button>
-            <button
-              type="button"
-              aria-label="Winter season observations"
-              aria-pressed={season === "winter"}
-              disabled={layerMode === "latest_scene"}
-              onClick={() => onSeasonChange("winter")}
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
-                layerMode === "latest_scene"
-                  ? "cursor-not-allowed text-slate-400"
-                  : season === "winter"
-                  ? "bg-sky-600 text-white shadow-sm cursor-pointer"
-                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
-              }`}
-            >
-              ❄️ Winter
-            </button>
-            <button
-              type="button"
-              aria-label="Post-Monsoon season observations"
-              aria-pressed={season === "post_monsoon"}
-              disabled={layerMode === "latest_scene"}
-              onClick={() => onSeasonChange("post_monsoon")}
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
-                layerMode === "latest_scene"
-                  ? "cursor-not-allowed text-slate-400"
-                  : season === "post_monsoon"
-                  ? "bg-orange-700 text-white shadow-sm cursor-pointer"
-                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
-              }`}
-            >
-              🍂 Post-Monsoon
-            </button>
-            <button
-              type="button"
-              aria-label="Monsoon season observations"
-              aria-pressed={season === "monsoon"}
-              disabled={layerMode === "latest_scene"}
-              onClick={() => onSeasonChange("monsoon")}
-              title={
-                layerMode === "latest_scene"
-                  ? undefined
-                  : "Low reliability: high cloud contamination risk"
-              }
-              className={`rounded px-2 py-1 text-[11px] font-semibold transition-all flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
-                layerMode === "latest_scene"
-                  ? "cursor-not-allowed text-slate-400"
-                  : season === "monsoon"
-                  ? "bg-teal-700 text-white shadow-sm cursor-pointer"
-                  : "text-slate-600 hover:bg-slate-100 cursor-pointer"
-              }`}
-            >
-              <span>🌧️ Monsoon</span>
-              <span className="rounded bg-amber-500/80 px-1 py-0.2 text-[9px] font-bold text-white">⚠️</span>
-            </button>
-          </div>
-        )}
+        {seasonSelector}
 
         {onSelectTool && (
           <div
