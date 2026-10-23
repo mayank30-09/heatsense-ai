@@ -45,6 +45,14 @@ def load_surat_boundary() -> ee.Geometry:
 def mask_landsat_l2(image: ee.Image) -> ee.Image:
     qa = image.select("QA_PIXEL")
 
+    # USGS Landsat Collection 2 Level-2 QA_PIXEL bitmask:
+    # Bit 0: Fill (1 = fill)
+    # Bit 1: Dilated Cloud (1 = dilated cloud)
+    # Bit 2: Cirrus (1 = high confidence cirrus)
+    # Bit 3: Cloud (1 = cloud)
+    # Bit 4: Cloud Shadow (1 = cloud shadow)
+    # Bit 5: Snow (1 = snow)
+    # Note: Bit 7 is Water (1 = water) — water is intentionally preserved.
     clear = (
         qa.bitwiseAnd(1 << 0).eq(0)
         .And(qa.bitwiseAnd(1 << 1).eq(0))
@@ -54,12 +62,15 @@ def mask_landsat_l2(image: ee.Image) -> ee.Image:
         .And(qa.bitwiseAnd(1 << 5).eq(0))
     )
 
-    qa_radsat = image.select("QA_RADSAT").eq(0)
+    # QA_RADSAT: Check only Band 10 (thermal) saturation (Bit 9: 1 << 9).
+    # Optical band saturation (bits 0-6) on bright roofs/sand must NOT mask thermal LST.
+    qa_radsat = image.select("QA_RADSAT")
+    thermal_not_saturated = qa_radsat.bitwiseAnd(1 << 9).eq(0)
 
     return (
         image
         .updateMask(clear)
-        .updateMask(qa_radsat)
+        .updateMask(thermal_not_saturated)
     )
 
 def scale_lst(image: ee.Image) -> ee.Image:

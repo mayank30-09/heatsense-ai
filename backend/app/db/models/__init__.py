@@ -5,6 +5,8 @@ from backend.app.db.models.stage_c import (
     StageCGridCell,
     StageCGridObservation,
     StageCHeatPriorityScore,
+    StageCScene,
+    StageCSceneObservation,
 )
 
 from backend.app.db.models.stage_d import (
@@ -19,6 +21,8 @@ __all__ = [
     "StageCGridCell",
     "StageCGridObservation",
     "StageCHeatPriorityScore",
+    "StageCScene",
+    "StageCSceneObservation",
     "StageDInterventionCandidate",
     "StageDScenarioResult",
 ]

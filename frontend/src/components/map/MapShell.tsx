@@ -1,5 +1,7 @@
 import {
   useCallback,
+  useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -14,6 +16,7 @@ import type {
   GridCellScoreItem,
   SeasonName,
 } from "../../types/heatPriority";
+import { fetchScenes, type SceneItem } from "../../services/scenesApi";
 
 import AreaDrawing from "../AreaDrawing";
 import CellInspector from "./CellInspector";
@@ -49,6 +52,51 @@ export function MapShell({
   const [showRasterTile, setShowRasterTile] = useState(true);
   const [minHpiFilter, setMinHpiFilter] = useState<number | undefined>(undefined);
   const [selectedCell, setSelectedCell] = useState<GridCellScoreItem | null>(null);
+
+  const [scenes, setScenes] = useState<SceneItem[]>([]);
+  const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+  const [scenesLoading, setScenesLoading] = useState(false);
+  const [recentDayThreshold] = useState<number>(30);
+
+  useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+    setScenesLoading(true);
+
+    fetchScenes(controller.signal)
+      .then((data) => {
+        if (mounted) {
+          setScenes(data);
+          if (data.length > 0) {
+            setSelectedSceneId((prev) => prev ?? data[0].scene_id);
+          }
+          setScenesLoading(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setScenesLoading(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, []);
+
+  const selectedScene = useMemo(() => {
+    if (!scenes.length) return null;
+    return scenes.find((s) => s.scene_id === selectedSceneId) ?? scenes[0];
+  }, [scenes, selectedSceneId]);
+
+  const hasRecentScene = useMemo(() => {
+    if (!selectedScene) return false;
+    const acqTime = new Date(selectedScene.acquisition_date).getTime();
+    const now = new Date().getTime();
+    const diffDays = Math.max(0, (now - acqTime) / (1000 * 60 * 60 * 24));
+    return diffDays <= recentDayThreshold;
+  }, [selectedScene, recentDayThreshold]);
 
   const effectiveYear = year ?? (season === "post_monsoon" ? 2025 : 2026);
 
@@ -158,10 +206,22 @@ const handleAreaRemoved =
 
         {showRasterTile && (
           <TileLayer
-            key={`lst-raster-${season}-${effectiveYear}`}
-            url={`${API_BASE_URL}/rasters/lst/tiles/{z}/{x}/{y}.png?season=${season}&year=${effectiveYear}`}
+            key={
+              layerMode === "latest_scene" && selectedScene
+                ? `lst-scene-${selectedScene.scene_id}`
+                : `lst-raster-${season}-${effectiveYear}`
+            }
+            url={
+              layerMode === "latest_scene" && selectedScene
+                ? `${API_BASE_URL}/rasters/lst/tiles/{z}/{x}/{y}.png?scene_id=${selectedScene.scene_id}`
+                : `${API_BASE_URL}/rasters/lst/tiles/{z}/{x}/{y}.png?season=${season}&year=${effectiveYear}`
+            }
             opacity={0.65}
-            attribution="HEATSENSE AI · Landsat LST"
+            attribution={
+              layerMode === "latest_scene"
+                ? "HEATSENSE AI · Landsat NRT Single Scene"
+                : "HEATSENSE AI · Landsat LST"
+            }
           />
         )}
 
@@ -191,7 +251,14 @@ const handleAreaRemoved =
           }
         />
 
-        <HPILegend layerMode={layerMode} season={season} year={effectiveYear} />
+        <HPILegend
+          layerMode={layerMode}
+          season={season}
+          year={effectiveYear}
+          selectedScene={selectedScene}
+          recentDayThreshold={recentDayThreshold}
+          hasRecentScene={hasRecentScene}
+        />
       </MapContainer>
 
       {/* Monsoon Cloud Contamination Banner */}
@@ -202,6 +269,25 @@ const handleAreaRemoved =
               ⚠️ Monsoon Layer: Low reliability due to cloud contamination (QA filtering in progress)
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Latest Scene Notice Banner */}
+      {layerMode === "latest_scene" && (
+        <div className="pointer-events-none absolute top-16 left-1/2 z-[1000] -translate-x-1/2">
+          {scenes.length === 0 ? (
+            <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-slate-300 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur">
+              <span className="text-slate-700 text-xs font-semibold">
+                ℹ️ No Landsat scenes have been ingested yet. Showing base map.
+              </span>
+            </div>
+          ) : !hasRecentScene ? (
+            <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1.5 shadow-md backdrop-blur">
+              <span className="text-amber-900 text-xs font-semibold">
+                ⚠️ No clear scene in the last {recentDayThreshold} days.
+              </span>
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -216,6 +302,10 @@ const handleAreaRemoved =
         onSeasonChange={handleSeasonChange}
         activeTool={activeTool}
         onSelectTool={setActiveTool}
+        scenes={scenes}
+        selectedSceneId={selectedSceneId ?? undefined}
+        onSelectScene={setSelectedSceneId}
+        recentDayThreshold={recentDayThreshold}
       />
 
       {/* Grid Cell Inspector */}

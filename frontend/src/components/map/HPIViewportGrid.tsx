@@ -78,6 +78,12 @@ export default function HPIViewportGrid({
         max_lat: bounds.getNorth(),
       };
 
+      if (layerMode === "latest_scene") {
+        setCells([]);
+        setTotalInView(0);
+        return;
+      }
+
       try {
         const res = await fetchGridCells(
           {
@@ -152,6 +158,10 @@ export default function HPIViewportGrid({
       weight: isSelected ? 3 : cell.is_chronic_hotspot ? 2.5 : 1,
     };
   };
+
+  if (layerMode === "latest_scene") {
+    return null;
+  }
 
   return (
     <>

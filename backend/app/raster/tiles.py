@@ -29,18 +29,20 @@ LUT_G = np.interp(_INDEX_256, _STOPS, _G_POINTS).astype(np.uint8)
 LUT_B = np.interp(_INDEX_256, _STOPS, _B_POINTS).astype(np.uint8)
 
 
-def get_lst_tile(
+def render_cog_tile(
+    cog_path: Path | str,
     x: int,
     y: int,
     z: int,
-    season: Season | str = Season.summer,
-    year: int | None = None,
     tilesize: int = 256,
 ) -> bytes:
-    resolved = resolve_seasonal_cog(season=season, year=year)
+    """Render a 256x256 PNG tile from any valid LST Cloud-Optimized GeoTIFF."""
+    path_obj = Path(cog_path)
+    if not path_obj.exists():
+        raise FileNotFoundError(f"COG file not found: {path_obj}")
 
     try:
-        with COGReader(str(resolved.path)) as cog:
+        with COGReader(str(path_obj)) as cog:
             image = cog.tile(
                 x,
                 y,
@@ -107,3 +109,26 @@ def get_lst_tile(
         rgba,
         img_format="PNG",
     )
+
+
+def get_lst_tile(
+    x: int,
+    y: int,
+    z: int,
+    season: Season | str = Season.summer,
+    year: int | None = None,
+    tilesize: int = 256,
+) -> bytes:
+    resolved = resolve_seasonal_cog(season=season, year=year)
+    return render_cog_tile(resolved.path, x=x, y=y, z=z, tilesize=tilesize)
+
+
+def get_scene_lst_tile(
+    x: int,
+    y: int,
+    z: int,
+    cog_path: Path | str,
+    tilesize: int = 256,
+) -> bytes:
+    """Render tile from a specific near-real-time scene COG."""
+    return render_cog_tile(cog_path, x=x, y=y, z=z, tilesize=tilesize)

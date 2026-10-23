@@ -1,11 +1,12 @@
 """SQLAlchemy models for Stage C Heat Priority database schema."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from geoalchemy2 import Geometry
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -66,6 +67,9 @@ class StageCGridCell(Base):
     )
     scores = relationship(
         "StageCHeatPriorityScore", back_populates="grid_cell", cascade="all, delete-orphan"
+    )
+    scene_observations = relationship(
+        "StageCSceneObservation", back_populates="grid_cell", cascade="all, delete-orphan"
     )
 
 
@@ -189,3 +193,59 @@ class StageCHeatPriorityScore(Base):
     )
 
     grid_cell = relationship("StageCGridCell", back_populates="scores")
+
+
+class StageCScene(Base):
+    """Near-real-time scene acquisition ledger and metadata."""
+
+    __tablename__ = "stage_c_scenes"
+
+    scene_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    acquisition_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    acquisition_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    sensor: Mapped[str] = mapped_column(String(32), nullable=False)
+    path: Mapped[int] = mapped_column(Integer, nullable=False, default=148)
+    row: Mapped[int] = mapped_column(Integer, nullable=False, default=45)
+    cloud_cover: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    valid_pixel_fraction: Mapped[float] = mapped_column(Float(24), nullable=False)
+    mean_lst_c: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    max_lst_c: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="PROCESSED", index=True)
+    cog_path: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('PROCESSED', 'REJECTED_CLOUDY', 'FAILED', 'PENDING')",
+            name="ck_scene_status",
+        ),
+        CheckConstraint(
+            "valid_pixel_fraction >= 0.0 AND valid_pixel_fraction <= 1.0",
+            name="ck_scene_valid_pixel_fraction",
+        ),
+    )
+
+    observations = relationship(
+        "StageCSceneObservation", back_populates="scene", cascade="all, delete-orphan"
+    )
+
+
+class StageCSceneObservation(Base):
+    """Pixel-level LST observation for an ingested near-real-time scene."""
+
+    __tablename__ = "stage_c_scene_observations"
+
+    scene_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("stage_c_scenes.scene_id", ondelete="CASCADE"), primary_key=True
+    )
+    pixel_id: Mapped[str] = mapped_column(
+        String(16), ForeignKey("stage_c_grid_cells.pixel_id", ondelete="CASCADE"), primary_key=True
+    )
+    observed_lst_c: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    st_qa_k: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    is_valid: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    scene = relationship("StageCScene", back_populates="observations")
+    grid_cell = relationship("StageCGridCell", back_populates="scene_observations")

@@ -1,4 +1,5 @@
 import type { ActiveLayerMode, SeasonName } from "../../types/heatPriority";
+import type { SceneItem } from "../../services/scenesApi";
 
 interface LayerControlsProps {
   layerMode: ActiveLayerMode;
@@ -11,6 +12,10 @@ interface LayerControlsProps {
   onSeasonChange?: (season: SeasonName) => void;
   activeTool?: "grid" | "drawing";
   onSelectTool?: (tool: "grid" | "drawing") => void;
+  scenes?: SceneItem[];
+  selectedSceneId?: string;
+  onSelectScene?: (sceneId: string) => void;
+  recentDayThreshold?: number;
 }
 
 export default function LayerControls({
@@ -24,13 +29,20 @@ export default function LayerControls({
   onSeasonChange,
   activeTool = "grid",
   onSelectTool,
+  scenes = [],
+  selectedSceneId,
+  onSelectScene,
+  recentDayThreshold = 30,
 }: LayerControlsProps) {
   const modes: { id: ActiveLayerMode; label: string; icon: string }[] = [
     { id: "hpi", label: "HPI Priority", icon: "🔥" },
     { id: "lst", label: "Observed LST", icon: "🌡️" },
     { id: "confidence", label: "Confidence / Quality", icon: "🛡️" },
     { id: "chronic", label: "Chronic (223)", icon: "⚠️" },
+    { id: "latest_scene", label: "Latest scene", icon: "🛰️" },
   ];
+
+  const selectedScene = scenes.find((s) => s.scene_id === selectedSceneId) || scenes[0];
 
   return (
     <div className="pointer-events-none absolute top-3 left-14 z-[1000] flex flex-col gap-2">
@@ -55,6 +67,47 @@ export default function LayerControls({
           );
         })}
       </div>
+
+      {/* Latest Scene Selector Bar */}
+      {layerMode === "latest_scene" && (
+        <div className="pointer-events-auto flex items-center gap-2 rounded-lg border border-indigo-200 bg-white/95 p-1.5 shadow-md backdrop-blur flex-wrap">
+          <div className="flex items-center gap-1 text-xs font-semibold text-indigo-900">
+            <span>🛰️</span>
+            <span>Scene:</span>
+          </div>
+
+          {scenes.length > 0 ? (
+            <select
+              value={selectedSceneId || scenes[0]?.scene_id}
+              onChange={(e) => onSelectScene?.(e.target.value)}
+              className="rounded border border-indigo-200 bg-indigo-50/50 px-2 py-0.5 text-xs font-medium text-slate-800 shadow-2xs focus:border-indigo-500 focus:outline-none"
+            >
+              {scenes.map((s) => (
+                <option key={s.scene_id} value={s.scene_id}>
+                  {s.acquisition_date} ({s.sensor}) — {(s.valid_pixel_fraction * 100).toFixed(0)}% clear
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500 font-medium">
+              No scenes ingested
+            </span>
+          )}
+
+          {selectedScene && (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-800 border border-emerald-200 text-[11px]">
+                {(selectedScene.valid_pixel_fraction * 100).toFixed(1)}% Clear
+              </span>
+              {selectedScene.mean_lst_c !== null && (
+                <span className="font-medium text-slate-600 text-[11px]">
+                  Mean: <strong>{selectedScene.mean_lst_c.toFixed(1)}°C</strong>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Layer Options / Filter Bar */}
       <div className="pointer-events-auto flex items-center gap-2 flex-wrap">
@@ -85,12 +138,24 @@ export default function LayerControls({
         </button>
 
         {onSeasonChange && (
-          <div className="flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm">
+          <div
+            className={`flex items-center rounded-md border border-slate-200 bg-white/95 p-0.5 shadow-sm transition-opacity ${
+              layerMode === "latest_scene" ? "opacity-40 cursor-not-allowed" : ""
+            }`}
+            title={
+              layerMode === "latest_scene"
+                ? "Season selection disabled in Latest Scene mode (single-scene observations are active)."
+                : undefined
+            }
+          >
             <button
               type="button"
+              disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("summer")}
               className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
-                season === "summer"
+                layerMode === "latest_scene"
+                  ? "cursor-not-allowed text-slate-400"
+                  : season === "summer"
                   ? "bg-amber-600 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
@@ -99,9 +164,12 @@ export default function LayerControls({
             </button>
             <button
               type="button"
+              disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("winter")}
               className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
-                season === "winter"
+                layerMode === "latest_scene"
+                  ? "cursor-not-allowed text-slate-400"
+                  : season === "winter"
                   ? "bg-sky-600 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
@@ -110,9 +178,12 @@ export default function LayerControls({
             </button>
             <button
               type="button"
+              disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("post_monsoon")}
               className={`rounded px-2 py-1 text-[11px] font-semibold transition-all ${
-                season === "post_monsoon"
+                layerMode === "latest_scene"
+                  ? "cursor-not-allowed text-slate-400"
+                  : season === "post_monsoon"
                   ? "bg-orange-700 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
@@ -121,10 +192,17 @@ export default function LayerControls({
             </button>
             <button
               type="button"
+              disabled={layerMode === "latest_scene"}
               onClick={() => onSeasonChange("monsoon")}
-              title="Low reliability: high cloud contamination risk"
+              title={
+                layerMode === "latest_scene"
+                  ? undefined
+                  : "Low reliability: high cloud contamination risk"
+              }
               className={`rounded px-2 py-1 text-[11px] font-semibold transition-all flex items-center gap-1 ${
-                season === "monsoon"
+                layerMode === "latest_scene"
+                  ? "cursor-not-allowed text-slate-400"
+                  : season === "monsoon"
                   ? "bg-teal-700 text-white shadow-sm"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
