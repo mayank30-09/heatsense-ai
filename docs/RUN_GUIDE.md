@@ -119,7 +119,7 @@ ALL CHECKSUMS VERIFIED OK (100% MATCH)!
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/v1/health` | Service and database health check |
-| `POST` | `/api/v1/auth/dev-token?role=planner` | Issues valid JWT development token for testing role-restricted endpoints |
+| `POST` | `/api/v1/auth/login` | Authenticates user credentials and issues JWT access token |
 | `GET` | `/api/v1/heat-priority/summary` | Aggregate city-wide HPI metrics, chronic hotspot count, and confidence tiers |
 | `GET` | `/api/v1/heat-priority/cells` | Bounding box spatial viewport query for 100m grid cells |
 | `GET` | `/api/v1/heat-priority/cell/{pixel_id}` | Detailed multi-criteria breakdown for an individual grid cell |
@@ -205,7 +205,7 @@ The HEATSENSE AI WebGIS provides seven dedicated, fully integrated operational v
 - **Leakage Controls Checklist:** Verification of spatial buffer disjointness, temporal ordering, and coordinate feature exclusion.
 - **Seasonal Error Diagnostics:** Performance metrics across Summer, Winter, Monsoon, and Post-Monsoon test sets.
 - **Hotspot Conformal Bounds:** Residual distributions in chronic hotspots with $90\%$ conformal prediction intervals ($0.97^\circ\text{C}$ to $2.15^\circ\text{C}$).
-- **Sensor Chain of Custody:** Sensor specifications, calibration pipelines, and data provenance for Landsat 8/9 TIRS-2, Sentinel-2 MSI, ERA5-Land, and SMC cadastral boundaries.
+- **Sensor Chain of Custody:** Sensor specifications, calibration pipelines, and data provenance for Landsat 8/9 TIRS-2 thermal, Landsat 8/9 OLI-2 surface reflectance, and official SMC municipal boundaries.
 
 ---
 
@@ -215,8 +215,8 @@ The HEATSENSE AI WebGIS provides seven dedicated, fully integrated operational v
 Execute the comprehensive backend test suite inside the Python virtual environment:
 
 ```powershell
-# Run full backend test suite (287+ tests)
-.venv\Scripts\python.exe -m pytest backend/tests/ -v -k "not test_postgis_geometry_validity_and_srid"
+# Run full backend test suite (316 tests)
+.venv\Scripts\python.exe -m pytest backend/tests/ -v
 
 # Run specific domain test suites:
 # 1. Zonal Analysis & Seasonal LST:
@@ -229,7 +229,7 @@ Execute the comprehensive backend test suite inside the Python virtual environme
 .venv\Scripts\python.exe -m pytest backend/tests/test_stage_d_api.py backend/tests/test_stage_d_optimizer.py backend/tests/test_stage_d_candidates.py -v
 
 # 4. Security, Auth & RBAC Audit:
-.venv\Scripts\python.exe -m pytest backend/tests/test_security_audit.py -v -k "not test_postgis_geometry_validity_and_srid"
+.venv\Scripts\python.exe -m pytest backend/tests/test_security_audit.py -v
 ```
 
 ### Running Frontend Tests (Vitest)
@@ -239,7 +239,7 @@ Execute all frontend unit and integration tests:
 cd frontend
 npm test -- --run
 ```
-*Expected result: 31 of 31 tests passing across `api.test.ts`, `hpiColorScales.test.ts`, `heatPriorityApi.test.ts`, and `interventionsApi.test.ts`.*
+*Expected result: 45 of 45 tests passing across `api.test.ts`, `scenesApi.test.ts`, `hpiColorScales.test.ts`, `heatPriorityApi.test.ts`, `authApi.test.ts`, and `interventionsApi.test.ts`.*
 
 ---
 
@@ -254,4 +254,4 @@ If port 5433 is in use by a local PostgreSQL service:
 Ensure that the Cloud-Optimized GeoTIFFs (`data/cogs/`) are present and readable. The backend automatically handles season-to-file mapping with fallback to baseline tiles.
 
 ### 403 Forbidden on Optimization Endpoint
-The optimization API requires `planner` or `admin` role. In development environments, the frontend automatically obtains a development token via `/api/v1/auth/dev-token?role=planner`.
+The optimization API requires `planner` or `admin` role. Planners authenticate via `/api/v1/auth/login` to obtain an authorized JWT session token.
