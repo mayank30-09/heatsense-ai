@@ -39,9 +39,23 @@ describe("scenesApi", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     const callUrl = (fetch as any).mock.calls[0][0];
     expect(callUrl).toContain("/scenes");
+    expect(callUrl).toContain("source=landsat_l2");
     expect(result).toHaveLength(1);
     expect(result[0].scene_id).toBe("LC09_L2SP_148045_20261023_02_T1");
     expect(result[0].valid_pixel_fraction).toBe(0.88);
+  });
+
+  it("passes custom source parameter when requested", async () => {
+    (fetch as any).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => [],
+    });
+
+    await fetchScenes(undefined, "all");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const callUrl = (fetch as any).mock.calls[0][0];
+    expect(callUrl).toContain("source=all");
   });
 
   it("handles empty scenes list gracefully", async () => {

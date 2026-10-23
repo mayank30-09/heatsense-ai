@@ -310,22 +310,69 @@ def test_api_scenes_list(client: TestClient, db_session: Session, tmp_path: Path
         lst_array=arr,
         cloud_cover=15.0,
         output_dir=tmp_path,
+        source="SYNTHETIC TEST DATA",
         dry_run=False,
     )
 
-    resp = client.get("/api/v1/scenes")
-    assert resp.status_code == 200
-    items = resp.json()
-    assert isinstance(items, list)
-    assert len(items) >= 1
+    # 1. Default /api/v1/scenes (source='landsat_l2') excludes synthetic scenes
+    resp_default = client.get("/api/v1/scenes")
+    assert resp_default.status_code == 200
+    items_default = resp_default.json()
+    assert not any(s["scene_id"] == test_scene_id for s in items_default)
 
-    scene_found = next((s for s in items if s["scene_id"] == test_scene_id), None)
+    # 2. Querying source='SYNTHETIC TEST DATA' returns the fixture
+    resp_synth = client.get("/api/v1/scenes?source=SYNTHETIC%20TEST%20DATA")
+    assert resp_synth.status_code == 200
+    items_synth = resp_synth.json()
+    scene_found = next((s for s in items_synth if s["scene_id"] == test_scene_id), None)
     assert scene_found is not None
+    assert scene_found["source"] == "SYNTHETIC TEST DATA"
     assert scene_found["sensor"] == "LANDSAT_9"
     assert scene_found["status"] == "PROCESSED"
-    assert scene_found["path"] == SURAT_WRS_PATH
-    assert scene_found["row"] == SURAT_WRS_ROW
-    assert scene_found["mean_lst_c"] is not None
+
+    # 3. Querying source='all' also returns it
+    resp_all = client.get("/api/v1/scenes?source=all")
+    assert resp_all.status_code == 200
+    items_all = resp_all.json()
+    assert any(s["scene_id"] == test_scene_id for s in items_all)
+
+
+def test_mock_safety_cli_and_catalog(client: TestClient, db_session: Session, tmp_path: Path):
+    """Verify that process_scene_record marks synthetic output as SYNTHETIC TEST DATA and excludes from default catalog."""
+    arr, qa = create_synthetic_scene_array(valid_fraction=0.88, mean_temp=43.5)
+    mock_scene_id = "SYNTHETIC_LC09_L2SP_148045_20261024_02_T1"
+    acq_dt = datetime(2026, 10, 24, 5, 43, 21, tzinfo=timezone.utc)
+
+    mock_dir = tmp_path / "mock_scenes"
+    mock_dir.mkdir(parents=True, exist_ok=True)
+
+    result = process_scene_record(
+        session=db_session,
+        scene_id=mock_scene_id,
+        acquisition_time=acq_dt,
+        acquisition_date=acq_dt.date(),
+        sensor="LANDSAT_9",
+        lst_array=arr,
+        cloud_cover=12.0,
+        output_dir=mock_dir,
+        source="SYNTHETIC TEST DATA",
+        dry_run=False,
+    )
+
+    assert result["source"] == "SYNTHETIC TEST DATA"
+    assert result["status"] == "PROCESSED"
+
+    # Default catalog excludes it
+    resp_default = client.get("/api/v1/scenes")
+    assert resp_default.status_code == 200
+    assert not any(s["scene_id"] == mock_scene_id for s in resp_default.json())
+
+    # Explicit synthetic filter includes it
+    resp_synth = client.get("/api/v1/scenes?source=synthetic")
+    assert resp_synth.status_code == 200
+    found = next((s for s in resp_synth.json() if s["scene_id"] == mock_scene_id), None)
+    assert found is not None
+    assert found["source"] == "SYNTHETIC TEST DATA"
 
 
 def test_api_scene_raster_tiles(client: TestClient, db_session: Session, tmp_path: Path):
@@ -489,13 +536,20 @@ def test_sample_scene_fixture_integration(client: TestClient, db_session: Sessio
     assert rerun_result["status"] == "PROCESSED"
 
     # 4. API Serialization & Verification
-    resp = client.get("/api/v1/scenes")
+    # Default catalog (source='landsat_l2') excludes synthetic test fixture
+    resp_default = client.get("/api/v1/scenes")
+    assert resp_default.status_code == 200
+    assert not any(s["scene_id"] == test_scene_id for s in resp_default.json())
+
+    # Explicit source='all' or source='SYNTHETIC TEST DATA' returns it
+    resp = client.get("/api/v1/scenes?source=all")
     assert resp.status_code == 200
     scene_match = next((s for s in resp.json() if s["scene_id"] == test_scene_id), None)
     assert scene_match is not None
     assert scene_match["valid_pixel_fraction"] > 0.60
     assert scene_match["sensor"] == "LANDSAT_9"
     assert "acquisition_time_ist" in scene_match
+    assert scene_match["source"] == "SYNTHETIC TEST DATA"
 
 
 # -----------------------------------------------------------------------------

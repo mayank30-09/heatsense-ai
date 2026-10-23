@@ -66,6 +66,7 @@ SURAT_WRS_ROW: int = 45
 DEFAULT_MIN_VALID_FRACTION: float = 0.60
 NODATA_VALUE: float = -9999.0
 DEFAULT_SCENES_DIR: Path = Path("data/processed/scenes")
+DEFAULT_MOCK_SCENES_DIR: Path = Path("data/processed/mock_scenes")
 
 
 def get_last_ingested_watermark(session: Session) -> datetime | None:
@@ -331,6 +332,7 @@ def process_scene_record(
     min_valid_fraction: float = DEFAULT_MIN_VALID_FRACTION,
     output_dir: Path = DEFAULT_SCENES_DIR,
     qa_array: np.ndarray | None = None,
+    source: str = "landsat_l2",
     dry_run: bool = False,
 ) -> dict[str, Any]:
     """Evaluate, export, and ingest a single candidate Landsat scene.
@@ -441,6 +443,7 @@ def process_scene_record(
         "units": "Celsius",
         "spatial_resolution": "100m",
         "crs": GRID_CRS,
+        "source": source,
     }
 
     if not dry_run:
@@ -496,6 +499,7 @@ def process_scene_record(
         "mean_lst_c": mean_lst,
         "max_lst_c": max_lst,
         "cog_path": str(cog_path).replace("\\", "/"),
+        "source": source,
     }
 
 
@@ -653,8 +657,11 @@ def main() -> None:
             target_date_str = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
             d = date.fromisoformat(target_date_str)
             dt = datetime(d.year, d.month, d.day, 5, 43, 21, tzinfo=timezone.utc)
-            scene_id = f"LC09_L2SP_148045_{target_date_str.replace('-', '')}_02_T1"
+            scene_id = f"SYNTHETIC_LC09_L2SP_148045_{target_date_str.replace('-', '')}_02_T1"
             sensor = "LANDSAT_9"
+
+            mock_dir = DEFAULT_MOCK_SCENES_DIR
+            mock_dir.mkdir(parents=True, exist_ok=True)
 
             lst, qa = create_synthetic_scene_array(valid_fraction=0.88, mean_temp=43.5)
             result = process_scene_record(
@@ -667,8 +674,12 @@ def main() -> None:
                 cloud_cover=12.0,
                 min_valid_fraction=args.min_valid_fraction,
                 qa_array=qa,
+                output_dir=mock_dir,
+                source="SYNTHETIC TEST DATA",
                 dry_run=args.dry_run,
             )
+            result["source"] = "SYNTHETIC TEST DATA"
+            result["warning"] = "SYNTHETIC TEST DATA: Excluded from default catalog /scenes queries."
             print(json.dumps(result, indent=2))
             return
 

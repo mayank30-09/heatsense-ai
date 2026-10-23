@@ -14,10 +14,15 @@ export interface SceneItem {
   max_lst_c: number | null;
   status: string;
   cog_path: string | null;
+  source?: string;
 }
 
-export async function fetchScenes(signal?: AbortSignal): Promise<SceneItem[]> {
-  const response = await fetch(`${API_BASE_URL}/scenes`, { credentials: "omit", signal });
+export async function fetchScenes(
+  signal?: AbortSignal,
+  source: string = "landsat_l2"
+): Promise<SceneItem[]> {
+  const url = `${API_BASE_URL}/scenes?source=${encodeURIComponent(source)}`;
+  const response = await fetch(url, { credentials: "omit", signal });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch scenes catalog: ${response.status}`);

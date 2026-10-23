@@ -21,10 +21,11 @@ def _resolve_scene_cog_path(scene_id: str) -> tuple[Path, str]:
     """Resolve COG file path and canonical scene identifier for a given scene_id or date string."""
     clean_id = scene_id.strip()
 
-    # 1. Direct file path check under data/processed/scenes
-    direct_path = Path("data/processed/scenes") / f"{clean_id}.tif"
-    if direct_path.exists():
-        return direct_path, clean_id
+    # 1. Direct file path check under data/processed/scenes and data/processed/mock_scenes
+    for base_dir in [Path("data/processed/scenes"), Path("data/processed/mock_scenes")]:
+        direct_path = base_dir / f"{clean_id}.tif"
+        if direct_path.exists():
+            return direct_path, clean_id
 
     # 2. Database lookup in stage_c_scenes
     db = SessionLocal()
@@ -52,14 +53,18 @@ def _resolve_scene_cog_path(scene_id: str) -> tuple[Path, str]:
             cog_p = Path(scene.cog_path)
             if cog_p.exists():
                 return cog_p, scene.scene_id
+            # Fallback to mock_scenes if file was relocated
+            mock_p = Path("data/processed/mock_scenes") / cog_p.name
+            if mock_p.exists():
+                return mock_p, scene.scene_id
     finally:
         db.close()
 
-    # 3. Check for pattern match in data/processed/scenes/
-    scenes_dir = Path("data/processed/scenes")
-    if scenes_dir.exists():
-        for candidate in scenes_dir.glob(f"*{clean_id}*.tif"):
-            return candidate, candidate.stem
+    # 3. Check for pattern match in data/processed/scenes/ and data/processed/mock_scenes/
+    for scenes_dir in [Path("data/processed/scenes"), Path("data/processed/mock_scenes")]:
+        if scenes_dir.exists():
+            for candidate in scenes_dir.glob(f"*{clean_id}*.tif"):
+                return candidate, candidate.stem
 
     raise FileNotFoundError(f"Scene '{scene_id}' not found.")
 

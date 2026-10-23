@@ -448,6 +448,10 @@ export default function HPILegend({
               Skin temperature at ~10:30 local solar time (about 11:00 IST), single scene, not a seasonal composite.
             </div>
 
+            <div className="mt-1 text-[9px] font-medium text-amber-700 bg-amber-50 rounded p-1 border border-amber-200">
+              ⚠️ NRT scenes use a different QA mask from the frozen seasonal composites and are not comparable.
+            </div>
+
             <div className="mt-1 text-[9px] text-slate-400">
               Cloud-masked or unobserved pixels render transparent (nodata). Single-scene values do not flow into HPI, predictions, or recommendations.
             </div>

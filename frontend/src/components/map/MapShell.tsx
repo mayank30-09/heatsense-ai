@@ -287,13 +287,13 @@ const handleAreaRemoved =
                 ℹ️ No Landsat scenes have been ingested yet. Showing base map.
               </span>
             </div>
-          ) : !hasRecentScene ? (
-            <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1.5 shadow-md backdrop-blur">
-              <span className="text-amber-900 text-xs font-semibold">
-                ⚠️ No clear scene in the last {recentDayThreshold} days.
+          ) : (
+            <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-indigo-200 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur">
+              <span className="text-indigo-900 text-xs font-medium">
+                ℹ️ <strong>Notice:</strong> NRT scenes use a different QA mask from the frozen seasonal composites and are not comparable.
               </span>
             </div>
-          ) : null}
+          )}
         </div>
       )}
 

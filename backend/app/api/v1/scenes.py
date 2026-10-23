@@ -18,6 +18,9 @@ router = APIRouter(
 )
 
 
+from pathlib import Path
+import json
+
 class SceneMetadataItem(BaseModel):
     """Metadata response model for an ingested near-real-time Landsat scene."""
 
@@ -34,6 +37,42 @@ class SceneMetadataItem(BaseModel):
     max_lst_c: float | None = Field(None, description="Maximum land surface temperature in Celsius")
     status: str = Field(..., description="Ingestion processing status (PROCESSED, REJECTED_CLOUDY, etc.)")
     cog_path: str | None = Field(None, description="Relative path to Cloud-Optimized GeoTIFF raster")
+    source: str = Field("landsat_l2", description="Catalog source: 'landsat_l2' or 'SYNTHETIC TEST DATA'")
+
+
+def _is_scene_synthetic(r: StageCScene) -> bool:
+    """Detect whether a scene record represents synthetic test data."""
+    sid = r.scene_id.upper()
+    if sid.startswith("TEST_FIXTURE_") or sid.startswith("SYNTHETIC_") or "MOCK" in sid:
+        return True
+
+    if r.cog_path and "mock_scenes" in r.cog_path:
+        return True
+
+    date_str = (
+        r.acquisition_date.isoformat()
+        if isinstance(r.acquisition_date, date)
+        else str(r.acquisition_date)
+    )
+    for base_dir in [Path("data/processed/mock_scenes"), Path("data/processed/scenes")]:
+        sidecar = base_dir / f"{date_str}.json"
+        if sidecar.exists():
+            try:
+                with open(sidecar, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                    if meta.get("source") == "SYNTHETIC TEST DATA" or meta.get("is_synthetic"):
+                        return True
+            except Exception:
+                pass
+
+    if r.cog_path:
+        p = Path(r.cog_path)
+        if not p.exists():
+            mock_p = Path("data/processed/mock_scenes") / p.name
+            if mock_p.exists():
+                return True
+
+    return False
 
 
 @router.get(
@@ -43,13 +82,18 @@ class SceneMetadataItem(BaseModel):
     description="Returns all successfully processed single-scene LST observations in reverse chronological order.",
 )
 def list_scenes(
+    source: str = Query(
+        "landsat_l2",
+        description="Data source filter (default 'landsat_l2' for authentic Landsat Level-2 observations; use 'SYNTHETIC TEST DATA' or 'all' to include synthetic data)",
+    ),
     status: str = Query("PROCESSED", description="Filter by status (default 'PROCESSED', use 'ALL' for ledger)"),
     min_valid_fraction: float | None = Query(0.60, ge=0.0, le=1.0, description="Minimum valid pixel fraction filter (default 0.60 for adequate coverage)"),
     db: Session = Depends(get_db),
 ) -> list[SceneMetadataItem]:
     """Retrieve catalog of ingested Landsat scenes.
 
-    Restricted to scenes with adequate valid pixel coverage (>= min_valid_fraction) by default.
+    Restricted to authentic satellite scenes (source='landsat_l2') and adequate coverage by default.
+    Synthetic mock scenes are strictly excluded unless explicitly requested via source='all' or 'SYNTHETIC TEST DATA'.
     """
     stmt = select(StageCScene).order_by(desc(StageCScene.acquisition_time))
     if status.upper() != "ALL":
@@ -61,9 +105,26 @@ def list_scenes(
     records = db.execute(stmt).scalars().all()
 
     ist_tz = timezone(timedelta(hours=5, minutes=30))
+    req_source = source.strip().lower()
 
     items: list[SceneMetadataItem] = []
     for r in records:
+        is_synth = _is_scene_synthetic(r)
+        record_source = "SYNTHETIC TEST DATA" if is_synth else "landsat_l2"
+
+        # Apply source filter
+        if req_source == "landsat_l2":
+            if is_synth:
+                continue
+        elif req_source in ("synthetic test data", "synthetic", "mock"):
+            if not is_synth:
+                continue
+        elif req_source == "all":
+            pass
+        else:
+            if record_source.lower() != req_source:
+                continue
+
         acq_time_str = (
             r.acquisition_time.isoformat()
             if isinstance(r.acquisition_time, datetime)
@@ -96,6 +157,7 @@ def list_scenes(
                 max_lst_c=round(float(r.max_lst_c), 2) if r.max_lst_c is not None else None,
                 status=r.status,
                 cog_path=r.cog_path,
+                source=record_source,
             )
         )
 
