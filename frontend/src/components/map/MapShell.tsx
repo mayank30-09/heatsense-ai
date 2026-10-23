@@ -98,7 +98,7 @@ export function MapShell({
     return diffDays <= recentDayThreshold;
   }, [selectedScene, recentDayThreshold]);
 
-  const effectiveYear = year ?? (season === "post_monsoon" ? 2025 : 2026);
+  const effectiveYear = season === "post_monsoon" && year === 2026 ? 2025 : year;
 
   const handleSeasonChange = useCallback((newSeason: SeasonName) => {
     setSeason(newSeason);
@@ -196,6 +196,12 @@ const handleAreaRemoved =
       <MapContainer
         center={SURAT_CENTER}
         zoom={11}
+        minZoom={10}
+        maxZoom={16}
+        maxBounds={[
+          [20.95, 72.60],
+          [21.40, 73.08],
+        ]}
         scrollWheelZoom
         className="leaflet-map"
       >

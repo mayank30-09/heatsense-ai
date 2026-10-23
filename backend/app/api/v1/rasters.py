@@ -90,6 +90,7 @@ def lst_tile(
                 headers={
                     "Cache-Control": "public, max-age=3600, must-revalidate",
                     "ETag": etag,
+                    "X-Data-Source": cog_path.name,
                     "X-Scene-ID": canonical_scene_id,
                 },
             )
@@ -112,7 +113,9 @@ def lst_tile(
             headers={
                 "Cache-Control": "public, max-age=3600, must-revalidate",
                 "ETag": etag,
+                "X-Data-Source": resolved.path.name,
                 "X-Effective-Year": str(resolved.effective_year),
+                "X-Effective-Season": str(resolved.season.value),
             },
         )
 
