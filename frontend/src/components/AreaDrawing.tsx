@@ -158,6 +158,10 @@ export default function AreaDrawing({
           );
         }
 
+        if (result && typeof result === "object") {
+          result.geojson_geometry = geometry;
+        }
+
         return result;
       } catch (error) {
         const message =
@@ -223,6 +227,9 @@ export default function AreaDrawing({
       if (!result) {
         return;
       }
+      if (typeof (layer as any).toGeoJSON === "function") {
+        result.geojson_geometry = (layer as any).toGeoJSON().geometry;
+      }
 
       const place = await resolveAreaName(layer);
       const analysisCode =
@@ -272,6 +279,9 @@ export default function AreaDrawing({
       const result = await calculateStatistics(layer);
       if (!result) {
         return;
+      }
+      if (typeof (layer as any).toGeoJSON === "function") {
+        result.geojson_geometry = (layer as any).toGeoJSON().geometry;
       }
 
       const place = await resolveAreaName(layer);

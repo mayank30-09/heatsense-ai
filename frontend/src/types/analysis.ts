@@ -24,6 +24,7 @@ export type AnalysisResult = {
   data_coverage_percentage?: number;
   ndwi_water_fraction?: number;
   water_warning?: boolean;
+  geojson_geometry?: any;
 
   geometry?: {
     geometry_type: string;

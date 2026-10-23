@@ -19,6 +19,7 @@ import type {
 import { fetchScenes, type SceneItem } from "../../services/scenesApi";
 
 import AreaDrawing from "../AreaDrawing";
+import AreaRecommendationsPanel from "./AreaRecommendationsPanel";
 import CellInspector from "./CellInspector";
 import HPILegend from "./HPILegend";
 import HPIViewportGrid from "./HPIViewportGrid";
@@ -327,7 +328,7 @@ const handleAreaRemoved =
 
       {/* Polygon Drawing Area Analysis Drawer */}
       {isAreaAnalysis && (activeTool === "drawing" || analysisAreas.length > 0) && (
-        <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-96 max-h-[75%] overflow-y-auto">
+        <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-[calc(100vw-24px)] max-w-md sm:w-[420px] max-h-[80%] overflow-y-auto">
           <div className="pointer-events-auto rounded-lg border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
             <div className="mb-3 flex items-center justify-between">
               <div>
@@ -363,6 +364,8 @@ const handleAreaRemoved =
                   <AnalysisAreaCard
                     key={area.id}
                     area={area}
+                    season={season}
+                    year={effectiveYear}
                   />
                 )
               )}
@@ -376,11 +379,15 @@ const handleAreaRemoved =
 
 function AnalysisAreaCard({
   area,
+  season,
+  year,
 }: {
   area: AnalysisArea;
+  season?: string;
+  year?: number;
 }) {
-  const result =
-    area.result;
+  const result = area.result;
+  const [showRecommendations, setShowRecommendations] = useState(true);
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
@@ -585,6 +592,34 @@ function AnalysisAreaCard({
             Landsat radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (about 11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
           </div>
         </>
+      )}
+
+      {/* Heat Interventions & Recommendations */}
+      {result.geojson_geometry && (
+        <div className="mt-3 border-t border-slate-100 pt-3">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              Interventions
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowRecommendations((prev) => !prev)}
+              className="text-[11px] font-medium text-blue-600 hover:text-blue-800"
+            >
+              {showRecommendations ? "Hide Recommendations" : "Show Recommendations"}
+            </button>
+          </div>
+
+          {showRecommendations && (
+            <AreaRecommendationsPanel
+              areaId={area.id}
+              areaName={area.name}
+              geometry={result.geojson_geometry}
+              season={result.season || season}
+              year={result.effective_year || year}
+            />
+          )}
+        </div>
       )}
     </div>
   );
