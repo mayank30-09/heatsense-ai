@@ -45,6 +45,9 @@ def test_heat_priority_summary_endpoint() -> None:
     """Test retrieving summary statistics for operational HPI dataset."""
     response = client.get("/api/v1/heat-priority/summary")
     assert response.status_code == 200, response.text
+    assert "cache-control" in response.headers
+    assert "public" in response.headers["cache-control"]
+    assert "etag" in response.headers
     
     # Strict JSON validation: must not contain invalid tokens like NaN
     data = json.loads(response.text)
@@ -65,6 +68,8 @@ def test_heat_priority_cells_endpoint() -> None:
     # Query default first page
     response = client.get("/api/v1/heat-priority/cells?limit=10&offset=0")
     assert response.status_code == 200
+    assert "cache-control" in response.headers
+    assert "public" in response.headers["cache-control"]
     data = json.loads(response.text)
 
     assert data["total"] == 49747
@@ -262,6 +267,9 @@ def test_heat_priority_lst_stats_default_summer() -> None:
     """Test retrieving authoritative summer 2026 LST stats across SMC grid."""
     resp = client.get("/api/v1/heat-priority/lst-stats")
     assert resp.status_code == 200, resp.text
+    assert "cache-control" in resp.headers
+    assert "public" in resp.headers["cache-control"]
+    assert "etag" in resp.headers
     data = json.loads(resp.text)
 
     assert data["season"] == "summer"
@@ -324,6 +332,9 @@ def test_heat_priority_model_validation_endpoint() -> None:
     """Test retrieving frozen ML model validation summary and quality control records."""
     resp = client.get("/api/v1/heat-priority/model-validation")
     assert resp.status_code == 200, resp.text
+    assert "cache-control" in resp.headers
+    assert "public" in resp.headers["cache-control"]
+    assert "etag" in resp.headers
     data = json.loads(resp.text)
     assert "qc_summary" in data
     assert "model_metadata" in data

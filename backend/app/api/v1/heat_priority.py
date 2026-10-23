@@ -11,7 +11,7 @@ import json
 import math
 from pathlib import Path as FilePath
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -138,6 +138,7 @@ class GridCellsPaginatedResponse(BaseModel):
 
 @router.get("/summary", response_model=HeatPrioritySummaryResponse)
 def get_heat_priority_summary(
+    response: Response,
     scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
     spec_version: str = Query("v2.0", description="Specification version"),
     db: Session = Depends(get_db),
@@ -184,6 +185,9 @@ def get_heat_priority_summary(
     )
     pers_counts = {tier: count for tier, count in db.execute(pers_q).all()}
 
+    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
+    response.headers["ETag"] = f'"hpi-summary-{scoring_period}-{spec_version}"'
+
     return HeatPrioritySummaryResponse(
         scoring_period=scoring_period,
         spec_version=spec_version,
@@ -200,6 +204,7 @@ def get_heat_priority_summary(
 
 @router.get("/lst-stats", response_model=LSTStatsResponse)
 def get_heat_priority_lst_stats(
+    response: Response,
     season: Season = Query(Season.summer, description="Observation season (summer, winter, post_monsoon, monsoon)"),
     year: int | None = Query(None, ge=2020, le=2030, description="Observation year (defaults to 2026, or 2025 for post_monsoon)"),
     db: Session = Depends(get_db),
@@ -241,6 +246,9 @@ def get_heat_priority_lst_stats(
     valid_fraction = round(float(res.n_valid / total_cells), 4) if total_cells > 0 else 0.0
     prov = SEASON_PROVENANCE.get((season.value, effective_year), {})
 
+    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
+    response.headers["ETag"] = f'"lst-stats-{season.value}-{effective_year}"'
+
     return LSTStatsResponse(
         season=season,
         year=req_year,
@@ -263,6 +271,7 @@ def get_heat_priority_lst_stats(
 
 @router.get("/cells", response_model=GridCellsPaginatedResponse)
 def get_grid_cells(
+    response: Response,
     scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
     spec_version: str = Query("v2.0", description="Specification version"),
     season: Season = Query(Season.summer, description="Observation season to join (summer, winter, post_monsoon, monsoon)"),
@@ -404,6 +413,8 @@ def get_grid_cells(
         for r in results
     ]
 
+    response.headers["Cache-Control"] = "public, max-age=300, must-revalidate"
+
     return GridCellsPaginatedResponse(
         total=total,
         offset=offset,
@@ -414,6 +425,7 @@ def get_grid_cells(
 
 @router.get("/cell/{pixel_id}", response_model=GridCellScoreItem)
 def get_grid_cell_detail(
+    response: Response,
     pixel_id: str = Path(..., min_length=1, max_length=16, description="Canonical grid cell identifier (e.g., R045_C067)"),
     scoring_period: str = Query("2026_summer_operational", description="Scoring period identifier"),
     spec_version: str = Query("v2.0", description="Specification version"),
@@ -468,6 +480,9 @@ def get_grid_cell_detail(
             detail=f"Grid cell '{pixel_id}' does not exist.",
         )
 
+    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
+    response.headers["ETag"] = f'"cell-{pixel_id}-{scoring_period}-{spec_version}-{season.value}-{effective_year}"'
+
     return GridCellScoreItem(
         pixel_id=r.pixel_id,
         row_idx=r.row_idx,
@@ -493,7 +508,7 @@ def get_grid_cell_detail(
 
 
 @router.get("/model-validation", response_model=dict[str, Any])
-def get_model_validation_summary() -> dict[str, Any]:
+def get_model_validation_summary(response: Response) -> dict[str, Any]:
     """Retrieve frozen ML model quality control, spatial holdout benchmarks, and sensor provenance."""
     qc_path = PROJECT_ROOT / "artifacts" / "ml_freeze" / "qc_summary.json"
     meta_path = PROJECT_ROOT / "artifacts" / "ml_freeze" / "model_metadata.json"
@@ -511,6 +526,9 @@ def get_model_validation_summary() -> dict[str, Any]:
                 model_meta = json.load(f)
         except Exception:
             pass
+    response.headers["Cache-Control"] = "public, max-age=86400, must-revalidate"
+    response.headers["ETag"] = '"ml-validation-frozen-v1"'
+
     return {
         "qc_summary": qc_data,
         "model_metadata": model_meta,

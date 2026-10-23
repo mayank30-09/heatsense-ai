@@ -42,7 +42,8 @@ export default function HPIViewportGrid({
   const debounceTimer = useRef<number | null>(null);
   const abortController = useRef<AbortController | null>(null);
 
-  const effectiveYear = year ?? (season === "post_monsoon" ? 2025 : 2026);
+  const resolvedYear = year ?? 2026;
+  const effectiveYear = season === "post_monsoon" && resolvedYear === 2026 ? 2025 : resolvedYear;
 
   const loadViewportCells = useCallback(() => {
     const currentZoom = map.getZoom();
