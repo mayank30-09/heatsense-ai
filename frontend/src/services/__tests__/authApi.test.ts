@@ -59,14 +59,37 @@ describe("authApi and In-Memory Security Invariants", () => {
       );
     });
 
-    it("login 429: throws rate limit throttling error", async () => {
+    it("login 429: throws rate limit throttling error with retry time", async () => {
       (fetch as any).mockResolvedValueOnce({
         ok: false,
         status: 429,
+        headers: {
+          get: (name: string) => (name === "Retry-After" ? "45" : null),
+        },
+        json: async () => ({
+          detail: "Too many authentication attempts. Please try again in 45 seconds.",
+        }),
       });
 
       await expect(loginAuth("planner_officer", "any_pw")).rejects.toThrow(
-        "Too many authentication attempts. Please try again later."
+        "Too many authentication attempts. Please try again in 45 seconds."
+      );
+    });
+
+    it("login 429: falls back to Retry-After header if body empty", async () => {
+      (fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: {
+          get: (name: string) => (name === "Retry-After" ? "30" : null),
+        },
+        json: async () => {
+          throw new Error("No JSON");
+        },
+      });
+
+      await expect(loginAuth("planner_officer", "any_pw")).rejects.toThrow(
+        "Too many authentication attempts. Please try again in 30 seconds."
       );
     });
 

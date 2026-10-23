@@ -43,13 +43,40 @@ export async function loginAuth(
   }
 
   if (response.status === 401) {
-    throw new Error("Invalid username or password.");
+    let detailMsg = "Invalid username or password.";
+    try {
+      const data = await response.json();
+      if (data?.detail) detailMsg = data.detail;
+    } catch {
+      // fallback to default
+    }
+    throw new Error(detailMsg);
   }
   if (response.status === 429) {
-    throw new Error("Too many authentication attempts. Please try again later.");
+    const retryAfter = response.headers?.get ? response.headers.get("Retry-After") : null;
+    let detailMsg = "";
+    try {
+      const data = await response.json();
+      if (data?.detail) detailMsg = data.detail;
+    } catch {
+      // fallback to header
+    }
+    const msg =
+      detailMsg ||
+      (retryAfter
+        ? `Too many authentication attempts. Please try again in ${retryAfter} seconds.`
+        : "Too many authentication attempts. Please try again later.");
+    throw new Error(msg);
   }
   if (response.status === 403) {
-    throw new Error("Account is inactive. Contact the SMC system administrator.");
+    let detailMsg = "Account is inactive. Contact the SMC system administrator.";
+    try {
+      const data = await response.json();
+      if (data?.detail) detailMsg = data.detail;
+    } catch {
+      // fallback to default
+    }
+    throw new Error(detailMsg);
   }
   if (!response.ok) {
     throw new Error(`Authentication failed: HTTP ${response.status}`);
@@ -81,10 +108,24 @@ export async function getMeAuth(
   }
 
   if (response.status === 401) {
-    throw new Error("Session expired or invalid credentials (401).");
+    let detailMsg = "Session expired or invalid credentials (401).";
+    try {
+      const data = await response.json();
+      if (data?.detail) detailMsg = data.detail;
+    } catch {
+      // fallback to default
+    }
+    throw new Error(detailMsg);
   }
   if (response.status === 403) {
-    throw new Error("Access forbidden (403).");
+    let detailMsg = "Access forbidden (403).";
+    try {
+      const data = await response.json();
+      if (data?.detail) detailMsg = data.detail;
+    } catch {
+      // fallback to default
+    }
+    throw new Error(detailMsg);
   }
   if (!response.ok) {
     throw new Error(`Profile check failed: HTTP ${response.status}`);
