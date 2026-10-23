@@ -49,7 +49,7 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-slate-300">
               Authoritative 100m analytical grid multi-criteria prioritization combining Landsat 8/9 thermal severity,
-              5-year multi-seasonal persistence, Sentinel-2 vegetation deficit, and built-up density.
+              5-year multi-seasonal persistence, Landsat Level-2 surface reflectance vegetation deficit, and built-up density.
             </p>
           </div>
 

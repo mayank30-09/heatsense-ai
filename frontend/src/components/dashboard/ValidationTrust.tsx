@@ -488,23 +488,23 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
                     <span>🌱</span>
-                    <span>Multispectral Optical: Sentinel-2 MSI</span>
+                    <span>Multispectral Optical: Landsat 8/9 OLI-2 (100m)</span>
                   </div>
                   <div className="mt-2 space-y-1.5 text-xs text-slate-600">
                     <div>
-                      <strong>Instrument:</strong> MultiSpectral Instrument (MSI Level-2A)
+                      <strong>Instrument:</strong> Operational Land Imager (OLI / OLI-2 Level-2SP)
                     </div>
                     <div>
-                      <strong>Spatial Resolution:</strong> 10m (B4, B8) / 20m (B11, B12)
+                      <strong>Spatial Resolution:</strong> 30m native, resampled to canonical 100m SMC grid
                     </div>
                     <div>
-                      <strong>Vegetation Deficit:</strong> NDVI = (B8 - B4) / (B8 + B4)
+                      <strong>Vegetation Deficit:</strong> NDVI = (SR_B5 - SR_B4) / (SR_B5 + SR_B4)
                     </div>
                     <div>
-                      <strong>Built-up Index:</strong> NDBI = (B11 - B8) / (B11 + B8)
+                      <strong>Built-up Index:</strong> NDBI = (SR_B6 - SR_B5) / (SR_B6 + SR_B5)
                     </div>
                     <div>
-                      <strong>Water Index:</strong> NDWI = (B3 - B8) / (B3 + B8)
+                      <strong>Water Index:</strong> NDWI = (SR_B3 - SR_B5) / (SR_B3 + SR_B5)
                     </div>
                   </div>
                 </div>

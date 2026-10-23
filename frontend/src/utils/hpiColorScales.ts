@@ -118,7 +118,7 @@ export function getOpticalImputationLabel(flag: string | null): {
     default:
       return {
         label: "Clean Optical",
-        description: "Authoritative direct Sentinel-2 observation with zero sentinel corruption",
+        description: "Authoritative direct Landsat 8/9 observation with zero nodata corruption",
         isImputed: false,
       };
   }
