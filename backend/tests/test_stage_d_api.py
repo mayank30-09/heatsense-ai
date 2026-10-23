@@ -10,9 +10,11 @@ Verifies:
 
 from __future__ import annotations
 
+import os
 import pytest
 from fastapi.testclient import TestClient
 
+from backend.app.core.auth import DEV_USERS_DB, User, require_planner_or_admin
 from backend.app.main import app
 
 client = TestClient(app)
@@ -131,3 +133,55 @@ def test_reference_scenarios_endpoint():
     for sc in scenarios:
         assert "scenario_name" in sc
         assert sc["budget_inr"] > 0
+
+
+def test_optimize_endpoint_auth_and_dev_token_removal():
+    """Verify dev-token returns 404 and optimize enforces 401, 403, and 200."""
+    # 1. Deprecated unauthenticated endpoint removed -> 404
+    resp_dev_token = client.post("/api/v1/auth/dev-token")
+    assert resp_dev_token.status_code == 404
+
+    # Remove Stage D autouse override to test true endpoint authorization
+    app.dependency_overrides.pop(require_planner_or_admin, None)
+    try:
+        payload = {
+            "budget_inr": 1000000.0,
+            "algorithm": "greedy",
+            "max_candidates": 10,
+        }
+        # 2. No token -> 401 Unauthorized
+        resp_no_token = client.post("/api/v1/interventions/optimize", json=payload)
+        assert resp_no_token.status_code == 401
+
+        # 3. Public-role token -> 403 Forbidden
+        test_pw = os.environ.get("DEV_USER_PASSWORD", "test_throwaway_mock_password_2026")
+        login_pub = client.post(
+            "/api/v1/auth/login",
+            json={"username": "public_user", "password": test_pw},
+        )
+        assert login_pub.status_code == 200
+        pub_token = login_pub.json()["access_token"]
+        resp_pub = client.post(
+            "/api/v1/interventions/optimize",
+            json=payload,
+            headers={"Authorization": f"Bearer {pub_token}"},
+        )
+        assert resp_pub.status_code == 403
+
+        # 4. Planner token via /auth/login -> 200 OK
+        login_pln = client.post(
+            "/api/v1/auth/login",
+            json={"username": "planner_officer", "password": test_pw},
+        )
+        assert login_pln.status_code == 200
+        pln_token = login_pln.json()["access_token"]
+        resp_pln = client.post(
+            "/api/v1/interventions/optimize",
+            json=payload,
+            headers={"Authorization": f"Bearer {pln_token}"},
+        )
+        assert resp_pln.status_code == 200
+        assert resp_pln.json()["algorithm"] == "GREEDY"
+    finally:
+        planner = DEV_USERS_DB["planner_officer"]
+        app.dependency_overrides[require_planner_or_admin] = lambda: User(**planner.model_dump())

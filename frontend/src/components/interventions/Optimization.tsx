@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type {
   InterventionType,
   OptimizationResultResponse,
   OptimizeRequestPayload,
   ScenarioSolutionItem,
 } from "../../types/interventions";
-import {
-  getDevToken,
-  runInterventionOptimization,
-} from "../../services/interventionsApi";
+import { runInterventionOptimization } from "../../services/interventionsApi";
+import { useAuth } from "../../context/AuthContext";
+import LoginPanel from "../auth/LoginPanel";
 
 interface OptimizationProps {
   initialBudgetInr?: number;
@@ -36,6 +35,16 @@ export default function Optimization({
   initialBudgetInr = 25000000,
   onSwitchToMap,
 }: OptimizationProps) {
+  // Authentication State via In-Memory Context
+  const {
+    token,
+    user,
+    role,
+    isPlannerOrAdmin,
+    logout,
+    clearSession,
+  } = useAuth();
+
   // Configuration State
   const [budget, setBudget] = useState<number>(initialBudgetInr);
   const [algorithm, setAlgorithm] = useState<"nsga2" | "greedy">("nsga2");
@@ -53,22 +62,6 @@ export default function Optimization({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<OptimizationResultResponse | null>(null);
   const [selectedSolutionIdx, setSelectedSolutionIdx] = useState<number>(0);
-  const [authToken, setAuthToken] = useState<string>("");
-
-  // Acquire dev session token on mount
-  useEffect(() => {
-    let cancelled = false;
-    getDevToken("planner")
-      .then((token) => {
-        if (!cancelled) setAuthToken(token);
-      })
-      .catch(() => {
-        // Fallback: will prompt or retry if needed
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const handleRunOptimization = async () => {
     setRunning(true);
@@ -87,20 +80,23 @@ export default function Optimization({
     };
 
     try {
-      let token = authToken;
       if (!token) {
-        token = await getDevToken("planner");
-        setAuthToken(token);
+        clearSession("Authentication required to run optimization.");
+        return;
       }
       const res = await runInterventionOptimization(payload, token);
       setResult(res);
       setSelectedSolutionIdx(0);
     } catch (err: unknown) {
-      setError(
+      const errMsg =
         err instanceof Error
           ? err.message
-          : "Optimization execution failed. Check server connectivity."
-      );
+          : "Optimization execution failed. Check server connectivity.";
+      if (errMsg.includes("401")) {
+        clearSession("Session expired or unauthorized (401). Please sign in again.");
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setRunning(false);
     }
@@ -110,6 +106,18 @@ export default function Optimization({
     result && result.solutions.length > 0
       ? result.solutions[selectedSolutionIdx] || result.solutions[0]
       : null;
+
+  // Unauthenticated or Non-Planner/Admin: show login panel and DO NOT call API
+  if (!isPlannerOrAdmin) {
+    return (
+      <div className="py-6">
+        <LoginPanel
+          title="Optimization Authentication Required"
+          subtitle="Stage D budget optimization and intervention selection require Planner or Admin privileges."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -136,6 +144,23 @@ export default function Optimization({
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="text-right">
+              <div className="text-xs text-slate-300">
+                Logged in: <strong className="text-white">{user?.username}</strong>
+              </div>
+              <span className="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                {role}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={logout}
+              className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-white/20 transition-all cursor-pointer"
+            >
+              Sign Out
+            </button>
+
             {onSwitchToMap && (
               <button
                 type="button"

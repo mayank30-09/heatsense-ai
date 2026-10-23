@@ -88,14 +88,4 @@ export async function fetchScenarios(signal?: AbortSignal): Promise<PlanningScen
   return response.json() as Promise<PlanningScenario[]>;
 }
 
-export async function getDevToken(role: "planner" | "admin" = "planner"): Promise<string> {
-  const url = `${API_BASE_URL}/auth/dev-token?role=${role}`;
-  const response = await fetch(url, { method: "POST" });
-  if (!response.ok) {
-    throw new Error(`Failed to obtain development token: HTTP ${response.status}`);
-  }
-  const data = await response.json();
-  return data.access_token;
-}
-
 

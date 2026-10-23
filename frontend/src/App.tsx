@@ -6,6 +6,7 @@ import Optimization from "./components/interventions/Optimization";
 import ScenarioLab from "./components/interventions/ScenarioLab";
 import { MapShell } from "./components/map/MapShell";
 import { getHealth, type HealthResponse } from "./services/api";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./styles.css";
 
 
@@ -19,7 +20,8 @@ const views = [
   "Validation / Trust",
 ];
 
-export default function App() {
+function AppContent() {
+  const { user, role, isAuthenticated, logout } = useAuth();
   const [activeView, setActiveView] = useState("Dashboard");
   const [scenarioBudget, setScenarioBudget] = useState<number | undefined>(undefined);
   const [health, setHealth] = useState<HealthResponse | null>(null);
@@ -59,13 +61,30 @@ export default function App() {
           <h1>HEATSENSE AI</h1>
         </div>
 
-        <div className="status-pill">
-          <span
-            className={
-              backendConnected ? "status-dot" : "status-dot offline"
-            }
-          />
-          {backendConnected ? "API Connected" : "API Offline"}
+        <div className="flex items-center gap-3">
+          {isAuthenticated && user && (
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs shadow-sm">
+              <span className="font-semibold text-slate-800">{user.username}</span>
+              <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-800">
+                {role}
+              </span>
+              <button
+                type="button"
+                onClick={logout}
+                className="ml-1 text-slate-400 hover:text-slate-700 text-xs font-semibold cursor-pointer"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+          <div className="status-pill">
+            <span
+              className={
+                backendConnected ? "status-dot" : "status-dot offline"
+              }
+            />
+            {backendConnected ? "API Connected" : "API Offline"}
+          </div>
         </div>
       </header>
 
@@ -252,5 +271,13 @@ export default function App() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

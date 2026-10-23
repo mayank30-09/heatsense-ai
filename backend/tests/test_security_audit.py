@@ -116,6 +116,12 @@ def test_login_endpoint_success_and_failure():
     assert resp_bad_user.status_code == 401
 
 
+def test_dev_token_endpoint_removed():
+    """Verify deprecated unauthenticated /api/v1/auth/dev-token returns 404."""
+    resp = client.post("/api/v1/auth/dev-token")
+    assert resp.status_code == 404
+
+
 def test_authenticate_user_refuses_dev_db_in_production(monkeypatch):
     """Verify authenticate_user rejects all DEV_USERS_DB credentials when APP_ENV=production."""
     from backend.app.core.auth import authenticate_user

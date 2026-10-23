@@ -3,7 +3,6 @@ import {
   fetchCandidateDetail,
   fetchInterventionCandidates,
   fetchScenarios,
-  getDevToken,
   optimizeInterventions,
   runInterventionOptimization,
 } from "../interventionsApi";
@@ -245,35 +244,6 @@ describe("interventionsApi", () => {
 
       await expect(fetchScenarios()).rejects.toThrow(
         "Failed to load planning scenarios: HTTP 500"
-      );
-    });
-  });
-
-  describe("getDevToken", () => {
-    it("fetches dev JWT token for default planner role", async () => {
-      (fetch as any).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ access_token: "mock-jwt-planner-token-123" }),
-      });
-
-      const token = await getDevToken("planner");
-
-      expect(fetch).toHaveBeenCalledTimes(1);
-      const [url, init] = (fetch as any).mock.calls[0];
-      expect(url).toContain("/api/v1/auth/dev-token?role=planner");
-      expect(init.method).toBe("POST");
-      expect(token).toBe("mock-jwt-planner-token-123");
-    });
-
-    it("throws error when dev token request fails", async () => {
-      (fetch as any).mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-      });
-
-      await expect(getDevToken("planner")).rejects.toThrow(
-        "Failed to obtain development token: HTTP 403"
       );
     });
   });
