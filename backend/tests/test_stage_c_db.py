@@ -53,6 +53,49 @@ def test_t18_database_row_counts(db_session: Session) -> None:
     assert score_count == 49747, f"Expected 49,747 operational HPI scores, got {score_count}"
 
 
+def test_database_baseline_invariants(db_session: Session) -> None:
+    """Verify live PostgreSQL baselines and fail immediately if baseline state or row counts change."""
+    from backend.app.db.models.osm_place import OSMPlace
+    from backend.app.db.models.stage_d import (
+        StageDInterventionCandidate,
+        StageDScenarioResult,
+    )
+    from backend.app.db.models.study_area import StudyArea
+
+    # 1. stage_c_grid_cells: 49,747
+    cell_count = db_session.scalar(select(func.count()).select_from(StageCGridCell))
+    assert cell_count == 49747, f"Baseline violation: expected 49,747 grid cells, got {cell_count}"
+
+    # 2. stage_c_grid_observations: 924,731
+    obs_count = db_session.scalar(select(func.count()).select_from(StageCGridObservation))
+    assert obs_count == 924731, f"Baseline violation: expected 924,731 grid observations, got {obs_count}"
+
+    # 3. stage_c_heat_priority_scores: 49,747 with scoring_period only '2026_summer_operational'
+    total_scores = db_session.scalar(select(func.count()).select_from(StageCHeatPriorityScore))
+    assert total_scores == 49747, f"Baseline violation: expected 49,747 total scores, got {total_scores}"
+
+    periods = set(db_session.scalars(select(StageCHeatPriorityScore.scoring_period).distinct()).all())
+    assert periods == {"2026_summer_operational"}, (
+        f"Baseline violation: expected scoring_period only {{'2026_summer_operational'}}, got {periods}"
+    )
+
+    # 4. stage_d_intervention_candidates: 0
+    candidates_count = db_session.scalar(select(func.count()).select_from(StageDInterventionCandidate))
+    assert candidates_count == 0, f"Baseline violation: expected 0 intervention candidates, got {candidates_count}"
+
+    # 5. stage_d_scenario_results: 0
+    scenario_count = db_session.scalar(select(func.count()).select_from(StageDScenarioResult))
+    assert scenario_count == 0, f"Baseline violation: expected 0 scenario results, got {scenario_count}"
+
+    # 6. study_areas: 1
+    study_area_count = db_session.scalar(select(func.count()).select_from(StudyArea))
+    assert study_area_count == 1, f"Baseline violation: expected 1 study area, got {study_area_count}"
+
+    # 7. osm_places: 44
+    osm_count = db_session.scalar(select(func.count()).select_from(OSMPlace))
+    assert osm_count == 44, f"Baseline violation: expected 44 osm places, got {osm_count}"
+
+
 def test_t18_database_relational_integrity(db_session: Session) -> None:
     """T-18: Verify foreign key integrity and nearest OSM place resolution."""
     # Ensure all scored cells reference existing grid cells

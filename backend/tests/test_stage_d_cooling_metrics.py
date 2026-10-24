@@ -363,11 +363,12 @@ def test_api_responses_and_persisted_scenarios():
 
     # 2. Test database model roundtrip persistence in PostgreSQL
     session: Session = SessionLocal()
+    savepoint = session.begin_nested()
     try:
         test_scenario_id = "SCENARIO_SCIENTIFIC_TEST_01"
-        # Clean any prior test row
+        # Clean any prior test row within savepoint
         session.query(DBScenarioResult).filter_by(scenario_id=test_scenario_id).delete()
-        session.commit()
+        session.flush()
 
         db_record = DBScenarioResult(
             scenario_id=test_scenario_id,
@@ -391,7 +392,7 @@ def test_api_responses_and_persisted_scenarios():
             selected_candidates_json={"test": True},
         )
         session.add(db_record)
-        session.commit()
+        session.flush()
 
         # Query back and verify all columns persist correctly
         fetched = session.scalar(
@@ -405,11 +406,8 @@ def test_api_responses_and_persisted_scenarios():
         assert fetched.population_exposure_benefit is None
         assert fetched.population_exposure_status == "POPULATION_DATA_UNAVAILABLE"
         assert fetched.total_cooling_c == 2.0
-
-        # Clean up
-        session.delete(fetched)
-        session.commit()
     finally:
+        savepoint.rollback()
         session.close()
 
 

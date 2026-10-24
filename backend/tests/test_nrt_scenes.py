@@ -24,7 +24,7 @@ from fastapi.testclient import TestClient
 import numpy as np
 import pytest
 import rasterio
-from sqlalchemy import delete, select
+from sqlalchemy import delete, event, select
 from sqlalchemy.orm import Session
 
 from backend.app.db.models.stage_c import (
@@ -32,7 +32,7 @@ from backend.app.db.models.stage_c import (
     StageCScene,
     StageCSceneObservation,
 )
-from backend.app.db.session import SessionLocal
+from backend.app.db.session import SessionLocal, engine, get_db
 from backend.app.main import app
 from gis.gee.latest_scene import (
     CANONICAL_SMC_CELL_COUNT,
@@ -58,22 +58,32 @@ from scripts.monitor_scene_hotspots import run_hotspot_comparison
 
 @pytest.fixture
 def db_session() -> Generator[Session, None, None]:
-    """Provide a database session and clean up test scenes upon teardown."""
-    session = SessionLocal()
-    test_scene_prefix = "TEST_FIXTURE_"
+    """Provide a database session with transaction rollback so no rows leak to live DB."""
+    connection = engine.connect()
+    transaction = connection.begin()
+    session = Session(bind=connection)
+    session.begin_nested()
+
+    @event.listens_for(session, "after_transaction_end")
+    def restart_savepoint(sess, trans):
+        if trans.nested and not trans._parent.nested:
+            sess.begin_nested()
+
+    app.dependency_overrides[get_db] = lambda: session
     try:
-        # Pre-clean
+        # Pre-clean test IDs inside transaction to avoid unique constraint collisions
         session.execute(
-            delete(StageCScene).where(StageCScene.scene_id.like(f"{test_scene_prefix}%"))
+            delete(StageCScene).where(
+                (StageCScene.scene_id.like("TEST_FIXTURE_%"))
+                | (StageCScene.scene_id.like("SYNTHETIC_%"))
+            )
         )
-        session.commit()
         yield session
     finally:
-        session.execute(
-            delete(StageCScene).where(StageCScene.scene_id.like(f"{test_scene_prefix}%"))
-        )
-        session.commit()
+        app.dependency_overrides.pop(get_db, None)
         session.close()
+        transaction.rollback()
+        connection.close()
 
 
 @pytest.fixture
