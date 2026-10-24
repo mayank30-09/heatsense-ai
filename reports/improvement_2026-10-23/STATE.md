@@ -532,23 +532,23 @@
 ## 4. Phase H: Deep Veracity & Reproduction Sweep (Tasks H1–H9)
 
 ### Task H1: LATEST SCENE TRUTH (Completed — Commit `0b15fc1`)
-- **Genuine Landsat Ingestion:** Queried USGS EarthEngine catalog for genuine Surat WRS-2 Path 148 Row 045 Landsat Collection 2 Level-2 overpasses. Ingested 2 genuine scenes into `data/processed/scenes` catalog (`LC09_L2SP_148045_20261023_02_T1` from 2026-10-23 and `LC09_L2SP_148045_20261007_02_T1` from 2026-10-07).
-- **Disproved 45.2°C Synthetic Anomaly:** Real overpasses recorded mean LST of 31.91°C (max 39.81°C, min 26.23°C) and 31.54°C (max 39.12°C, min 25.11°C). Updated `stage_c_scenes` with genuine metadata.
-- **UI Single-Scene Caveat Banner:** Added amber caveat banner to `frontend/src/components/dashboard/HeatMap.tsx` disclosing that single-scene observations are not comparable to multi-year seasonal composites due to instantaneous meteorological variability and are not used in canonical HPI or ML training.
+- **Genuine Landsat Ingestion:** Queried USGS EarthEngine catalog for genuine Surat WRS-2 Path 148 Row 045 Landsat Collection 2 Level-2 overpasses. Real scenes: LC08 2026-10-06 (mean 38.85°C), LC09 2026-10-14 (mean 41.25°C); 2026-09-28 rejected cloudy; 2026-10-23/24 were synthetic.
+- **Disproved 45.2°C Synthetic Anomaly:** Real overpasses recorded genuine mean LST (LC08 38.85°C, LC09 41.25°C). Updated `stage_c_scenes` with genuine metadata.
+- **UI Single-Scene Caveat Banner:** Added amber caveat banner to `frontend/src/components/map/MapShell.tsx` disclosing that single-scene observations are not comparable to multi-year seasonal composites due to instantaneous meteorological variability and are not used in canonical HPI or ML training.
 - **Backend Test:** Added unit test in `backend/tests/test_nrt_scenes.py`.
 
 ### Task H2: SCENARIO LAB AUTH GUARD (Completed — Commit `e3fcfdf`)
-- **Access Guard Implementation:** Audited `frontend/src/pages/ScenarioLab.tsx` and backend `/api/v1/interventions/diminishing-returns`. Implemented UI and API access guard: unauthenticated users can view public UHAP benchmarks, but custom parameter adjustments, simulation runs, and diminishing-returns evaluations require logging in as `planner_officer` or `smc_admin`.
+- **Access Guard Implementation:** Audited `frontend/src/components/interventions/ScenarioLab.tsx` and backend `/api/v1/interventions/diminishing-returns`. Implemented UI and API access guard: unauthenticated users can view public UHAP benchmarks, but custom parameter adjustments, simulation runs, and diminishing-returns evaluations require logging in as `planner_officer` or `smc_admin`.
 - **Login Modal Prompt:** Added login prompt with direct modal trigger.
-- **Frontend Test Coverage:** Added 3 vitest tests in `frontend/src/tests/scenarioLabAuth.test.tsx` (58/58 vitest passed).
+- **Frontend Test Coverage:** Added 3 vitest tests in `frontend/src/components/interventions/__tests__/ScenarioLab.test.tsx` (58/58 vitest passed).
 
 ### Task H3: UNTRACKED CODE REVIEW (Completed — No Tracked Changes)
 - **Security Audit:** Audited untracked directories `.github/`, `tests/`, and `docs/live_pipeline*`.
-- **Scheduled Cron Flagged:** Flagged `.github/workflows/ee_nrt_ingestion.yml` for attempting scheduled cron ingestions against external Google Cloud and Earth Engine APIs without repository-approved secrets.
+- **Scheduled Cron Flagged:** Flagged `.github/workflows/landsat_nrt_pipeline.yml` for attempting scheduled cron ingestions against external Google Cloud and Earth Engine APIs without repository-approved secrets.
 - **Quarantine:** Quarantined untracked directories to ensure no automated pipelines run untracked scripts.
 
 ### Task H4: EVIDENCE REGISTER FIX (Completed — Commit `2bd1135`)
-- **Weight Reconciliation:** Corrected Claim 4 (HPI weights) in `docs/EVIDENCE_REGISTER.md` to `w_surface=0.45, w_built=0.25, w_green=0.30` matching code (`gis/heat_priority/calculator.py:27-31`) and specification Section 3.2.1.
+- **Weight Reconciliation:** Corrected Claim 4 (HPI weights) in `docs/EVIDENCE_REGISTER.md` to thermal severity 0.40, persistence 0.30, vegetation deficit 0.15, built-up density 0.15 matching code (`gis/heat_priority/scoring.py`). Confirmed `gis/heat_priority/calculator.py` does not exist.
 - **Grid Dimensions Reclassification:** Reclassified Claim 8 (Stage C Grid Dimensions) from MEASURED to DERIVED (reconciling 497.47 km² nominal vs 459.55 km² operational clipped area).
 - **Cooling Assumptions Reclassification:** Reclassified Claim 12 (Cooling Caps & Cost Assumptions) from MODELLED to ASSUMPTION / CODE CONSTANT (`gis/interventions/cooling_effects.py:22-105`).
 
