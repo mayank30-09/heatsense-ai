@@ -565,6 +565,16 @@ def get_model_validation_summary(response: Response) -> dict[str, Any]:
         except Exception:
             pass
 
+    exp_path = PROJECT_ROOT / "artifacts" / "ml_experiments" / "ml_experimental_evaluation.json"
+    conformal_calibration: dict[str, Any] | None = None
+    if exp_path.exists():
+        try:
+            with open(exp_path, encoding="utf-8") as f:
+                exp_json = json.load(f)
+                conformal_calibration = exp_json.get("experiments", {}).get("conformal_calibration")
+        except Exception:
+            pass
+
     response.headers["Cache-Control"] = "public, max-age=86400, must-revalidate"
     response.headers["ETag"] = '"ml-validation-frozen-v1"'
 
@@ -572,5 +582,6 @@ def get_model_validation_summary(response: Response) -> dict[str, Any]:
         "qc_summary": qc_data,
         "model_metadata": model_meta,
         "model_comparison": model_comparison,
+        "conformal_calibration": conformal_calibration,
     }
 

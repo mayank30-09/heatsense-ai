@@ -167,6 +167,17 @@ export interface ModelValidationSummary {
     mean_r2: number;
     std_r2: number;
   }>;
+  conformal_calibration?: {
+    nominal_coverage: number;
+    overall_empirical_coverage: number;
+    interval_half_width: number;
+    interval_full_width: number;
+    n_samples: number;
+    subgroups?: {
+      season?: Record<string, { n_samples: number; coverage: number; width: number; coverage_gap: number }>;
+      heat_decile?: Record<string, { n_samples: number; coverage: number; width: number; coverage_gap: number }>;
+    };
+  };
 }
 
 

@@ -386,6 +386,10 @@ export default function HPILegend({
             <div className="mt-2.5 border-t border-slate-100 pt-2 text-[10px] text-slate-500">
               Optical Imputation: 8-Connected Median, Boundary Mean, or Neutral Climatological Fallback.
             </div>
+
+            <div className="mt-2 text-[10px] text-amber-800 italic bg-amber-50 rounded p-1.5 border border-amber-200">
+              Notice: Confidence index is a heuristic, not a calibrated probability.
+            </div>
           </div>
         )}
 

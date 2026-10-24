@@ -215,9 +215,12 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
         </div>
 
         <div className="rounded-lg bg-slate-50 p-2.5">
-          <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400">
-            Confidence Tier
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400">
+              Confidence Tier
+            </span>
+            <span className="text-[9px] text-slate-400 italic">Heuristic</span>
+          </div>
           <div
             className="mt-0.5 text-sm font-bold"
             style={{ color: getConfidenceColor(cell.confidence_tier) }}
@@ -228,6 +231,9 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
                 ({cell.confidence_index.toFixed(2)})
               </span>
             )}
+          </div>
+          <div className="mt-1 text-[9px] text-slate-400 italic leading-tight">
+            Confidence index is a heuristic, not a calibrated probability.
           </div>
         </div>
 

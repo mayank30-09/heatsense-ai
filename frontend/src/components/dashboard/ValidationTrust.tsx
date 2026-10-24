@@ -263,6 +263,50 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 </p>
               </div>
 
+              {/* Policy D Quality Screening Counts & Domain Census */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Policy D Quality Screening Counts & Domain Census
+                  </h4>
+                  <span className="rounded bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-800">
+                    Authoritative Freeze Census
+                  </span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <div className="rounded-lg bg-white p-3 border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Total Valid Rows</span>
+                    <div className="mt-0.5 font-mono text-base font-extrabold text-slate-900">924,731</div>
+                    <span className="text-[10px] text-slate-500">100% domain</span>
+                  </div>
+                  <div className="rounded-lg bg-white p-3 border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Development Rows</span>
+                    <div className="mt-0.5 font-mono text-base font-extrabold text-slate-900">720,973</div>
+                    <span className="text-[10px] text-slate-500">77.97% partition</span>
+                  </div>
+                  <div className="rounded-lg bg-white p-3 border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Holdout Rows</span>
+                    <div className="mt-0.5 font-mono text-base font-extrabold text-slate-900">203,758</div>
+                    <span className="text-[10px] text-slate-500">22.03% partition</span>
+                  </div>
+                  <div className="rounded-lg bg-white p-3 border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Spatial Blocks</span>
+                    <div className="mt-0.5 font-mono text-base font-extrabold text-slate-900">132 / 33</div>
+                    <span className="text-[10px] text-slate-500">Dev / Test (165 total)</span>
+                  </div>
+                  <div className="rounded-lg bg-white p-3 border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Analytical Cells</span>
+                    <div className="mt-0.5 font-mono text-base font-extrabold text-slate-900">49,747</div>
+                    <span className="text-[10px] text-slate-500">100m grid cells / scene</span>
+                  </div>
+                  <div className="rounded-lg bg-white p-3 border border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-400">Seasonal Composites</span>
+                    <div className="mt-0.5 font-mono text-base font-extrabold text-slate-900">19 COGs</div>
+                    <span className="text-[10px] text-slate-500">2022–2026 seasons</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Controlled Architecture Benchmark */}
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -529,6 +573,115 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                   ✓ Architectural Fix in HEATSENSE AI: All decision-making layers and Heat Priority
                   Scores directly utilize satellite observed LST (Collection 2 Level 2), eliminating ML
                   underestimation from citywide planning.
+                </div>
+              </div>
+
+              {/* Conformal Prediction Coverage by Stratum */}
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-sm font-extrabold text-slate-900">
+                      Conformal Prediction Coverage by Stratum (Nominal 90% Calibration)
+                    </h4>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      Source: <span className="font-mono">artifacts/ml_experiments/ml_experimental_evaluation.json</span> · <span className="font-semibold text-slate-700">MEASURED</span>
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200">
+                    Overall Coverage: 90.15% (±2.98°C half-width)
+                  </span>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Seasonal Subgroups */}
+                  <div className="rounded-lg border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-100/70 px-3 py-2 text-xs font-bold text-slate-800 border-b border-slate-200">
+                      Seasonal Strata Coverage
+                    </div>
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-200">
+                        <tr>
+                          <th className="py-2 px-3">Season</th>
+                          <th className="py-2 px-3">Samples (N)</th>
+                          <th className="py-2 px-3">Coverage</th>
+                          <th className="py-2 px-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                        <tr className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 font-sans font-medium">Summer</td>
+                          <td className="py-2 px-3 text-slate-600">454</td>
+                          <td className="py-2 px-3 font-bold text-slate-900">90.53%</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-emerald-700 font-bold">Nominal Met (+0.53%)</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 font-sans font-medium">Winter</td>
+                          <td className="py-2 px-3 text-slate-600">440</td>
+                          <td className="py-2 px-3 font-bold text-slate-900">95.68%</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-blue-700 font-bold">Conservative (+5.68%)</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 font-sans font-medium">Post-Monsoon</td>
+                          <td className="py-2 px-3 text-slate-600">405</td>
+                          <td className="py-2 px-3 font-bold text-slate-900">95.80%</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-blue-700 font-bold">Conservative (+5.80%)</td>
+                        </tr>
+                        <tr className="hover:bg-rose-50/40 bg-rose-50/20">
+                          <td className="py-2 px-3 font-sans font-bold text-rose-900">Monsoon</td>
+                          <td className="py-2 px-3 text-slate-600">447</td>
+                          <td className="py-2 px-3 font-bold text-rose-700">79.19%</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-10.81%)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Decile Subgroups */}
+                  <div className="rounded-lg border border-slate-200 overflow-hidden">
+                    <div className="bg-slate-100/70 px-3 py-2 text-xs font-bold text-slate-800 border-b border-slate-200">
+                      Heat Severity Decile Strata
+                    </div>
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-200">
+                        <tr>
+                          <th className="py-2 px-3">Decile Bin</th>
+                          <th className="py-2 px-3">Coverage Range</th>
+                          <th className="py-2 px-3">Behavior & Undercoverage Analysis</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                        <tr className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 font-sans font-medium">Deciles 1–4 (Cool–Moderate)</td>
+                          <td className="py-2 px-3 font-bold text-slate-900">89.66% – 94.86%</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-emerald-700 font-bold">Well-calibrated baseline</td>
+                        </tr>
+                        <tr className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 font-sans font-medium">Deciles 5–9 (Warm–High)</td>
+                          <td className="py-2 px-3 font-bold text-slate-900">87.93% – 91.38%</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-slate-600">Conformal bounds stable</td>
+                        </tr>
+                        <tr className="hover:bg-rose-50/40 bg-rose-50/20">
+                          <td className="py-2 px-3 font-sans font-bold text-rose-900">Decile 10 (Hottest 10%)</td>
+                          <td className="py-2 px-3 font-bold text-rose-700">83.43%</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-6.57% on industrial roofs)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Explicit Calibrated Probability Notice */}
+                <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-950">
+                  <div className="flex items-center gap-2 font-bold text-amber-900">
+                    <span>⚠️</span>
+                    <span>Heuristic Probability Disclosure:</span>
+                  </div>
+                  <p className="mt-1 font-semibold text-amber-900">
+                    &ldquo;confidence index is a heuristic, not a calibrated probability&rdquo;
+                  </p>
+                  <p className="mt-1 text-[11px] text-amber-800 leading-relaxed">
+                    The spatial confidence score (0.00 to 1.00) synthesizes sensor observation frequency, thermal radiometer saturation, and atmospheric QA bitmasks into an operational priority metric. It reflects empirical data reliability, not a Bayesian or frequentist probability of occurrence.
+                  </p>
                 </div>
               </div>
             </div>

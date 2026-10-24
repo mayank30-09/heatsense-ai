@@ -92,10 +92,19 @@ Spatial conformal prediction was evaluated at nominal coverage $1 - \alpha = 0.9
   - Summer: $90.53\%$ (Nominal met)
   - Winter: $95.68\%$ (Conservative)
   - Post-Monsoon: $95.80\%$ (Conservative)
-  - Monsoon: $79.19\%$ (Undershoot caused by cloud masking variance and dry-spell extreme breaks).
+  - Monsoon: $79.19\%$ (Undershoot: -10.81% gap caused by cloud masking variance and dry-spell extreme breaks).
 - **Decile Subgroup Coverage:**
   - Deciles 1–9: $87.93\% - 94.86\%$ coverage across bins.
-  - Decile 10 (Extreme Tail): $83.43\%$ coverage due to sharp industrial localized hotspots.
+  - Decile 10 (Extreme Tail): $83.43\%$ (Undershoot: -6.57% gap due to sharp industrial localized hotspots).
+
+> **Calibrated Probability Disclosure:** "Confidence index is a heuristic, not a calibrated probability." The spatial confidence score $C_i$ synthesizes observation frequency, thermal radiometer saturation, and atmospheric QA bitmasks into an operational prioritization ranking; it must not be interpreted as an empirical probability.
+
+### Policy D Quality Screening Counts & Data Freshness
+- **Total Valid Observations:** 924,731 rows
+- **Development Split:** 720,973 rows (77.97%) across 132 blocks
+- **Test Holdout Split:** 203,758 rows (22.03%) across 33 blocks
+- **Spatial Grid:** 49,747 regular analytical cells per composite (100m resolution, EPSG:4326)
+- **Temporal Freshness & Scope:** 19 seasonal composites across 2022–2026 (Landsat 8/9 TIRS & OLI-2, USGS Collection 2 Level 2, ~10:30 local solar / 11:00 IST overpass)
 
 ---
 
