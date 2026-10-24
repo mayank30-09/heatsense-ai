@@ -19,6 +19,7 @@ from backend.app.db.models.stage_c import (
     StageCGridCell,
     StageCGridObservation,
     StageCHeatPriorityScore,
+    StageCScene,
 )
 from backend.app.db.session import SessionLocal
 
@@ -94,6 +95,17 @@ def test_database_baseline_invariants(db_session: Session) -> None:
     # 7. osm_places: 44
     osm_count = db_session.scalar(select(func.count()).select_from(OSMPlace))
     assert osm_count == 44, f"Baseline violation: expected 44 osm places, got {osm_count}"
+
+    # 8. Every stage_c_scenes row whose id starts with SYNTHETIC_ or TEST_FIXTURE_ is not PROCESSED
+    unexcluded_test_scenes = db_session.scalars(
+        select(StageCScene.scene_id).where(
+            (StageCScene.scene_id.like("SYNTHETIC_%") | StageCScene.scene_id.like("TEST_FIXTURE_%"))
+            & (StageCScene.status == "PROCESSED")
+        )
+    ).all()
+    assert len(unexcluded_test_scenes) == 0, (
+        f"Baseline violation: found test/synthetic scenes with status 'PROCESSED': {unexcluded_test_scenes}"
+    )
 
 
 def test_t18_database_relational_integrity(db_session: Session) -> None:

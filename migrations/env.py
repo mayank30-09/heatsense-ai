@@ -15,6 +15,8 @@ if config.config_file_name is not None:
 settings = get_settings()
 
 database_url = settings.database_url
+if "@localhost:" in database_url:
+    database_url = database_url.replace("@localhost:", "@127.0.0.1:")
 
 config.set_main_option(
     "sqlalchemy.url",
