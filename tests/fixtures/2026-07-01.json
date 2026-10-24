@@ -1,0 +1,16 @@
+{
+  "scene_id": "TEST_FIXTURE_INTEGRATION_01",
+  "acquisition_date": "2026-07-01",
+  "acquisition_time": "2026-07-01T05:43:00+00:00",
+  "sensor": "LANDSAT_9",
+  "path": 148,
+  "row": 45,
+  "cloud_cover": 5.0,
+  "valid_pixel_fraction": 0.9201961927352403,
+  "mean_lst_c": 44.539008528162775,
+  "max_lst_c": 51.96023941040039,
+  "units": "Celsius",
+  "spatial_resolution": "100m",
+  "crs": "EPSG:4326",
+  "source": "landsat_l2"
+}

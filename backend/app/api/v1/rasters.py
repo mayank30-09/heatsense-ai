@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from datetime import date
 import hashlib
+import json
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Path as PathParam, Query
+from fastapi import APIRouter, Depends, HTTPException, Path as PathParam, Query
 from fastapi.responses import Response
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from ...db.models.stage_c import StageCScene
-from ...db.session import SessionLocal
+from ...db.session import SessionLocal, get_db
 from ...raster.catalog import Season, resolve_seasonal_cog
 from ...raster.tiles import get_lst_tile, get_scene_lst_tile
 
@@ -18,7 +20,7 @@ router = APIRouter(
 )
 
 
-def _resolve_scene_cog_path(scene_id: str) -> tuple[Path, str]:
+def _resolve_scene_cog_path(scene_id: str, db: Session | None = None) -> tuple[Path, str]:
     """Resolve COG file path and canonical scene identifier for a given scene_id or date string."""
     clean_id = scene_id.strip()
 
@@ -28,8 +30,25 @@ def _resolve_scene_cog_path(scene_id: str) -> tuple[Path, str]:
         if direct_path.exists():
             return direct_path, clean_id
 
-    # 2. Database lookup in stage_c_scenes
-    db = SessionLocal()
+    # 2. Check companion sidecar JSONs in scenes and mock_scenes
+    for base_dir in [Path("data/processed/scenes"), Path("data/processed/mock_scenes")]:
+        if base_dir.exists():
+            for sidecar in base_dir.glob("*.json"):
+                try:
+                    with open(sidecar, "r", encoding="utf-8") as f:
+                        meta = json.load(f)
+                        if meta.get("scene_id") == clean_id:
+                            tif_p = sidecar.with_suffix(".tif")
+                            if tif_p.exists():
+                                return tif_p, clean_id
+                except Exception:
+                    pass
+
+    # 3. Database lookup in stage_c_scenes
+    close_db = False
+    if db is None:
+        db = SessionLocal()
+        close_db = True
     try:
         stmt = select(StageCScene).where(StageCScene.scene_id == clean_id)
         scene = db.execute(stmt).scalar_one_or_none()
@@ -59,9 +78,10 @@ def _resolve_scene_cog_path(scene_id: str) -> tuple[Path, str]:
             if mock_p.exists():
                 return mock_p, scene.scene_id
     finally:
-        db.close()
+        if close_db:
+            db.close()
 
-    # 3. Check for pattern match in data/processed/scenes/ and data/processed/mock_scenes/
+    # 4. Check for pattern match in data/processed/scenes/ and data/processed/mock_scenes/
     for scenes_dir in [Path("data/processed/scenes"), Path("data/processed/mock_scenes")]:
         if scenes_dir.exists():
             for candidate in scenes_dir.glob(f"*{clean_id}*.tif"):
@@ -81,11 +101,12 @@ def lst_tile(
     season: Season = Query(Season.summer, description="Season (summer, winter, post_monsoon, monsoon)"),
     year: int | None = Query(None, ge=2020, le=2030, description="Year (e.g. 2026)"),
     scene_id: str | None = Query(None, description="Optional scene product ID or acquisition date for single-scene rendering"),
+    db: Session = Depends(get_db),
 ) -> Response:
     try:
         # Scene-specific rendering branch
         if scene_id:
-            cog_path, canonical_scene_id = _resolve_scene_cog_path(scene_id)
+            cog_path, canonical_scene_id = _resolve_scene_cog_path(scene_id, db=db)
             tile = get_scene_lst_tile(x=x, y=y, z=z, cog_path=cog_path)
             etag = f'"{hashlib.sha256(tile).hexdigest()[:16]}"'
 
