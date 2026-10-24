@@ -382,7 +382,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                   </table>
                 </div>
                 <p className="mt-2.5 text-[11px] text-slate-500 leading-relaxed">
-                  <strong>Note on cross-fold comparison:</strong> Metrics from different cross-validation fold definitions must never be compared. In this controlled 5-fold split, Random Forest achieves marginally lower RMSE (1.8024°C vs 1.8280°C). XGBoost is retained for production due to inference speed and memory footprint, not an RMSE advantage.
+                  <strong>Note on model comparison:</strong> On development CV, RF (1.8024°C) was slightly better than default XGBoost (1.8280°C); tuned frozen XGBoost reported 1.8478°C in its own tuning study (different folds, not directly comparable); XGBoost was retained for the tuned workflow and holdout evaluation; RF was not evaluated on holdout.
                 </p>
               </div>
 
@@ -564,10 +564,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                   Scientific Diagnosis of Chronic Hotspot Residuals:
                 </h4>
                 <p className="mt-1 leading-relaxed text-amber-900">
-                  Notice the -1.53°C cold bias on chronic hotspots: Machine learning regressors smooth
-                  extreme spatial gradients. In dense industrial zones (Pandesara, Sachin), uninsulated
-                  corrugated metal roofs reach 58.65°C skin temperature. The regression model predicts
-                  ~54°C due to spatial mixing with surrounding cooler roads and soil.
+                  The -1.53°C cold bias on chronic hotspots is possibly related to sub-pixel thermal heterogeneity or high-radiance structures within the ~100m footprint; not tested. In dense industrial zones, surface skin temperatures reach up to 58.65°C, where machine learning regressors predict ~54°C.
                 </p>
                 <div className="mt-2 font-bold text-emerald-800">
                   ✓ Architectural Fix in HEATSENSE AI: All decision-making layers and Heat Priority
@@ -630,7 +627,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                           <td className="py-2 px-3 font-sans font-bold text-rose-900">Monsoon</td>
                           <td className="py-2 px-3 text-slate-600">447</td>
                           <td className="py-2 px-3 font-bold text-rose-700">79.19%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-10.81%)</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-10.81%; possibly related to cloud contamination; not tested)</td>
                         </tr>
                       </tbody>
                     </table>
@@ -663,7 +660,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                         <tr className="hover:bg-rose-50/40 bg-rose-50/20">
                           <td className="py-2 px-3 font-sans font-bold text-rose-900">Decile 10 (Hottest 10%)</td>
                           <td className="py-2 px-3 font-bold text-rose-700">83.43%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-6.57% on industrial roofs)</td>
+                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-6.57%; possibly related to industrial roofs; not tested)</td>
                         </tr>
                       </tbody>
                     </table>

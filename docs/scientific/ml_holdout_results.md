@@ -78,8 +78,8 @@ Evaluation broken down by seasonal context in the locked test partition:
 
 ### Scientific Observations by Season:
 1. **Winter & Post-Monsoon Precision**: Winter exhibits the lowest MAE ($0.9139^\circ\text{C}$) and minimal bias ($+0.0032^\circ\text{C}$) among evaluated seasons. The result is consistent with comparatively stable retrieval conditions and higher clear-sky sample support, although the model evaluation alone does not establish atmospheric transmission as the causal explanation.
-2. **Summer Heat Extremes**: Summer exhibits MAE of $1.3734^\circ\text{C}$ with a slight negative bias ($-0.1916^\circ\text{C}$). The result is consistent with wider surface thermal heterogeneity over dry non-vegetated soils and industrial rooftops, though localized emissivity dynamics cannot be directly separated without ground instrumentation.
-3. **Monsoon Cloud Attenuation**: Monsoon exhibits the highest observed error (RMSE $2.4353^\circ\text{C}$). This observed pattern is consistent with cloud-mask boundary effects and reduced temporal clear-sky support ($LST\_OBS\_COUNT$), representing an operational observational limitation under cloud-restricted conditions rather than an intrinsic model failure.
+2. **Summer Heat Extremes**: Summer exhibits MAE of $1.3734^\circ\text{C}$ with a slight negative bias ($-0.1916^\circ\text{C}$). The result is possibly related to surface thermal heterogeneity over dry non-vegetated soils or industrial roofs; not tested. Localized emissivity dynamics cannot be directly separated without ground instrumentation.
+3. **Monsoon Cloud Attenuation**: Monsoon exhibits the highest observed error (RMSE $2.4353^\circ\text{C}$). This error is possibly related to cloud contamination, cloud-mask boundary effects, and reduced temporal clear-sky support ($LST\_OBS\_COUNT$); not tested. It represents an operational observational limitation under cloud-restricted conditions rather than an intrinsic model failure.
 
 ---
 
@@ -96,7 +96,7 @@ Hotspot tier breakdown across the 33 locked test blocks based on multi-season re
 
 ### Critical Architectural Implication:
 - As hotspot severity increases from non-hotspot to chronic, the model's RMSE increases from $1.67^\circ\text{C}$ to $4.84^\circ\text{C}$, with an increasing cold bias (underpredicting chronic hotspots by $-1.5264^\circ\text{C}$).
-- **Interpretation**: The observed cold bias is consistent with sub-pixel thermal heterogeneity within the approximately 100m thermal footprint. Landsat's ~100m native thermal radiometer footprint resampled to 30m blends localized high-radiance industrial surfaces with cooler surrounding background.
+- **Interpretation**: The observed cold bias is possibly related to sub-pixel thermal heterogeneity or high-radiance structures within the ~100m thermal footprint; not tested. Landsat's ~100m native thermal radiometer footprint resampled to 30m blends localized high-radiance industrial surfaces with cooler surrounding background.
 - **Architectural Decision**: **Observed satellite LST must remain Primary Thermal Evidence** in HEATSENSE AI's Heat Priority engine. Model predictions serve exclusively as supplementary evidence and counterfactual simulation baselines, never as a replacement for observed thermal reality.
 
 ---
@@ -107,8 +107,8 @@ Hotspot tier breakdown across the 33 locked test blocks based on multi-season re
    `LST_QA_MEDIAN_K` provides a strong retrieval-quality and atmospheric-retrieval context signal that improves predictive performance in the evaluated feature configurations. Its predictive contribution must not be interpreted as physical causation.
 2. **Model Attribution vs. Causality (SHAP)**:
    SHAP values quantify numerical feature attribution within the fitted decision-tree ensembles, not physical causality. Under cloud-restricted monsoon conditions, `LST_OBS_COUNT` has the largest reported mean absolute SHAP contribution among the evaluated features ($2.5202^\circ\text{C}$). The result indicates that observation support is particularly informative for the model during monsoon conditions. This is a model-attribution result, not evidence of physical causation.
-3. **Inference Latency Benchmark**:
-   In dedicated CPU batch inference benchmarks on 924,731 rows, Scikit-Learn Random Forest required approximately 2.1132 s, whereas XGBoost required approximately 6.5477 s. Separately, the final holdout evaluation required approximately 1.093 s for 203,758 rows, equivalent to approximately 5.36 s per million rows under linear extrapolation. Random Forest demonstrates faster measured CPU inference, while XGBoost is the frozen operational model based on the tuned development workflow, independent locked test evaluation, and explainability workflow. RF remains an active benchmark. The currently reported RF 5-fold development CV RMSE and XGBoost locked-test RMSE are not directly comparable.
+3. **Inference Latency & Model Comparison Benchmark**:
+   In dedicated CPU batch inference benchmarks on 924,731 rows, Scikit-Learn Random Forest required approximately 2.1132 s, whereas XGBoost required approximately 6.5477 s. Separately, the final holdout evaluation required approximately 1.093 s for 203,758 rows, equivalent to approximately 5.36 s per million rows under linear extrapolation. Random Forest demonstrates faster measured CPU inference. On development CV, RF (1.8024) was slightly better than default XGBoost (1.8280); tuned frozen XGBoost reported 1.8478 in its own tuning study (different folds, not directly comparable); XGBoost was retained for the tuned workflow and holdout evaluation; RF was not evaluated on holdout.
 
 ---
 
