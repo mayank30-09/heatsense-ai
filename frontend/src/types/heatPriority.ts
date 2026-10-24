@@ -158,6 +158,15 @@ export interface ModelValidationSummary {
     best_parameters?: Record<string, any>;
     environment?: Record<string, string>;
   };
+  model_comparison?: Array<{
+    model: string;
+    mean_mae: number;
+    std_mae: number;
+    mean_rmse: number;
+    std_rmse: number;
+    mean_r2: number;
+    std_r2: number;
+  }>;
 }
 
 

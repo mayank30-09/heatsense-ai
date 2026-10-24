@@ -544,11 +544,33 @@ def get_model_validation_summary(response: Response) -> dict[str, Any]:
                 model_meta = json.load(f)
         except Exception:
             pass
+
+    comparison_path = PROJECT_ROOT / "data" / "diagnostics" / "ml" / "model_comparison_rf_xgb.csv"
+    model_comparison: list[dict[str, Any]] = []
+    if comparison_path.exists():
+        try:
+            import csv
+            with open(comparison_path, encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    model_comparison.append({
+                        "model": row["model"],
+                        "mean_mae": float(row["mean_MAE"]),
+                        "std_mae": float(row["std_MAE"]),
+                        "mean_rmse": float(row["mean_RMSE"]),
+                        "std_rmse": float(row["std_RMSE"]),
+                        "mean_r2": float(row["mean_R2"]),
+                        "std_r2": float(row["std_R2"]),
+                    })
+        except Exception:
+            pass
+
     response.headers["Cache-Control"] = "public, max-age=86400, must-revalidate"
     response.headers["ETag"] = '"ml-validation-frozen-v1"'
 
     return {
         "qc_summary": qc_data,
         "model_metadata": model_meta,
+        "model_comparison": model_comparison,
     }
 

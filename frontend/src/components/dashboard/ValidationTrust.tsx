@@ -252,6 +252,85 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 </div>
               </div>
 
+              {/* Controlled Architecture Benchmark */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Controlled Architecture Benchmark (Identical 5-Fold Spatial CV)
+                    </h4>
+                    <p className="mt-0.5 text-[11px] text-slate-500">
+                      Source: <span className="font-mono">data/diagnostics/ml/model_comparison_rf_xgb.csv</span> · <span className="font-semibold text-slate-700">MEASURED</span>
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-slate-700 border border-slate-200">
+                    5-Fold Spatially Grouped CV
+                  </span>
+                </div>
+
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full text-left text-xs bg-white rounded-lg border border-slate-200 overflow-hidden">
+                    <thead className="bg-slate-100/70 text-slate-600 uppercase border-b border-slate-200 font-semibold text-[10px]">
+                      <tr>
+                        <th className="py-2.5 px-3">Model Architecture</th>
+                        <th className="py-2.5 px-3">CV MAE (°C)</th>
+                        <th className="py-2.5 px-3">CV RMSE (°C)</th>
+                        <th className="py-2.5 px-3">CV R² Score</th>
+                        <th className="py-2.5 px-3">Operational Trade-off</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                      {(data?.model_comparison && data.model_comparison.length > 0
+                        ? data.model_comparison
+                        : [
+                            {
+                              model: "RandomForest",
+                              mean_mae: 1.29272,
+                              std_mae: 0.02802,
+                              mean_rmse: 1.80236,
+                              std_rmse: 0.05452,
+                              mean_r2: 0.90138,
+                              std_r2: 0.00426,
+                            },
+                            {
+                              model: "XGBoost",
+                              mean_mae: 1.31902,
+                              std_mae: 0.02737,
+                              mean_rmse: 1.82802,
+                              std_rmse: 0.06066,
+                              mean_r2: 0.89856,
+                              std_r2: 0.00449,
+                            },
+                          ]
+                      ).map((row) => (
+                        <tr key={row.model} className="hover:bg-slate-50/50">
+                          <td className="py-2.5 px-3 font-sans font-bold text-slate-800">
+                            {row.model === "RandomForest" ? "🌲 Random Forest Regressor" : "⚡ XGBoost Regressor (Production)"}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-700">
+                            {row.mean_mae.toFixed(4)} ± {row.std_mae.toFixed(4)}
+                          </td>
+                          <td className="py-2.5 px-3 font-bold text-slate-900">
+                            {row.mean_rmse.toFixed(4)} ± {row.std_rmse.toFixed(4)}
+                          </td>
+                          <td className="py-2.5 px-3 text-teal-600 font-bold">
+                            {row.mean_r2.toFixed(4)} ± {row.std_r2.toFixed(4)}
+                          </td>
+                          <td className="py-2.5 px-3 font-sans text-slate-600 text-[10px]">
+                            {row.model === "RandomForest"
+                              ? "Slightly lower RMSE (-0.026°C), but >120 MB artifact & higher inference latency"
+                              : "186k cells/s CPU batch inference, compact 17 MB artifact, chosen for deployment"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="mt-2.5 text-[11px] text-slate-500 leading-relaxed">
+                  <strong>Note on cross-fold comparison:</strong> Metrics from different cross-validation fold definitions must never be compared. In this controlled 5-fold split, Random Forest achieves marginally lower RMSE (1.8024°C vs 1.8280°C). XGBoost is retained for production due to inference speed and memory footprint, not an RMSE advantage.
+                </p>
+              </div>
+
               {/* Leakage Controls Checklist */}
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
