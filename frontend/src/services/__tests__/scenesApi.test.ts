@@ -13,18 +13,18 @@ describe("scenesApi", () => {
   it("fetches scenes list successfully from /api/v1/scenes", async () => {
     const mockScenes: SceneItem[] = [
       {
-        scene_id: "LC09_L2SP_148045_20261023_02_T1",
-        acquisition_date: "2026-10-23",
-        acquisition_time: "2026-10-23T05:43:21+00:00",
+        scene_id: "LC09_L2SP_148045_20261014_20261022_02_T1",
+        acquisition_date: "2026-10-14",
+        acquisition_time: "2026-10-14T05:33:20+00:00",
         sensor: "LANDSAT_9",
         path: 148,
         row: 45,
-        cloud_cover: 12.0,
-        valid_pixel_fraction: 0.88,
-        mean_lst_c: 45.2,
-        max_lst_c: 52.7,
+        cloud_cover: 0.01,
+        valid_pixel_fraction: 1.0,
+        mean_lst_c: 41.25,
+        max_lst_c: 55.08,
         status: "PROCESSED",
-        cog_path: "data/processed/scenes/2026-10-23.tif",
+        cog_path: "data/processed/scenes/2026-10-14.tif",
       },
     ];
 
@@ -41,8 +41,8 @@ describe("scenesApi", () => {
     expect(callUrl).toContain("/scenes");
     expect(callUrl).toContain("source=landsat_l2");
     expect(result).toHaveLength(1);
-    expect(result[0].scene_id).toBe("LC09_L2SP_148045_20261023_02_T1");
-    expect(result[0].valid_pixel_fraction).toBe(0.88);
+    expect(result[0].scene_id).toBe("LC09_L2SP_148045_20261014_20261022_02_T1");
+    expect(result[0].valid_pixel_fraction).toBe(1.0);
   });
 
   it("passes custom source parameter when requested", async () => {

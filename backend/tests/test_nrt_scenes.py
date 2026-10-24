@@ -715,25 +715,48 @@ def test_strict_genuine_scene_filtering(tmp_path: Path):
 
 
 def test_genuine_october_scene_catalog_and_tiles(client: TestClient):
-    """Verify GET /scenes returns only genuine scenes and tile endpoints render 200."""
+    """Verify GET /scenes returns only genuine scenes (Oct 14 and Oct 6) and tile endpoints render 200."""
     resp = client.get("/api/v1/scenes")
     assert resp.status_code == 200
     scenes = resp.json()
-    assert len(scenes) >= 1
-    # Oct 6 genuine scene must be present
+    
+    # Latest Scene selector must list Oct 14 and Oct 6 only
+    scene_dates = [s["acquisition_date"] for s in scenes]
+    assert len(scenes) == 2, f"Expected exactly 2 genuine scenes, got {len(scenes)}: {scene_dates}"
+    assert scene_dates == ["2026-10-14", "2026-10-06"], f"Expected [Oct 14, Oct 6], got {scene_dates}"
+
+    # Oct 14 genuine scene (Landsat 9)
+    oct14_scene = next((s for s in scenes if s["scene_id"] == "LC09_L2SP_148045_20261014_20261022_02_T1"), None)
+    assert oct14_scene is not None
+    assert oct14_scene["source"] == "landsat_l2"
+    assert oct14_scene["status"] == "PROCESSED"
+    assert oct14_scene["sensor"] == "LANDSAT_9"
+    assert oct14_scene["mean_lst_c"] == 41.25
+    assert oct14_scene["valid_pixel_fraction"] == 1.0
+
+    # Oct 14 tile endpoints
+    tile_resp_14 = client.get(f"/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id={oct14_scene['scene_id']}")
+    assert tile_resp_14.status_code == 200
+    assert tile_resp_14.headers.get("content-type") == "image/png"
+
+    tile_date_resp_14 = client.get("/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id=2026-10-14")
+    assert tile_date_resp_14.status_code == 200
+    assert tile_date_resp_14.headers.get("content-type") == "image/png"
+
+    # Oct 6 genuine scene (Landsat 8)
     oct6_scene = next((s for s in scenes if s["scene_id"] == "LC08_L2SP_148045_20261006_20261014_02_T1"), None)
     assert oct6_scene is not None
     assert oct6_scene["source"] == "landsat_l2"
     assert oct6_scene["status"] == "PROCESSED"
+    assert oct6_scene["sensor"] == "LANDSAT_8"
     assert oct6_scene["mean_lst_c"] == 38.85
     assert oct6_scene["valid_pixel_fraction"] == 0.9999
 
-    # Check tile endpoint by scene_id
-    tile_resp = client.get(f"/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id={oct6_scene['scene_id']}")
-    assert tile_resp.status_code == 200
-    assert tile_resp.headers.get("content-type") == "image/png"
+    # Oct 6 tile endpoints
+    tile_resp_6 = client.get(f"/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id={oct6_scene['scene_id']}")
+    assert tile_resp_6.status_code == 200
+    assert tile_resp_6.headers.get("content-type") == "image/png"
 
-    # Check tile endpoint by date
-    tile_date_resp = client.get("/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id=2026-10-06")
-    assert tile_date_resp.status_code == 200
-    assert tile_date_resp.headers.get("content-type") == "image/png"
+    tile_date_resp_6 = client.get("/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id=2026-10-06")
+    assert tile_date_resp_6.status_code == 200
+    assert tile_date_resp_6.headers.get("content-type") == "image/png"
