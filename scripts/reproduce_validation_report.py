@@ -14,6 +14,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,7 @@ QC_SUMMARY_FILE = FREEZE_DIR / "qc_summary.json"
 MODEL_META_FILE = FREEZE_DIR / "model_metadata.json"
 MODEL_COMPARISON_CSV = PROJECT_ROOT / "data" / "diagnostics" / "ml" / "model_comparison_rf_xgb.csv"
 ML_EXP_FILE = PROJECT_ROOT / "artifacts" / "ml_experiments" / "ml_experimental_evaluation.json"
+SPATIAL_RESIDUALS_FILE = FREEZE_DIR / "holdout_spatial_residuals.geojson"
 
 
 def sha256_file(path: Path) -> str:
@@ -77,11 +79,45 @@ def verify_manifest() -> dict[str, Any]:
     }
 
 
+def recompute_spatial_residual_metrics() -> dict[str, Any]:
+    """Recompute holdout MAE and RMSE from the stored per-block spatial residuals GeoJSON artifact."""
+    if not SPATIAL_RESIDUALS_FILE.exists():
+        return {"error": f"Missing {SPATIAL_RESIDUALS_FILE}"}
+
+    with open(SPATIAL_RESIDUALS_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    features = data.get("features", [])
+    total_samples = sum(f["properties"].get("n_samples", 0) for f in features)
+    if total_samples == 0:
+        return {"error": "Zero total samples in spatial residuals GeoJSON"}
+
+    weighted_mae = sum(
+        f["properties"].get("n_samples", 0) * f["properties"].get("mae", 0.0)
+        for f in features
+    ) / total_samples
+
+    weighted_mse = sum(
+        f["properties"].get("n_samples", 0) * (f["properties"].get("rmse", 0.0) ** 2)
+        for f in features
+    ) / total_samples
+    weighted_rmse = math.sqrt(weighted_mse)
+
+    return {
+        "total_blocks": len(features),
+        "total_samples": total_samples,
+        "sample_weighted_mae": round(weighted_mae, 4),
+        "sample_weighted_rmse": round(weighted_rmse, 4),
+        "raw_sample_weighted_mae": float(weighted_mae),
+        "raw_sample_weighted_rmse": float(weighted_rmse),
+    }
+
+
 def recompute_validation_metrics() -> dict[str, Any]:
     """Recompute metrics strictly from stored evaluation artifacts."""
     recomputed: dict[str, Any] = {}
 
-    # 1. Holdout performance
+    # 1. Holdout performance from JSON
     if HOLDOUT_PERF_FILE.exists():
         with open(HOLDOUT_PERF_FILE, "r", encoding="utf-8") as f:
             holdout = json.load(f)
@@ -98,6 +134,9 @@ def recompute_validation_metrics() -> dict[str, Any]:
         }
     else:
         recomputed["holdout"] = {"error": "Missing holdout_performance.json"}
+
+    # 2. Recomputed holdout metrics from spatial residuals GeoJSON
+    recomputed["spatial_residuals"] = recompute_spatial_residual_metrics()
 
     # 2. QC Summary
     if QC_SUMMARY_FILE.exists():
@@ -200,6 +239,10 @@ def compare_with_displayed(recomputed: dict[str, Any]) -> dict[str, Any]:
     check("holdout_mae", holdout.get("mae"), expected["holdout_mae"])
     check("holdout_rmse", holdout.get("rmse"), expected["holdout_rmse"])
     check("holdout_r2", holdout.get("r2"), expected["holdout_r2"])
+
+    spat = recomputed.get("spatial_residuals", {})
+    check("spatial_residuals_mae", spat.get("sample_weighted_mae"), expected["holdout_mae"])
+    check("spatial_residuals_rmse", spat.get("sample_weighted_rmse"), expected["holdout_rmse"])
 
     qc = recomputed.get("qc_summary", {})
     check("dev_blocks", qc.get("dev_blocks"), expected["dev_blocks"], 0)

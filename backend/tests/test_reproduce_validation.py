@@ -14,6 +14,7 @@ from scripts.reproduce_validation_report import (
     generate_validation_report,
     verify_manifest,
     recompute_validation_metrics,
+    recompute_spatial_residual_metrics,
     compare_with_displayed,
 )
 
@@ -28,6 +29,15 @@ def test_manifest_verification_matches_freeze():
     assert len(result["checksum_mismatches"]) == 0
 
 
+def test_spatial_residuals_recomputation_matches_holdout():
+    """Verify that sample-weighted aggregation over 33 locked test blocks in GeoJSON matches holdout metrics."""
+    spat = recompute_spatial_residual_metrics()
+    assert spat["total_blocks"] == 33
+    assert spat["total_samples"] == 203758
+    assert pytest.approx(spat["sample_weighted_mae"], abs=0.0001) == 1.2726
+    assert pytest.approx(spat["sample_weighted_rmse"], abs=0.0001) == 1.7524
+
+
 def test_recomputed_metrics_from_stored_artifacts():
     """Verify metrics extracted strictly from stored evaluation artifacts."""
     recomputed = recompute_validation_metrics()
@@ -38,6 +48,13 @@ def test_recomputed_metrics_from_stored_artifacts():
     assert pytest.approx(holdout["rmse"], abs=0.001) == 1.7524
     assert pytest.approx(holdout["r2"], abs=0.001) == 0.9006
     assert holdout["evaluation_count"] == 1
+
+    # Spatial Residuals
+    spat = recomputed["spatial_residuals"]
+    assert spat["total_blocks"] == 33
+    assert spat["total_samples"] == 203758
+    assert pytest.approx(spat["sample_weighted_mae"], abs=0.0001) == 1.2726
+    assert pytest.approx(spat["sample_weighted_rmse"], abs=0.0001) == 1.7524
 
     # QC Summary
     qc = recomputed["qc_summary"]
@@ -65,10 +82,11 @@ def test_full_reproduction_report_passes():
     assert report["overall_status"] == "PASS"
     assert report["manifest_verification"]["status"] == "PASS"
     assert report["displayed_comparison"]["status"] == "PASS"
-    assert report["displayed_comparison"]["passed_checks"] == 10
+    assert report["displayed_comparison"]["passed_checks"] == 12
 
     # Verify required verbatim disclosures
     disclosures = report["disclosures"]
     assert "evaluated once on the 33 locked test blocks: MAE 1.2726 C, RMSE 1.7524 C, R2 0.9006" in disclosures["holdout_usage"]
     assert "evaluation_count: 1 is a constant written by scripts/final_holdout_evaluation.py, not a runtime counter" in disclosures["holdout_usage"]
     assert disclosures["confidence_index"] == "confidence index is a heuristic, not a calibrated probability"
+
