@@ -1,0 +1,61 @@
+# HEATSENSE AI — Evidence Register
+
+**Target City:** Surat, Gujarat, India (Surat Municipal Corporation — SMC)  
+**Spec Version:** v2.0 Operational (2026 Summer Baseline)  
+**Document Purpose:** Systematic truth and evidence audit for all scientific, geospatial, statistical, economic, and engineering claims asserted within the HEATSENSE AI platform.
+
+---
+
+## 1. Classification Methodology
+
+Every quantitative claim, formula, parameter, and scientific assertion in the platform is cataloged under one of four rigorous evidentiary statuses:
+
+- **MEASURED:** Direct physical observation, verified sensor measurement, official municipal spatial dataset, or empirically calculated metric derived from authentic datasets with full chain-of-custody.
+- **MODELLED:** Output of a mathematical model, statistical regression, or algorithmic simulation (e.g., XGBoost, empirical microclimate formulas, NSGA-II optimization) grounded in peer-reviewed literature or validated training splits.
+- **ASSUMPTION:** Policy choice, stakeholder working group parameter, municipal cost estimate, or uncalibrated heuristic rule adopted for planning utility.
+- **UNVERIFIED:** Speculative, unvalidated, or research-level claim not yet supported by ground-truth measurements or active runtime code.
+
+---
+
+## 2. Platform Evidence Register
+
+| Claim / Assertion | Source / Implementation | Status | Notes & Verification Reference |
+| :--- | :--- | :--- | :--- |
+| **Landsat 8/9 LST Radiometric Conversion** ($T_{\text{skin}} = (\text{ST\_B10} \times 0.00341802 + 149.0) - 273.15$) | USGS EROS Collection 2 Level-2 Surface Temperature Science Product Guide; implemented in `gis/gee/seasonal_features.py` | **MEASURED** | Thermal Infrared Sensor 2 (TIRS-2) Band 10 radiance converted via USGS calibration coefficients. Represents skin surface temperature, not 2m ambient air temperature. |
+| **Multispectral Surface Reflectance Indices** (NDVI, NDBI, NDWI) | USGS Landsat 8/9 OLI/OLI-2 Collection 2 Level-2 Surface Reflectance (30m native resampled to 100m); `gis/gee/seasonal_features.py` | **MEASURED** | Band ratios: $\text{NDVI} = \frac{\text{B5}-\text{B4}}{\text{B5}+\text{B4}}$, $\text{NDBI} = \frac{\text{B6}-\text{B5}}{\text{B6}+\text{B5}}$, $\text{NDWI} = \frac{\text{B3}-\text{B5}}{\text{B3}+\text{B5}}$. Validated: Sentinel-2 is not used in the active pipeline. |
+| **SMC Municipal Domain Boundary** (Total Area: 461.63 km² / 461,630,791 m²) | Official Surat Municipal Corporation administrative vector boundary shapefile; `data/boundaries/smc_boundary.geojson` | **MEASURED** | Authoritative administrative boundary used for polygon clipping and citywide area-weighted cooling normalization. |
+| **Analytical Grid Cell Resolution** (100m × 100m, 49,747 analytical cells) | PostGIS spatial database table `stage_c_grid_cells`; `backend/app/db/models/stage_c.py` | **MEASURED** | Uniform Cartesian tessellation across the SMC bounding box; cells intersecting water or rural buffer tagged with `is_centroid_inside`. |
+| **Chronic Heat Hotspots** (223 cells) | Multi-year summer overpass percentile evaluation ($\ge 90$th percentile across multi-year summer observations); `backend/app/api/v1/heat_priority.py` | **MEASURED** | Cells exhibiting recurrent extreme surface heat persistence across 2022–2026 satellite overpass records. |
+| **Seasonal LST Baseline Distributions** (Summer: 42.3°C, Winter: 28.6°C, Monsoon: 30.8°C, Post-Monsoon: 34.1°C) | Multi-temporal Landsat composites (2022–2026); `data/cogs/` and `backend/app/api/v1/heat_priority.py` | **MEASURED** | Aggregate distributions across cloud-filtered pixel observations within SMC municipal domain. |
+| **Spatial Holdout Partitioning** (132 Dev Blocks, 33 Test Blocks, 0 Overlap) | Block-disjoint spatial holdout split; `artifacts/ml_freeze/holdout_split.json` | **MEASURED** | Dev: 720,973 rows (77.97%); Test: 203,758 rows (22.03%). Absolute spatial buffer separation; zero coordinate leakage. |
+| **Authoritative XGBoost Holdout Accuracy** ($R^2 = 0.9006$, $\text{MAE} = 1.2726^\circ\text{C}$, $\text{RMSE} = 1.7524^\circ\text{C}$) | Independent single-pass evaluation of `xgb_tuned_policy_d.json` on 203,758 holdout rows; `artifacts/ml_freeze/holdout_performance.json` | **MEASURED** | Verified via `scripts/reproduce_validation_report.py` and `backend/tests/test_reproduce_validation.py`. |
+| **5-Fold Spatial CV Model Comparison** (Random Forest RMSE: 1.8024°C, XGBoost RMSE: 1.8280°C) | Development set 5-fold spatial cross-validation; `data/diagnostics/ml/model_comparison_rf_xgb.csv` | **MEASURED** | Comparison on development folds; RF achieves slightly lower spatial CV RMSE than preliminary XGBoost tuning runs. |
+| **In-Sample Cell-Mean Baseline Accuracy** (RMSE: 2.4170°C, MAE: 1.6143°C, $R^2$: 0.8268) | Development partition historical cell mean persistence; `reports/improvement_2026-10-23/VALIDATION_BENCHMARK.md` | **MEASURED** | Benchmark showing spatial persistence of individual cell thermal characteristics across seasons. |
+| **Conformal Prediction Interval Coverage** (Overall: 90.15% at nominal 90.0%, Half-Width: ±2.98°C) | Non-parametric split conformal calibration; `artifacts/ml_freeze/conformal_calibration.json` | **MEASURED** | Summer: 90.53%, Winter: 95.68%, Post-Monsoon: 95.80%, Monsoon: 79.19% (undercoverage due to cloud artifacts), D10 Hottest: 83.43%. |
+| **Cryptographic Freeze Digests** (41/41 artifacts 100% matched) | SHA-256 manifest; `artifacts/ml_freeze/checksums.sha256` verified via `verify_checksums.py` | **MEASURED** | Cryptographic guarantee that models, splits, matrices, and baselines have not experienced bit drift or manual tampering. |
+| **XGBoost Surface Temperature Inference** | Gradient boosted decision trees (`xgb_tuned_policy_d.json`); `gis/ml/` | **MODELLED** | Maps optical indices, urban density, and quality metrics to predicted surface skin temperature. |
+| **Tree Canopy Local Cooling Impact** (Logarithmic canopy scaling, cap = 3.50°C) | Empirical urban forestry microclimate model (Bowler et al. 2010); `gis/interventions/cooling_effects.py` lines 53–66 | **MODELLED** | $\Delta T = \min(3.50, 0.65 \times \ln(1 + 0.18 \times N_{\text{trees}}) \times f_{\text{thermal}})$. Diminishing marginal returns above 40 mature trees per hectare. |
+| **Cool Roof Local Cooling Impact** (Albedo shift scaling, cap = 2.50°C) | Calibrated radiative albedo model (Santamouris et al. 2017); `gis/interventions/cooling_effects.py` lines 68–80 | **MODELLED** | $\Delta T = \min(2.50, (A_{\text{treated}} / 10000 \times 3.2) \times f_{\text{thermal}})$. Albedo shift of ~0.40 on treated roof surfaces. |
+| **Green Roof Local Cooling Impact** (Evapotranspiration + insulation, cap = 2.00°C) | Extensive green roof heat-flux model (Akbari et al. 2001); `gis/interventions/cooling_effects.py` lines 82–94 | **MODELLED** | $\Delta T = \min(2.00, (A_{\text{treated}} / 10000 \times 2.6) \times f_{\text{thermal}})$. Bounded microclimate thermal flux. |
+| **Cool Pavement Local Cooling Impact** (Permeable reflective microclimate, cap = 1.80°C) | Microclimate literature model; `gis/interventions/cooling_effects.py` lines 96–107 | **MODELLED** | $\Delta T = \min(1.80, (A_{\text{treated}} / 10000 \times 2.8) \times f_{\text{thermal}})$. |
+| **Sub-Additive Combined Cooling Attenuation** (Cell max cap = 4.50°C) | Combined microclimate attenuation function; `gis/interventions/cooling_effects.py` lines 113–130 | **MODELLED** | Cooling effects do not sum linearly. Second intervention attenuated by $1.0 - 0.25 \times \frac{\min(\Delta T_1, \Delta T_2)}{\max(\Delta T_1, \Delta T_2)}$. |
+| **NSGA-II Pareto Multi-Objective Optimization** | Genetic algorithm exploring non-dominated trade-offs; `gis/interventions/optimizer.py` and `backend/app/api/v1/interventions.py` | **MODELLED** | Optimizes capital expenditure (min), thermal benefit (max), and chronic hotspot mitigation count (max). |
+| **Greedy Knapsack Budget Allocation** | Marginal cost-effectiveness ranking; `gis/interventions/optimizer.py` | **MODELLED** | Ranks candidates by extensive thermal benefit per rupee ($B_i / \text{Cost}_i$) subject to budget ceiling and 1-intervention-per-cell exclusivity. |
+| **Heat Priority Index (HPI) Formulation** (Weights: 0.40 LST, 0.30 NDBI, 0.15 NDVI Deficit, 0.15 Chronic Persistence) | Surat Municipal Corporation heat resilience working group specification; `backend/app/db/models/stage_c.py` | **ASSUMPTION** | Normalization ranges: $T \in [30, 50]^\circ\text{C}$, $\text{NDVI} \in [0.05, 0.45]$, $\text{NDBI} \in [-0.25, 0.15]$. Relative priority weights reflect policy consensus, not physical law. |
+| **Heuristic Confidence Index** (Score $\in [0, 1]$ based on observation count and spatial variance) | Platform heuristic formula; `backend/app/api/v1/heat_priority.py` | **ASSUMPTION** | Disclaimed across UI: `"Confidence index is a heuristic based on observation count and spatial variance, not a calibrated probability."` |
+| **Intervention Unit Capital Costs** (Tree: ₹3,500, Cool Roof: ₹350/m², Green Roof: ₹3,600/m², Cool Pavement: ₹450/m²) | Surat PWD Schedule of Rates and municipal greening procurement estimates; `backend/app/db/models/stage_d.py` | **ASSUMPTION** | Includes fixed setup/mobilization overheads (Cool Roof: ₹5,000; Green Roof: ₹15,000; Cool Pavement: ₹8,000). |
+| **3-Year Operational Maintenance Factors** (Tree: ₹1,500, Cool Roof: ₹50/m², Green Roof: ₹450/m², Cool Pavement: ₹60/m²) | Municipal horticulture and pavement maintenance estimates; `backend/app/db/models/stage_d.py` | **ASSUMPTION** | Operational budgeting assumption for multi-year fiscal planning. |
+| **Default Seeded Authentication Roles** (`admin`, `planner`, `researcher`) | Local database seed script; `backend/app/db/seed.py` and `docs/auth_architecture.md` | **ASSUMPTION** | Demonstration roles for local testing and RBAC validation. Must be rotated in staging and production deployments. |
+| **Individual Building Roof Structural Feasibility** | Satellite imagery cannot determine roof structural load-bearing capacity | **UNVERIFIED** | Requires physical on-site structural engineering survey before installing green roofs or high-albedo coatings, especially in informal or tin-roof settlements. |
+| **Ward-Level Population Exposure Benefit** | Population census integration; `backend/app/api/v1/interventions.py` | **UNVERIFIED** | Field returns `null` with status `"POPULATION_DATA_UNAVAILABLE"`. High-resolution ward/slum census population layer not yet linked to 100m grid. |
+| **Specific Tree Botanical Profiles** (Neem, Peepal, Gulmohar crown geometry) | Parked research patch (`reports/runtime_verification_2026-10-21/parked/stage_d_science_wip.patch`) | **UNVERIFIED** | Botanical profiles and individual tree crown shading models remain unapplied to preserve runtime API backward compatibility. |
+| **Time-to-Maturity Cooling Growth Curves** (Years 1–10 tree canopy progression) | Parked research patch (`stage_d_science_wip.patch`) | **UNVERIFIED** | Active runtime uses mature canopy equilibrium cooling estimates; temporal growth curves are not in active production runtime. |
+| **1D Surface Energy Balance Equation Solver** ($R_n = H + LE + G$) | Parked research patch (`stage_d_science_wip.patch`) | **UNVERIFIED** | Active platform uses empirical peer-reviewed microclimate equations (Bowler 2010, Santamouris 2017) rather than full 1D energy balance differential solvers. |
+
+---
+
+## 3. Disclaimers & Governance Principles
+
+1. **Non-Inversion Principle:** Feature attributions (such as SHAP values) quantify historical observational correlations between satellite features and surface temperature. They must **never** be inverted or multiplied linearly by proposed intervention footprints to claim microclimate cooling.
+2. **Thermal Physical Context:** Satellite Land Surface Temperature ($T_{\text{skin}}$) represents the thermodynamic skin surface temperature of roofs, roads, vegetation, and bare soil. It is typically **10°C to 18°C hotter than 2-meter ambient air temperature ($T_{\text{air}}$)** during clear-sky summer afternoon overpasses.
+3. **Engineering Pre-Requisites:** All cool roof and green roof deployment recommendations output by this system are planning-level prioritization screening tools and do not substitute for on-site structural feasibility inspections.
