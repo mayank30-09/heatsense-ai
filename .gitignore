@@ -37,3 +37,11 @@ Thumbs.db
 /artifacts/shap/*
 /artifacts/validation/*
 /artifacts/reports/*
+
+# Large untracked experimental datasets (>75MB each)
+artifacts/ml_freeze/sentinel_sensitivity/sentinel_local_effect.csv
+artifacts/ml_freeze/sentinel_sensitivity/sentinel_spatial_proximity.csv
+
+# Local scratch workspaces
+scratch/
+
