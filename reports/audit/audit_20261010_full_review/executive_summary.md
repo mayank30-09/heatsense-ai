@@ -10,6 +10,13 @@
 **Authoritative Review Specification:** `ChatGPT-SEEANALYSEANDREVIEWT.pdf`  
 **Overall Project Audit Verdict:** **STAGE C ACCEPTED — 100% OPERATIONAL & SCIENTIFICALLY VERIFIED**
 
+> [!NOTE]
+> **Audit Supersedence & Architectural Evolution Note (October 2026)**:
+> This audit reflects the project baseline as of commit `5dc4d74b` (2026-10-10). The following subsequent evolutions supersede specific baseline descriptions:
+> 1. **Database Environment**: PostgreSQL 16.4 / PostGIS 3.4.3 is running on dedicated port `5433` (configured via `DATABASE_URL` in `.env`).
+> 2. **Stage D Interventions**: Intervention candidates and optimization engines are fully implemented in the codebase (`gis/interventions/`, `backend/app/api/v1/interventions.py`, migration `b2c3d4e5f6a7`), with Stage D database tables created and schema-enforced (tables currently empty awaiting formal municipal operational candidate ingestion).
+> 3. **Raster Products**: The pipeline standardizes on 8-band seasonal COGs (`data/processed/seasonal/`) and 10-band analytical COGs (`data/processed/analytical/`), maintaining strict raster dimensional alignment.
+
 ---
 
 ## 1. Executive Subsystem Scorecard

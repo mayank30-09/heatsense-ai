@@ -8,6 +8,9 @@
 **Canonical Configuration:** `config/quality_policy_d.yaml`
 **Date:** September 2026
 
+> [!NOTE]
+> **Status Note**: Status changed from DRAFT to FROZEN after the September freeze to match `ml_qc_freeze_record.md`; no rule or parameter changed (`config/quality_policy_d.yaml` unchanged).
+
 ---
 
 ## 1. Purpose

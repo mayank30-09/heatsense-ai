@@ -171,6 +171,13 @@ To be formally classified as `is_chronic_hotspot = True`, a cell **must satisfy 
 
 All supporting counts (`hot_seasons_count`, `valid_seasons_count`, `distinct_years_count`, `summer_hot_count`, `winter_hot_count`, `monsoon_hot_count`, `post_monsoon_hot_count`) are explicitly stored in the database for transparent auditability.
 
+### 4.3 Known Limitation: Season Denominator Discrepancy
+- **Specification vs. Implementation**: While Section 3.3.2 and Section 4.1 define recurrence frequency over locally valid seasons ($f_{hot} = N_{hot\_seasons} / N_{valid\_seasons}$), the reference calculation in `scripts/analyze_hotspot_persistence.py:104-105` uses a fixed 19-season denominator (`valid_seasons_count = total_seasons_count = 19`).
+- **Impact on Chronic Hotspot Count**: Under the fixed 19-season denominator, 223 cells qualify as chronic hotspots ($f_{hot} \ge 0.50$ or $N_{hot} \ge 4$). If evaluated strictly over locally valid non-null seasons ($N_{valid\_seasons}$), 233 cells meet the threshold.
+- **Differing Cells (10 cells)**: The 10 cells that qualify under the variable valid-season denominator but not under the fixed 19-season denominator are:
+  `R029_C299`, `R078_C239`, `R104_C174`, `R105_C213`, `R146_C182`, `R146_C185`, `R161_C162`, `R215_C174`, `R242_C188`, `R245_C190`.
+- **Operational Status**: Operational scores, database tables, and downstream models remain unchanged based on the authoritative frozen 223 chronic hotspot cells.
+
 ---
 
 ## 5. Confidence Index ($CI$) & Missing-Data Protocols
