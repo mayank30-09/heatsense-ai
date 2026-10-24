@@ -524,9 +524,68 @@
 - **Root Cleanliness:** Verified zero stray files exist in repository root.
 - **Next Task:** G8 FINAL VERIFICATION.
 
+### Task G8: FINAL VERIFICATION (Completed)
+- All Phase G verification sweeps executed and documented in `reports/improvement_2026-10-23/GAP_REPORT.md`.
+
 ---
 
-## 4. Project Status
-**Active Protocol:** Gap Closure Tasks G0–G8.  
-Branch `fix/runtime-working`. G0 through G7 Completed. Next: G8 Final. No remote push.
+## 4. Phase H: Deep Veracity & Reproduction Sweep (Tasks H1–H9)
 
+### Task H1: LATEST SCENE TRUTH (Completed — Commit `0b15fc1`)
+- **Genuine Landsat Ingestion:** Queried USGS EarthEngine catalog for genuine Surat WRS-2 Path 148 Row 045 Landsat Collection 2 Level-2 overpasses. Ingested 2 genuine scenes into `data/processed/scenes` catalog (`LC09_L2SP_148045_20261023_02_T1` from 2026-10-23 and `LC09_L2SP_148045_20261007_02_T1` from 2026-10-07).
+- **Disproved 45.2°C Synthetic Anomaly:** Real overpasses recorded mean LST of 31.91°C (max 39.81°C, min 26.23°C) and 31.54°C (max 39.12°C, min 25.11°C). Updated `stage_c_scenes` with genuine metadata.
+- **UI Single-Scene Caveat Banner:** Added amber caveat banner to `frontend/src/components/dashboard/HeatMap.tsx` disclosing that single-scene observations are not comparable to multi-year seasonal composites due to instantaneous meteorological variability and are not used in canonical HPI or ML training.
+- **Backend Test:** Added unit test in `backend/tests/test_nrt_scenes.py`.
+
+### Task H2: SCENARIO LAB AUTH GUARD (Completed — Commit `e3fcfdf`)
+- **Access Guard Implementation:** Audited `frontend/src/pages/ScenarioLab.tsx` and backend `/api/v1/interventions/diminishing-returns`. Implemented UI and API access guard: unauthenticated users can view public UHAP benchmarks, but custom parameter adjustments, simulation runs, and diminishing-returns evaluations require logging in as `planner_officer` or `smc_admin`.
+- **Login Modal Prompt:** Added login prompt with direct modal trigger.
+- **Frontend Test Coverage:** Added 3 vitest tests in `frontend/src/tests/scenarioLabAuth.test.tsx` (58/58 vitest passed).
+
+### Task H3: UNTRACKED CODE REVIEW (Completed — No Tracked Changes)
+- **Security Audit:** Audited untracked directories `.github/`, `tests/`, and `docs/live_pipeline*`.
+- **Scheduled Cron Flagged:** Flagged `.github/workflows/ee_nrt_ingestion.yml` for attempting scheduled cron ingestions against external Google Cloud and Earth Engine APIs without repository-approved secrets.
+- **Quarantine:** Quarantined untracked directories to ensure no automated pipelines run untracked scripts.
+
+### Task H4: EVIDENCE REGISTER FIX (Completed — Commit `2bd1135`)
+- **Weight Reconciliation:** Corrected Claim 4 (HPI weights) in `docs/EVIDENCE_REGISTER.md` to `w_surface=0.45, w_built=0.25, w_green=0.30` matching code (`gis/heat_priority/calculator.py:27-31`) and specification Section 3.2.1.
+- **Grid Dimensions Reclassification:** Reclassified Claim 8 (Stage C Grid Dimensions) from MEASURED to DERIVED (reconciling 497.47 km² nominal vs 459.55 km² operational clipped area).
+- **Cooling Assumptions Reclassification:** Reclassified Claim 12 (Cooling Caps & Cost Assumptions) from MODELLED to ASSUMPTION / CODE CONSTANT (`gis/interventions/cooling_effects.py:22-105`).
+
+### Task H5: MODEL COMPARISON HONESTY (Completed — Commit `bf852f3`)
+- **Documentation Alignment:** Updated `docs/scientific/ml_qc_freeze_record.md` and `docs/scientific/ml_holdout_results.md` to plainly state that on development CV, Random Forest (1.8024°C) was slightly better than default XGBoost (1.8280°C); tuned frozen XGBoost reported 1.8478°C; XGBoost was selected for the hyperparameter tuning workflow; RF was not evaluated on holdout.
+- **Non-Causal Disclosures:** Replaced speculative causal claims with non-causal disclosures ("possibly related to ...; not tested").
+- **UI Honesty:** Updated `frontend/src/components/dashboard/ValidationTrust.tsx` model comparison note, hotspot diagnosis, and Monsoon (-10.81%) and Decile 10 (-6.57%) undercoverage descriptions.
+
+### Task H6: REMAINING DOC ITEMS & KNOWN LIMITATIONS (Completed — Commit `17846f3`)
+- **Season Denominator Discrepancy:** Added Section 4.3 in `docs/specifications/stage_c_heat_priority_specification.md` explaining the Season Denominator Discrepancy (spec valid seasons vs script 19-season denominator, 223 vs 233 cells, enumerating all 10 differing cells, noting operational scores are unaffected).
+- **Pixel Policy Status Note:** Added status note in `docs/scientific/pixel_eligibility_policy.md` (DRAFT to FROZEN).
+- **Audit Supersedence:** Added supersedence note in `reports/audit/audit_20261010_full_review/executive_summary.md` (DB port 5433, empty Stage D tables, 8-band vs 10-band COGs).
+- **Comprehensive Limitations Document:** Authored [docs/KNOWN_LIMITATIONS.md](file:///e:/FINAL%20YEAR%20PROJECT/heatsense-ai/docs/KNOWN_LIMITATIONS.md).
+
+### Task H7: MIGRATION REVIEW & SYMMETRY (Completed — Commit `dd1752d`)
+- **Downgrade DDL Symmetry:** Fixed Alembic migration `b2c3d4e5f6a7` downgrade symmetry in both offline and online modes to drop `stage_d_intervention_candidates` (and its 4 indexes) and `stage_d_scenario_results` (and its index).
+- **Offline Static SQL Verified:** Verified offline static SQL generation (`alembic downgrade b2c3d4e5f6a7:a1b2c3d4e5f6 --sql`) produces clean `DROP INDEX` and `DROP TABLE` DDL without database connection. Zero throwaway-database roundtrips executed.
+
+### Task H8: VALIDATION REPRODUCTION EXTENSION (Completed — Commit `1de0776`)
+- **Spatial Residual Recomputation:** Extended `scripts/reproduce_validation_report.py` with `recompute_spatial_residual_metrics()`, calculating sample-weighted MAE (1.2726°C) and RMSE (1.7524°C) across all 33 locked test blocks ($N = 203,758$) in `artifacts/ml_freeze/holdout_spatial_residuals.geojson` and cross-checking against `holdout_performance.json` (exact match, diff = 0.0).
+- **Check Inventory:** Increased total verified reproduction checks from 10 to 12.
+- **Unit Test Coverage:** Added `test_spatial_residuals_recomputation_matches_holdout()` in `backend/tests/test_reproduce_validation.py` (4/4 tests passed in 0.45s).
+
+### Task H9: FINAL VERIFICATION GATES (Completed)
+- **Backend Tests:** 343 passed, 140 warnings in 411.80s (including all 4 integration tests, 0 failures).
+- **Frontend Tests:** 58 passed across 9 suites in 677ms.
+- **Frontend Build:** Built in 2.49s with 0 errors.
+- **Checksum Verifier:** 41/41 matches `[PASS] ALL CHECKSUMS VERIFIED OK (100% MATCH)!`.
+- **Sensitive String Grep:** 0 matches for `HeatSense@2026` or `single independent`, 0 active dev tokens.
+- **Fresh Clone Tests:** Passed under both `core.autocrlf=true` (337 passed, 41/41 checksums, clean) and `core.autocrlf=false` (337 passed, 41/41 checksums).
+- **Reporting:** Authored [reports/improvement_2026-10-23/GAP_REPORT_2.md](file:///e:/FINAL%20YEAR%20PROJECT/heatsense-ai/reports/improvement_2026-10-23/GAP_REPORT_2.md).
+
+---
+
+## 5. Project Status
+**Active Protocol:** Tasks H1–H9 Complete.  
+**Branch:** `fix/runtime-working`.  
+**SHA-256 Checksum Status:** 41/41 Verified (`[PASS]`).  
+**Remote Push:** None (kept strictly local).  
+**Repository State:** 100% Verified, Validated, and Clean.
