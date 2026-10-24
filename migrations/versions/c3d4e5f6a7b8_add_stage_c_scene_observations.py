@@ -35,7 +35,7 @@ def upgrade() -> None:
         sa.Column("cog_path", sa.String(length=256), nullable=True),
         sa.Column("ingested_at", sa.DateTime(timezone=True), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False),
         sa.CheckConstraint(
-            "status IN ('PROCESSED', 'REJECTED_CLOUDY', 'FAILED', 'PENDING', 'SYNTHETIC_EXCLUDED')",
+            "status IN ('PROCESSED', 'REJECTED_CLOUDY', 'FAILED', 'PENDING')",
             name="ck_scene_status",
         ),
         sa.CheckConstraint(
