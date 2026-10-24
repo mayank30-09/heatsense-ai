@@ -34,7 +34,10 @@ The Surat SMC domain is partitioned into $165$ discrete $2\text{km} \times 2\tex
 - `test_blocks_excluded_from_feature_selection`: `True`.
 - `test_blocks_excluded_from_model_selection`: `True`.
 - `test_blocks_excluded_from_final_training`: `True`.
-- Final evaluation on the 33 locked test blocks: $\text{MAE} = 1.2726^\circ\text{C}$, $\text{RMSE} = 1.7524^\circ\text{C}$, $R^2 = 0.9006$. `evaluation_count: 1` is a constant written by `scripts/final_holdout_evaluation.py`, not a runtime counter.
+- Final evaluation on the 33 locked test blocks: $\text{MAE} = 1.2726^\circ\text{C}$, $\text{RMSE} = 1.7524^\circ\text{C}$, $R^2 = 0.9006$.
+
+### Holdout Usage Disclosure
+> "The final model (xgb_tuned_policy_d, SHA-256 e1aedd49...) was evaluated once on the 33 locked test blocks: MAE 1.2726 C, RMSE 1.7524 C, R2 0.9006. Earlier, a preliminary tuning study (artifacts/xgb_tuning/) was run before the holdout split existed; its CV used all 165 blocks (unique_blocks_count 165), so the blocks later locked as the test set were part of that study, and a configuration from it was evaluated on them (RMSE 1.7342 C in the file committed in 32197ef, which does not match the frozen model). That result is superseded. The frozen study searched the 132 development blocks only (unique_blocks_in_search 132). evaluation_count: 1 is a constant written by scripts/final_holdout_evaluation.py, not a runtime counter."
 
 ---
 

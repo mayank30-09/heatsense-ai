@@ -252,6 +252,17 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 </div>
               </div>
 
+              {/* Holdout Usage Disclosure */}
+              <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-xs text-blue-950">
+                <div className="flex items-center gap-2 font-bold text-blue-900">
+                  <span>ℹ️</span>
+                  <span>Holdout Usage & Preliminary Tuning Disclosure</span>
+                </div>
+                <p className="mt-2 text-[12px] leading-relaxed text-blue-900 italic">
+                  &ldquo;The final model (xgb_tuned_policy_d, SHA-256 e1aedd49...) was evaluated once on the 33 locked test blocks: MAE 1.2726 C, RMSE 1.7524 C, R2 0.9006. Earlier, a preliminary tuning study (artifacts/xgb_tuning/) was run before the holdout split existed; its CV used all 165 blocks (unique_blocks_count 165), so the blocks later locked as the test set were part of that study, and a configuration from it was evaluated on them (RMSE 1.7342 C in the file committed in 32197ef, which does not match the frozen model). That result is superseded. The frozen study searched the 132 development blocks only (unique_blocks_in_search 132). evaluation_count: 1 is a constant written by scripts/final_holdout_evaluation.py, not a runtime counter.&rdquo;
+                </p>
+              </div>
+
               {/* Controlled Architecture Benchmark */}
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
