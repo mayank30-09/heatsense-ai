@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from pydantic import BaseModel, Field
 import pandas as pd
 from sqlalchemy import select, and_
@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.config import get_settings
 from backend.app.core.auth import User, UserRole, require_planner_or_admin
+from backend.app.core.rate_limit import InMemoryRateLimiter, get_client_ip
 from backend.app.db.session import get_db
 from backend.app.db.models.stage_c import StageCHeatPriorityScore, StageCGridCell
 from backend.app.db.models.stage_d import (
@@ -177,6 +178,10 @@ class DiminishingReturnsResponse(BaseModel):
     algorithm: str
     curve_points: list[DiminishingReturnsPoint]
     parameters: dict[str, Any]
+
+
+# Sliding-window rate limiter for diminishing-returns computation (30 req/min)
+diminishing_returns_rate_limiter = InMemoryRateLimiter(max_attempts=30, window_seconds=60)
 
 
 # ---------------------------------------------------------------------------
@@ -497,10 +502,20 @@ def list_available_scenarios():
 @router.post("/diminishing-returns", response_model=DiminishingReturnsResponse)
 def get_diminishing_returns(
     payload: DiminishingReturnsRequest,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_planner_or_admin),
 ):
     """Compute real diminishing-returns curve by executing greedy knapsack optimizer across budget thresholds."""
+    client_ip = get_client_ip(request)
+    allowed, retry_after = diminishing_returns_rate_limiter.check_and_record(f"dim_ret_{client_ip}")
+    if not allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded for diminishing-returns analysis. Please wait {retry_after}s before retrying.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
     budgets = payload.budgets_inr or [
         5_000_000.0,    # ₹50L
         10_000_000.0,   # ₹1Cr
