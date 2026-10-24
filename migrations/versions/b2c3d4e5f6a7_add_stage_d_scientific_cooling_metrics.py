@@ -18,9 +18,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    conn = op.get_bind()
-    inspector = sa.inspect(conn)
-    existing_tables = set(inspector.get_table_names())
+    context = op.get_context()
+    is_offline = getattr(context, "as_sql", False) or (context.bind and type(context.bind).__name__ == "MockConnection")
+    if is_offline:
+        existing_tables = set()
+    else:
+        conn = op.get_bind()
+        inspector = sa.inspect(conn)
+        existing_tables = set(inspector.get_table_names())
 
     # 1. Candidates table
     if "stage_d_intervention_candidates" not in existing_tables:
@@ -138,6 +143,22 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    context = op.get_context()
+    is_offline = getattr(context, "as_sql", False) or (context.bind and type(context.bind).__name__ == "MockConnection")
+    if is_offline:
+        for col_name in [
+            "portfolio_thermal_benefit_c_m2",
+            "treated_area_m2",
+            "mean_local_cooling_c",
+            "citywide_cooling_c",
+            "domain_area_m2",
+            "heat_priority_weighted_benefit_c_m2",
+            "population_exposure_benefit",
+            "population_exposure_status",
+        ]:
+            op.drop_column("stage_d_scenario_results", col_name)
+        return
+
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     existing_tables = set(inspector.get_table_names())
