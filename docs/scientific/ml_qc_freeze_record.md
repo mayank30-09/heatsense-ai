@@ -11,7 +11,7 @@
 ## 1. Freeze Status
 
 The HEATSENSE AI Machine Learning and Quality-Control pipeline is **FROZEN**.
-All scientific gates, including independent spatial block holdout isolation, development-only Optuna hyperparameter optimization, single independent test evaluation, automated leakage rejection tests, and cryptographic checksum generation, have passed with zero failures.
+All scientific gates, including independent spatial block holdout isolation, development-only Optuna hyperparameter optimization, test holdout evaluation protocol, automated leakage rejection tests, and cryptographic checksum generation, have passed with zero failures.
 
 ---
 
@@ -270,7 +270,7 @@ Measured on the 33 locked test blocks ($N = 203,758$):
 - **Zero Partition Overlap:** $\text{Development} \cap \text{Test} = \emptyset$.
 - **Structural Optuna Isolation:** `run_tuning(development_df=..., folds=...)` structurally rejects test rows.
 - **Code-Level Assertions:** Explicit runtime assertions (`assert development_blocks.isdisjoint(test_blocks)`) enforced at all pipeline stages.
-- **Evaluation Gate:** Test blocks evaluated exactly once, only after final parameter selection and training on all development data.
+- **Evaluation Gate:** Test blocks evaluated once on the frozen model after final parameter selection and training on development data (preliminary tuning studies conducted before the holdout split existed used all 165 blocks; `evaluation_count: 1` is recorded by `scripts/final_holdout_evaluation.py`).
 - **Automated Regression Suite:** 10 leakage and protocol unit tests in `backend/tests/test_holdout_protocol.py` verify isolation before any training.
 
 ---
@@ -361,7 +361,7 @@ All conditions of the Scientific Freeze Gate are satisfied:
 5. All 165 blocks conserved.
 6. 5-fold CV uses development blocks only.
 7. Test blocks strictly excluded from Optuna, feature selection, and model training.
-8. Single independent test evaluation executed.
+8. Test holdout evaluation on locked blocks executed.
 9. Scientific language audited and causal interpretations corrected.
 10. All automated unit and regression tests passing.
 11. Cryptographic SHA-256 hashes generated and verified.

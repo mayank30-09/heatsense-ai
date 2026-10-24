@@ -8,7 +8,7 @@ Following the strict scientific protocol:
 1. The 165 spatial blocks (2 km × 2 km) covering Surat, India, were partitioned into **132 development blocks (80%)** and **33 locked test blocks (20%)** using a deterministic random seed (`seed=42`).
 2. Hyperparameter optimization (30 Optuna TPE trials) and model selection were executed **strictly across the 132 development blocks** using 5-fold spatial cross-validation.
 3. The 33 test blocks were strictly isolated and never accessed during Optuna search, feature selection, or model tuning.
-4. The final candidate model (`xgb_tuned_policy_d`) was trained on all 720,973 development rows and evaluated **exactly once** on the 203,758 untouched test rows.
+4. The final candidate model (`xgb_tuned_policy_d`) was trained on all 720,973 development rows and evaluated once on the 203,758 locked test rows for final verification (an earlier preliminary tuning study prior to holdout establishment evaluated configurations across all 165 blocks; `evaluation_count: 1` is recorded by `scripts/final_holdout_evaluation.py`).
 
 ---
 
@@ -59,7 +59,7 @@ The final evaluation was conducted on **September 27, 2026** against the 33 lock
 | **Root Mean Squared Error (RMSE)** | **1.7524 °C** | Independent spatial generalization |
 | **Coefficient of Determination ($R^2$)** | **0.9006** | Explains 90.06% of spatial-temporal variance |
 | **CPU Batch Inference Latency** | 1.093 s | Measured on 203,758 test rows (~5.36 s / 1M rows under linear extrapolation) |
-| **Evaluation Count** | 1 | Single independent evaluation |
+| **Evaluation Count** | 1 | Constant written by `scripts/final_holdout_evaluation.py` |
 
 *Note: Historical development re-evaluation metrics (1.7840 °C RMSE / 0.9033 $R^2$) represent cross-validation results across all folds, whereas 1.7524 °C RMSE represents the true independent holdout generalization.*
 

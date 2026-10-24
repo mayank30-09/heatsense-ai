@@ -49,7 +49,7 @@ This document provides the formal Quality Control (QC) summary for the HEATSENSE
 
 ## 5. Independent Holdout Evaluation
 
-The locked model was evaluated **exactly once** on the 33 untouched test blocks ($N = 203,758$ rows):
+The locked model was evaluated once on the 33 locked test blocks ($N = 203,758$ rows; earlier preliminary tuning prior to the freeze searched all 165 blocks and is superseded):
 
 - **Mean Absolute Error (MAE)**: **1.2726 °C**
 - **Root Mean Squared Error (RMSE)**: **1.7524 °C**
@@ -83,7 +83,7 @@ The elevated prediction error in chronic hotspots is consistent with sub-pixel t
 The ML scientific pipeline satisfies all quality and reproducibility criteria:
 - [x] Zero spatial leakage between development and test partitions.
 - [x] Hyperparameters selected exclusively on development CV.
-- [x] Test set evaluated exactly once.
+- [x] Final model evaluated once on the 33 locked test blocks (superseding earlier pre-split tuning).
 - [x] Full automated test suite passing (98/98 tests).
 - [x] Comprehensive cryptographic artifact hashes recorded.
 
