@@ -40,15 +40,43 @@ class SceneMetadataItem(BaseModel):
     source: str = Field("landsat_l2", description="Catalog source: 'landsat_l2' or 'SYNTHETIC TEST DATA'")
 
 
+import re
+
+GENUINE_LANDSAT_PRODUCT_PATTERN = re.compile(
+    r"^LC0[89]_L2SP_148045_\d{8}_\d{8}_02_T[12]$"
+)
+
+
 def _is_scene_synthetic(r: StageCScene) -> bool:
     """Detect whether a scene record represents synthetic test data."""
+    # 1. Explicit exclusion status
+    if getattr(r, "status", None) == "SYNTHETIC_EXCLUDED":
+        return True
+
     sid = r.scene_id.upper()
+    # 2. Known mock / fixture prefixes
     if sid.startswith("TEST_FIXTURE_") or sid.startswith("SYNTHETIC_") or "MOCK" in sid:
         return True
 
-    if r.cog_path and "mock_scenes" in r.cog_path:
+    # 3. Product ID validation against authentic USGS Landsat Level-2 product format
+    if not GENUINE_LANDSAT_PRODUCT_PATTERN.match(sid):
         return True
 
+    # 4. For PROCESSED scenes, COG file must exist on disk
+    if r.status == "PROCESSED":
+        if not r.cog_path:
+            return True
+        p = Path(r.cog_path)
+        if not p.exists():
+            return True
+        if "mock_scenes" in p.as_posix():
+            return True
+    elif r.cog_path:
+        p = Path(r.cog_path)
+        if not p.exists() or "mock_scenes" in p.as_posix():
+            return True
+
+    # 5. Check sidecar metadata provenance
     date_str = (
         r.acquisition_date.isoformat()
         if isinstance(r.acquisition_date, date)
@@ -65,14 +93,8 @@ def _is_scene_synthetic(r: StageCScene) -> bool:
             except Exception:
                 pass
 
-    if r.cog_path:
-        p = Path(r.cog_path)
-        if not p.exists():
-            mock_p = Path("data/processed/mock_scenes") / p.name
-            if mock_p.exists():
-                return True
-
     return False
+
 
 
 @router.get(

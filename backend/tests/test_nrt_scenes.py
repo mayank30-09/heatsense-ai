@@ -647,3 +647,83 @@ def test_seasonal_provenance_stats_endpoint(client: TestClient):
     assert data_m["valid_fraction"] < 1.0
 
 
+def test_strict_genuine_scene_filtering(tmp_path: Path):
+    """Verify _is_scene_synthetic flags missing COGs, SYNTHETIC_EXCLUDED status, and non-genuine product IDs."""
+    from backend.app.api.v1.scenes import _is_scene_synthetic
+
+    # 1. Status SYNTHETIC_EXCLUDED
+    sc1 = StageCScene(
+        scene_id="LC08_L2SP_148045_20261006_20261014_02_T1",
+        acquisition_date=date(2026, 10, 6),
+        acquisition_time=datetime(2026, 10, 6, 5, 33, 14, tzinfo=timezone.utc),
+        sensor="LANDSAT_8",
+        status="SYNTHETIC_EXCLUDED",
+        valid_pixel_fraction=0.9999,
+        cog_path="data/processed/scenes/2026-10-06.tif",
+    )
+    assert _is_scene_synthetic(sc1) is True
+
+    # 2. Missing COG on disk for PROCESSED scene
+    sc2 = StageCScene(
+        scene_id="LC08_L2SP_148045_20261006_20261014_02_T1",
+        acquisition_date=date(2026, 10, 6),
+        acquisition_time=datetime(2026, 10, 6, 5, 33, 14, tzinfo=timezone.utc),
+        sensor="LANDSAT_8",
+        status="PROCESSED",
+        valid_pixel_fraction=0.9999,
+        cog_path=str(tmp_path / "non_existent_cog.tif"),
+    )
+    assert _is_scene_synthetic(sc2) is True
+
+    # 3. Non-genuine product ID (missing processing date / wrong format)
+    real_cog = tmp_path / "2026-10-23.tif"
+    real_cog.touch()
+    sc3 = StageCScene(
+        scene_id="LC09_L2SP_148045_20261023_02_T1",
+        acquisition_date=date(2026, 10, 23),
+        acquisition_time=datetime(2026, 10, 23, 5, 43, 21, tzinfo=timezone.utc),
+        sensor="LANDSAT_9",
+        status="PROCESSED",
+        valid_pixel_fraction=0.88,
+        cog_path=str(real_cog),
+    )
+    assert _is_scene_synthetic(sc3) is True
+
+    # 4. Genuine product ID with valid COG on disk
+    genuine_cog = tmp_path / "2026-10-06.tif"
+    genuine_cog.touch()
+    sc4 = StageCScene(
+        scene_id="LC08_L2SP_148045_20261006_20261014_02_T1",
+        acquisition_date=date(2026, 10, 6),
+        acquisition_time=datetime(2026, 10, 6, 5, 33, 14, tzinfo=timezone.utc),
+        sensor="LANDSAT_8",
+        status="PROCESSED",
+        valid_pixel_fraction=0.9999,
+        cog_path=str(genuine_cog),
+    )
+    assert _is_scene_synthetic(sc4) is False
+
+
+def test_genuine_october_scene_catalog_and_tiles(client: TestClient):
+    """Verify GET /scenes returns only genuine scenes and tile endpoints render 200."""
+    resp = client.get("/api/v1/scenes")
+    assert resp.status_code == 200
+    scenes = resp.json()
+    assert len(scenes) >= 1
+    # Oct 6 genuine scene must be present
+    oct6_scene = next((s for s in scenes if s["scene_id"] == "LC08_L2SP_148045_20261006_20261014_02_T1"), None)
+    assert oct6_scene is not None
+    assert oct6_scene["source"] == "landsat_l2"
+    assert oct6_scene["status"] == "PROCESSED"
+    assert oct6_scene["mean_lst_c"] == 38.85
+    assert oct6_scene["valid_pixel_fraction"] == 0.9999
+
+    # Check tile endpoint by scene_id
+    tile_resp = client.get(f"/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id={oct6_scene['scene_id']}")
+    assert tile_resp.status_code == 200
+    assert tile_resp.headers.get("content-type") == "image/png"
+
+    # Check tile endpoint by date
+    tile_date_resp = client.get("/api/v1/rasters/lst/tiles/12/2874/1770.png?scene_id=2026-10-06")
+    assert tile_date_resp.status_code == 200
+    assert tile_date_resp.headers.get("content-type") == "image/png"

@@ -625,6 +625,53 @@ def check_ingestion_freshness(session: Session, max_age_days: int = 20) -> tuple
     return is_fresh, age_days, watermark
 
 
+def fetch_gee_scene_arrays(ee_image_id: str) -> tuple[np.ndarray, np.ndarray]:
+    """Download calibrated LST array from Earth Engine for Surat analytical grid."""
+    import tempfile
+    import urllib.request
+    import ee
+
+    img = ee.Image(ee_image_id)
+    masked = mask_landsat_l2(img)
+    scaled = scale_lst(masked)
+
+    from gis.spatial.grid import ORIGIN_LAT, ORIGIN_LON, PIXEL_SIZE
+
+    x_min = ORIGIN_LON
+    x_max = ORIGIN_LON + GRID_WIDTH * PIXEL_SIZE
+    y_max = ORIGIN_LAT
+    y_min = ORIGIN_LAT - GRID_HEIGHT * PIXEL_SIZE
+
+    region = ee.Geometry.BBox(x_min, y_min, x_max, y_max)
+
+    url = scaled.select(["lst_c"]).getDownloadURL({
+        "name": "surat_lst_scene",
+        "region": region,
+        "crs": GRID_CRS,
+        "dimensions": [GRID_WIDTH, GRID_HEIGHT],
+        "format": "GEO_TIFF",
+    })
+
+    with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp_file:
+        tmp_path = Path(tmp_file.name)
+
+    try:
+        urllib.request.urlretrieve(url, tmp_path)
+        with rasterio.open(tmp_path) as src:
+            lst_arr = src.read(1).astype(np.float32)
+            nodata = src.nodata
+            if nodata is not None:
+                lst_arr[lst_arr == nodata] = NODATA_VALUE
+            lst_arr[~np.isfinite(lst_arr)] = NODATA_VALUE
+            lst_arr[(lst_arr <= 0.0) | (lst_arr >= 100.0)] = NODATA_VALUE
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+    qa_arr = np.full((GRID_HEIGHT, GRID_WIDTH), 1.0, dtype=np.float32)
+    return lst_arr, qa_arr
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="HEATSENSE AI Near-Real-Time Landsat LST Ingestion")
     parser.add_argument("--mock", action="store_true", help="Ingest a synthetic scene for offline testing")
@@ -632,6 +679,8 @@ def main() -> None:
     parser.add_argument("--min-valid-fraction", type=float, default=DEFAULT_MIN_VALID_FRACTION, help="Min valid fraction")
     parser.add_argument("--check-freshness-days", type=int, default=None, help="Fail if no scene ingested within N days")
     parser.add_argument("--date", type=str, default=None, help="Target date YYYY-MM-DD for synthetic/manual ingestion")
+    parser.add_argument("--start-date", type=str, default=None, help="Start date YYYY-MM-DD for GEE discovery")
+    parser.add_argument("--end-date", type=str, default=None, help="End date YYYY-MM-DD for GEE discovery")
     args = parser.parse_args()
 
     session = SessionLocal()
@@ -683,12 +732,41 @@ def main() -> None:
             print(json.dumps(result, indent=2))
             return
 
-        # Attempt Earth Engine live discovery
+        # Attempt Earth Engine live discovery and ingestion
         try:
-            scenes = discover_gee_scenes(watermark_dt=watermark)
+            from gis.gee.landsat_lst import initialize_earth_engine
+            initialize_earth_engine()
+            scenes = discover_gee_scenes(
+                start_date=args.start_date,
+                end_date=args.end_date,
+                watermark_dt=watermark if not args.start_date else None,
+            )
             logger.info("Found %d new eligible GEE scenes", len(scenes))
+            for sc in scenes:
+                logger.info("Processing scene %s (%s)...", sc["scene_id"], sc["acquisition_date"])
+                lst, qa = fetch_gee_scene_arrays(sc["ee_image_id"])
+                res = process_scene_record(
+                    session=session,
+                    scene_id=sc["scene_id"],
+                    acquisition_time=sc["acquisition_time"],
+                    acquisition_date=sc["acquisition_date"],
+                    sensor=sc["sensor"],
+                    lst_array=lst,
+                    cloud_cover=sc["cloud_cover"],
+                    min_valid_fraction=args.min_valid_fraction,
+                    qa_array=qa,
+                    source="landsat_l2",
+                    dry_run=args.dry_run,
+                )
+                logger.info(
+                    "Ingested %s: status=%s, valid_frac=%.4f, mean_lst=%.2f",
+                    res["scene_id"],
+                    res["status"],
+                    res["valid_pixel_fraction"],
+                    res.get("mean_lst_c") or 0.0,
+                )
         except Exception as exc:
-            logger.warning("Earth Engine discovery could not run: %s", exc)
+            logger.warning("Earth Engine live ingestion could not run: %s", exc)
             logger.info("To test offline, invoke with --mock flag.")
             return
 

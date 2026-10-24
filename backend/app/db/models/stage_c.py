@@ -218,7 +218,7 @@ class StageCScene(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "status IN ('PROCESSED', 'REJECTED_CLOUDY', 'FAILED', 'PENDING')",
+            "status IN ('PROCESSED', 'REJECTED_CLOUDY', 'FAILED', 'PENDING', 'SYNTHETIC_EXCLUDED')",
             name="ck_scene_status",
         ),
         CheckConstraint(
