@@ -50,7 +50,7 @@ This document consolidates known scientific, operational, computational, and ins
 ---
 
 ## 6. Near-Real-Time (NRT) Single Scenes vs. Seasonal Composites
-- **Instantaneous Skin Temperature:** The Near-Real-Time (NRT) view displays raw single-pass Landsat 8/9 Level-2 overpass acquisitions (~10:45 AM local solar time).
+- **Instantaneous Skin Temperature:** The Near-Real-Time (NRT) view displays raw single-pass Landsat 8/9 Level-2 overpass acquisitions (Landsat overpass ~10:24 local solar time (scene centre ~05:33 UTC = ~11:03 IST)).
 - **Atmospheric Fluctuations:** An individual scene reflects instantaneous weather conditions (surface moisture, wind speed, transient clouds) and cannot be directly compared to 19-season multi-temporal median composites.
 - **Exclusion from HPI:** NRT scenes are purely observational diagnostic feeds; they are strictly excluded from the multi-year Heat Priority Index ($HPI$) computation.
 
