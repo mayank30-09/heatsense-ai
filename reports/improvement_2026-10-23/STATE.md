@@ -513,11 +513,20 @@
     - Documented authoritative source code locations:
       - Cooling physics calculations: [gis/interventions/cooling_effects.py](file:///e:/FINAL%20YEAR%20PROJECT/heatsense-ai/gis/interventions/cooling_effects.py#L22-L105) (lines 22–105).
       - Intervention REST endpoints: [backend/app/api/v1/interventions.py](file:///e:/FINAL%20YEAR%20PROJECT/heatsense-ai/backend/app/api/v1/interventions.py#L80-L290) (lines 80–290).
-  - **Next Task:** G7 UI CLEANUP / POLISH.
+
+### Task G7: HYGIENE (Completed)
+- **.gitignore:** Ignored large sentinel sensitivity CSVs (`sentinel_local_effect.csv`, `sentinel_spatial_proximity.csv`) and `scratch/` (Commit `9872cdf`).
+- **Skipif Guards for Untracked Tests:** Added `pytest.mark.skipif` for tests requiring uncommitted/external datasets (Commit `4166b86`).
+- **Data Availability Statement:** Created [DATA_AVAILABILITY.md](file:///e:/FINAL%20YEAR%20PROJECT/heatsense-ai/DATA_AVAILABILITY.md) detailing sensor sources, access conditions, license terms, and reproduction protocols (Commit `dcf05ae`).
+- **Offline Migration Downgrade Fix:** Updated migration `b2c3d4e5f6a7` to support offline SQL generation for both upgrade and downgrade (Commit `2dced56`).
+- **Diminishing Returns Endpoint Protection:** Added `require_planner_or_admin` auth dependency and sliding-window rate limiter (30 req/min) to `/api/v1/interventions/diminishing-returns` (Commit `b764e16`).
+- **Content Hash ETags:** Replaced static string and composite template ETags with deterministic SHA-256 content hashes across `/heat-priority/summary`, `/heat-priority/lst-stats`, `/heat-priority/cell/{pixel_id}`, `/heat-priority/model-validation`, and `/rasters/lst/tiles/{z}/{x}/{y}.png` (Commit `05f745d`).
+- **Root Cleanliness:** Verified zero stray files exist in repository root.
+- **Next Task:** G8 FINAL VERIFICATION.
 
 ---
 
 ## 4. Project Status
 **Active Protocol:** Gap Closure Tasks G0–G8.  
-Branch `fix/runtime-working`. Next commit for G6 DOCS TRUTH. No remote push.
+Branch `fix/runtime-working`. G0 through G7 Completed. Next: G8 Final. No remote push.
 
