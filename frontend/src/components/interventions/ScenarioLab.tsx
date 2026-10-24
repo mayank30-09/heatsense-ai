@@ -8,10 +8,13 @@ import {
   fetchDiminishingReturns,
   fetchScenarios,
 } from "../../services/interventionsApi";
+import { useAuth } from "../../context/AuthContext";
+import LoginPanel from "../auth/LoginPanel";
 
 interface ScenarioLabProps {
   onSwitchToOptimization?: (budgetInr: number) => void;
   onSwitchToMap?: () => void;
+  initialScenarios?: PlanningScenario[];
 }
 
 function formatINR(val: number): string {
@@ -33,10 +36,13 @@ const TIER_ICONS: Record<string, string> = {
 export default function ScenarioLab({
   onSwitchToOptimization,
   onSwitchToMap,
+  initialScenarios,
 }: ScenarioLabProps) {
-  const [scenarios, setScenarios] = useState<PlanningScenario[]>([]);
+  const { token, user, role, isPlannerOrAdmin, isAuthenticated } = useAuth();
+
+  const [scenarios, setScenarios] = useState<PlanningScenario[]>(initialScenarios || []);
   const [diminishingPoints, setDiminishingPoints] = useState<DiminishingReturnsPoint[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(!initialScenarios);
   const [returnsLoading, setReturnsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +61,7 @@ export default function ScenarioLab({
 
   // Fetch benchmark planning scenarios
   useEffect(() => {
+    if (initialScenarios && initialScenarios.length > 0) return;
     let cancelled = false;
     setLoading(true);
 
@@ -81,6 +88,12 @@ export default function ScenarioLab({
 
   // Fetch real physical diminishing returns curve from backend greedy knapsack optimizer
   useEffect(() => {
+    if (!isPlannerOrAdmin || !token) {
+      setDiminishingPoints([]);
+      setReturnsLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setReturnsLoading(true);
 
@@ -88,10 +101,13 @@ export default function ScenarioLab({
       (t) => enabledTypes[t]
     );
 
-    fetchDiminishingReturns({
-      budgets_inr: [5000000, 10000000, 25000000, 50000000, 75000000, 100000000],
-      target_types: activeTypes.length > 0 ? activeTypes : undefined,
-    })
+    fetchDiminishingReturns(
+      {
+        budgets_inr: [5000000, 10000000, 25000000, 50000000, 75000000, 100000000],
+        target_types: activeTypes.length > 0 ? activeTypes : undefined,
+      },
+      token
+    )
       .then((res) => {
         if (!cancelled && res.curve_points) {
           setDiminishingPoints(res.curve_points);
@@ -107,7 +123,7 @@ export default function ScenarioLab({
     return () => {
       cancelled = true;
     };
-  }, [enabledTypes]);
+  }, [enabledTypes, isPlannerOrAdmin, token]);
 
   const activeScenario = scenarios[selectedScenarioIdx] || scenarios[0];
 
@@ -231,6 +247,21 @@ export default function ScenarioLab({
           </div>
 
           <div className="flex items-center gap-3">
+            {isAuthenticated ? (
+              <div className="text-right">
+                <div className="text-xs text-slate-300">
+                  Logged in: <strong className="text-white">{user?.username}</strong>
+                </div>
+                <span className="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                  {role}
+                </span>
+              </div>
+            ) : (
+              <span className="rounded bg-white/10 px-2.5 py-1 text-xs text-slate-300 border border-white/20">
+                Logged Out
+              </span>
+            )}
+
             {onSwitchToMap && (
               <button
                 type="button"
@@ -511,8 +542,34 @@ export default function ScenarioLab({
             </div>
           )}
 
-          {/* Interactive Custom Scenario Simulator (Physics Grounded) */}
-          <div className="rounded-xl border border-indigo-200 bg-gradient-to-b from-white to-indigo-50/30 p-6 shadow-sm">
+          {/* Interactive Custom Scenario Simulator & Diminishing Returns Section */}
+          {!isPlannerOrAdmin ? (
+            <div className="rounded-xl border border-indigo-200 bg-white p-6 shadow-sm">
+              <div className="mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                    Authentication Required
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Stage D Diminishing Returns
+                  </span>
+                </div>
+                <h3 className="mt-2 text-lg font-bold text-slate-900">
+                  Physical Diminishing Returns & Custom Simulator
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  Accessing the live Stage D greedy knapsack diminishing returns curve and dynamic budget simulation requires <strong>Planner</strong> or <strong>Admin</strong> privileges. Reference UHAP benchmarks above remain open for public inspection. Please sign in below to unlock custom budget simulation.
+                </p>
+              </div>
+              <LoginPanel
+                title="Scenario Lab Planner Authentication"
+                subtitle="Sign in with an authorized municipal account to evaluate physical diminishing returns curves."
+              />
+            </div>
+          ) : (
+            <>
+              {/* Interactive Custom Scenario Simulator (Physics Grounded) */}
+              <div className="rounded-xl border border-indigo-200 bg-gradient-to-b from-white to-indigo-50/30 p-6 shadow-sm">
             <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
               <div>
                 <span className="rounded-sm bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
@@ -799,6 +856,8 @@ export default function ScenarioLab({
               </div>
             </div>
           )}
+        </>
+      )}
 
           {/* Scientific Governance Callout */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 text-xs text-slate-600 shadow-xs">

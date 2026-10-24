@@ -22,7 +22,7 @@ export interface AuthContextType {
   clearSession: (reason?: string) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   // STRICT INVARIANT: Token and User stored strictly in in-memory React state.
