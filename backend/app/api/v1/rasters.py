@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+import hashlib
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, Path as PathParam, Query
 from fastapi.responses import Response
@@ -86,8 +87,7 @@ def lst_tile(
         if scene_id:
             cog_path, canonical_scene_id = _resolve_scene_cog_path(scene_id)
             tile = get_scene_lst_tile(x=x, y=y, z=z, cog_path=cog_path)
-            mtime = int(cog_path.stat().st_mtime) if cog_path.exists() else 0
-            etag = f'"{canonical_scene_id}-{mtime}-{z}-{x}-{y}"'
+            etag = f'"{hashlib.sha256(tile).hexdigest()[:16]}"'
 
             return Response(
                 content=tile,
@@ -109,8 +109,7 @@ def lst_tile(
             season=resolved.season,
             year=resolved.effective_year,
         )
-        mtime = int(resolved.path.stat().st_mtime) if resolved.path.exists() else 0
-        etag = f'"{resolved.season}-{resolved.effective_year}-{mtime}-{z}-{x}-{y}"'
+        etag = f'"{hashlib.sha256(tile).hexdigest()[:16]}"'
 
         return Response(
             content=tile,

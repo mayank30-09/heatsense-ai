@@ -7,6 +7,7 @@ confidence ratings, and chronic hotspot status.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from pathlib import Path as FilePath
@@ -202,10 +203,7 @@ def get_heat_priority_summary(
     )
     pers_counts = {tier: count for tier, count in db.execute(pers_q).all()}
 
-    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
-    response.headers["ETag"] = f'"hpi-summary-{scoring_period}-{spec_version}"'
-
-    return HeatPrioritySummaryResponse(
+    summary_resp = HeatPrioritySummaryResponse(
         scoring_period=scoring_period,
         spec_version=spec_version,
         total_grid_cells=total_cells,
@@ -218,6 +216,11 @@ def get_heat_priority_summary(
         persistence_tier_counts=pers_counts,
         normalization_constants=NormalizationConstants(),
     )
+    content_hash = hashlib.sha256(summary_resp.model_dump_json().encode("utf-8")).hexdigest()[:16]
+    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
+    response.headers["ETag"] = f'"{content_hash}"'
+
+    return summary_resp
 
 
 @router.get("/lst-stats", response_model=LSTStatsResponse)
@@ -264,10 +267,7 @@ def get_heat_priority_lst_stats(
     valid_fraction = round(float(res.n_valid / total_cells), 4) if total_cells > 0 else 0.0
     prov = SEASON_PROVENANCE.get((season.value, effective_year), {})
 
-    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
-    response.headers["ETag"] = f'"lst-stats-{season.value}-{effective_year}"'
-
-    return LSTStatsResponse(
+    stats_resp = LSTStatsResponse(
         season=season,
         year=req_year,
         effective_year=effective_year,
@@ -285,6 +285,11 @@ def get_heat_priority_lst_stats(
         last_acquisition_date=prov.get("last_acquisition_date"),
         date_window=prov.get("date_window"),
     )
+    content_hash = hashlib.sha256(stats_resp.model_dump_json().encode("utf-8")).hexdigest()[:16]
+    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
+    response.headers["ETag"] = f'"{content_hash}"'
+
+    return stats_resp
 
 
 @router.get("/cells", response_model=GridCellsPaginatedResponse)
@@ -498,10 +503,7 @@ def get_grid_cell_detail(
             detail=f"Grid cell '{pixel_id}' does not exist.",
         )
 
-    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
-    response.headers["ETag"] = f'"cell-{pixel_id}-{scoring_period}-{spec_version}-{season.value}-{effective_year}"'
-
-    return GridCellScoreItem(
+    cell_resp = GridCellScoreItem(
         pixel_id=r.pixel_id,
         row_idx=r.row_idx,
         col_idx=r.col_idx,
@@ -523,6 +525,11 @@ def get_grid_cell_detail(
         observed_lst_c=safe_float(r.observed_lst_c, 2),
         optical_imputation_flag=r.optical_imputation_flag,
     )
+    content_hash = hashlib.sha256(cell_resp.model_dump_json().encode("utf-8")).hexdigest()[:16]
+    response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"
+    response.headers["ETag"] = f'"{content_hash}"'
+
+    return cell_resp
 
 
 @router.get("/model-validation", response_model=dict[str, Any])
@@ -575,13 +582,17 @@ def get_model_validation_summary(response: Response) -> dict[str, Any]:
         except Exception:
             pass
 
-    response.headers["Cache-Control"] = "public, max-age=86400, must-revalidate"
-    response.headers["ETag"] = '"ml-validation-frozen-v1"'
-
-    return {
+    val_payload = {
         "qc_summary": qc_data,
         "model_metadata": model_meta,
         "model_comparison": model_comparison,
         "conformal_calibration": conformal_calibration,
     }
+    content_hash = hashlib.sha256(
+        json.dumps(val_payload, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()[:16]
+    response.headers["Cache-Control"] = "public, max-age=86400, must-revalidate"
+    response.headers["ETag"] = f'"{content_hash}"'
+
+    return val_payload
 
