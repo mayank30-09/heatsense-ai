@@ -19,20 +19,20 @@ This document consolidates known scientific, operational, computational, and ins
 ---
 
 ## 2. Cooling Physics & Cost Parameters (Code Constants)
-- **Literature Attribution Unverified:** Unit costs (e.g. ₹2,500/tree, ₹600/m² cool roof) and physical cooling saturation caps:
+- **Literature Attribution Unverified:** Unit costs (Tree: 3,500 INR, Cool Roof: 350 INR/m² + 5,000 fixed, Green Roof: 3,600 INR/m² + 15,000 fixed, Cool Pavement: 450 INR/m² + 8,000 fixed; defined in `gis/interventions/costs.py`) and physical cooling saturation caps:
   - Tree canopy cooling cap: **3.50°C**
   - Cool roof cooling cap: **2.50°C**
   - Green roof cooling cap: **2.00°C**
   - Cool pavement cooling cap: **1.80°C**
   - Combined multi-intervention cap: **4.50°C**
-- **Status as Simulation Baselines:** These limits are parameterized code constants in `gis/interventions/cooling_effects.py`. Their exact empirical calibration to Surat's specific coastal tropical microclimate is unverified by local in-situ sensor networks.
+- **Status as Simulation Baselines:** These limits are parameterized code constants in `gis/interventions/cooling_effects.py` and `gis/interventions/costs.py`. Their exact empirical calibration to Surat's specific coastal tropical microclimate is unverified by local in-situ sensor networks.
 - **Interpretation:** Counterfactual cooling projections represent comparative decision-support simulations under stated assumptions, not guaranteed contractual microclimate outcomes.
 
 ---
 
 ## 3. Monsoon 2026 Partial Coverage & Cloud Contamination
 - **Cloud-Restricted Observation Count:** Monsoon seasons in coastal Gujarat experience persistent overcast cloud cover during the Southwest Monsoon (June–September).
-- **Reduced Clear-Sky Support:** The Monsoon 2026 seasonal composite is based on partial acquisitions where clear-sky sample support is low ($OBS < 4$) and radiometric uncertainty indicators are elevated ($ST\_QA > 3.5\text{ K}$).
+- **Reduced Clear-Sky Support:** The Monsoon 2026 seasonal composite is based on partial acquisitions where clear-sky sample support is low and radiometric uncertainty indicators are elevated.
 - **Conformal Undercoverage:** As documented in validation benchmarks, the monsoon stratum exhibits conformal undercoverage (79.19% vs nominal 90.0%), possibly related to cloud-mask boundary effects and low clear-sky sample support (not tested).
 
 ---
