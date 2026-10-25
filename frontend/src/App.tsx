@@ -65,9 +65,30 @@ function AppContent() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div>
-          <p className="eyebrow">URBAN HEAT ANALYSIS PLATFORM</p>
-          <h1>HEATSENSE AI</h1>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-700 text-white shadow-xs"
+            aria-hidden="true"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="4" />
+              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" strokeOpacity="0.4" />
+              <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.9" />
+            </svg>
+          </div>
+          <div>
+            <p className="eyebrow">URBAN HEAT ANALYSIS PLATFORM</p>
+            <h1>HEATSENSE AI</h1>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -75,23 +96,23 @@ function AppContent() {
             type="button"
             onClick={() => setShowGlossary(true)}
             aria-label="Open science and metric glossary"
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-1"
           >
-            <span>📖</span>
+            <span aria-hidden="true">📖</span>
             <span>Science Glossary</span>
           </button>
 
           {isAuthenticated && user && (
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs shadow-xs">
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs shadow-xs">
               <span className="font-semibold text-slate-800">{user.username}</span>
-              <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-800">
+              <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
                 {role}
               </span>
               <button
                 type="button"
                 onClick={logout}
                 aria-label="Sign out of account"
-                className="ml-1 text-slate-400 hover:text-slate-700 text-xs font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-300 rounded"
+                className="ml-1 text-slate-400 hover:text-slate-700 text-xs font-semibold cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-300 rounded px-1 py-0.5"
               >
                 Logout
               </button>
@@ -108,7 +129,7 @@ function AppContent() {
                 backendConnected ? "status-dot" : "status-dot offline"
               }
             />
-            {backendConnected ? "API Connected" : "API Offline"}
+            <span>{backendConnected ? "API Connected" : "API Offline"}</span>
           </div>
         </div>
       </header>
