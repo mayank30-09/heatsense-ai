@@ -14,31 +14,25 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
     "holdout" | "seasons" | "hotspots" | "provenance"
   >("holdout");
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadValidation = () => {
     setLoading(true);
-
     fetchModelValidation()
       .then((res) => {
-        if (!cancelled) {
-          setData(res);
-          setError(null);
-        }
+        setData(res);
+        setError(null);
       })
       .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load validation metadata"
-          );
-        }
+        setError(
+          err instanceof Error ? err.message : "Failed to load validation metadata"
+        );
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       });
+  };
 
-    return () => {
-      cancelled = true;
-    };
+  useEffect(() => {
+    loadValidation();
   }, []);
 
   const qc = data?.qc_summary;
@@ -47,21 +41,21 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
   return (
     <div className="flex flex-col gap-6">
       {/* Hero Header */}
-      <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 p-6 text-white shadow-sm">
+      <div className="rounded-xl border border-slate-700/80 bg-slate-900 p-6 text-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-teal-500/20 px-2.5 py-0.5 text-xs font-bold text-teal-300 border border-teal-500/30">
+              <span className="rounded-full bg-indigo-500/20 px-2.5 py-0.5 text-xs font-bold text-indigo-300 border border-indigo-500/30">
                 QC Status: {qc?.status || "PASS"} (Audit Validated)
               </span>
               <span className="text-xs font-mono text-slate-300">
                 Commit: {meta?.git_commit ? meta.git_commit.substring(0, 10) : "c91bc69038"}
               </span>
             </div>
-            <h2 className="mt-2 text-2xl font-extrabold text-white">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
               Model Validation & Scientific Trust Center
             </h2>
-            <p className="mt-1 max-w-3xl text-sm text-slate-300">
+            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-300">
               Complete transparency into spatial cross-validation, independent holdout metrics,
               seasonal error diagnostics, sensor calibration pipelines, and data leakage controls for
               Surat Municipal Corporation.
@@ -72,10 +66,10 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={onSwitchToMap}
-              className="flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-bold text-white shadow hover:bg-teal-500 transition-all"
+              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
               <span>Inspect Grid On Map</span>
-              <span>→</span>
+              <span aria-hidden="true">→</span>
             </button>
           )}
         </div>
@@ -83,16 +77,31 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
 
       {/* Loading & Error States */}
       {loading && (
-        <div className="flex items-center justify-center p-12 text-slate-500">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal-600 border-t-transparent mr-3" />
-          <span>Loading scientific validation benchmarks and QC freeze records…</span>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+            <span>Loading scientific validation benchmarks and QC freeze records…</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="skeleton-pulse h-24 rounded-xl" />
+            <div className="skeleton-pulse h-24 rounded-xl" />
+            <div className="skeleton-pulse h-24 rounded-xl" />
+            <div className="skeleton-pulse h-24 rounded-xl" />
+          </div>
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          <div className="font-bold">Error loading validation metadata:</div>
-          <div>{error}</div>
+        <div className="error-state-panel text-sm">
+          <div className="font-bold text-base text-red-900 mb-1">Error loading validation metadata</div>
+          <p className="text-red-700 max-w-md mb-3">{error}</p>
+          <button
+            type="button"
+            onClick={loadValidation}
+            className="btn-secondary text-xs"
+          >
+            Retry
+          </button>
         </div>
       )}
 
@@ -100,50 +109,50 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
       {qc && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="decision-card p-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Holdout R² Score
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-teal-600 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-indigo-700 font-mono tabular-nums">
                 {qc.holdout_evaluation.r2.toFixed(4)}
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 On 203,758 independent test observations
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="decision-card p-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Mean Absolute Error (MAE)
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-slate-900 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-slate-900 font-mono tabular-nums">
                 {qc.holdout_evaluation.mae.toFixed(2)}°C
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Sub-1.5°C threshold achieved across Surat
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="decision-card p-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Root Mean Squared Error (RMSE)
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-slate-900 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-slate-900 font-mono tabular-nums">
                 {qc.holdout_evaluation.rmse.toFixed(2)}°C
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Holdout spatial blocks RMSE (CV: {meta?.best_development_cv_rmse?.toFixed(2) || "1.85"}°C)
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="decision-card p-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Spatial Block Independence
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-indigo-700 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-indigo-700 font-mono tabular-nums">
                 {qc.spatial_split_integrity.test_blocks} / {qc.spatial_split_integrity.total_blocks}
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 2km spatial blocks · Disjoint spatial blocks partition
               </p>
             </div>
@@ -154,9 +163,9 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("holdout")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
                 activeTab === "holdout"
-                  ? "border-teal-600 text-teal-700"
+                  ? "border-indigo-600 text-indigo-700"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -166,9 +175,9 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("seasons")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
                 activeTab === "seasons"
-                  ? "border-teal-600 text-teal-700"
+                  ? "border-indigo-600 text-indigo-700"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -178,9 +187,9 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("hotspots")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
                 activeTab === "hotspots"
-                  ? "border-teal-600 text-teal-700"
+                  ? "border-indigo-600 text-indigo-700"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -190,9 +199,9 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("provenance")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
                 activeTab === "provenance"
-                  ? "border-teal-600 text-teal-700"
+                  ? "border-indigo-600 text-indigo-700"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -315,7 +324,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                       Controlled Architecture Benchmark (Identical 5-Fold Spatial CV)
                     </h4>
                     <p className="mt-0.5 text-[11px] text-slate-500">
-                      Source: <span className="font-mono">data/diagnostics/ml/model_comparison_rf_xgb.csv</span> · <span className="font-semibold text-slate-700">MEASURED</span>
+                      Source: <span className="font-mono">data/diagnostics/ml/model_comparison_rf_xgb.csv</span> · <span className="badge-evidence badge-measured">MEASURED</span>
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-slate-700 border border-slate-200">
@@ -323,18 +332,18 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                   </span>
                 </div>
 
-                <div className="mt-3 overflow-x-auto">
-                  <table className="w-full text-left text-xs bg-white rounded-lg border border-slate-200 overflow-hidden">
-                    <thead className="bg-slate-100/70 text-slate-600 uppercase border-b border-slate-200 font-semibold text-[10px]">
+                <div className="table-container mt-3">
+                  <table className="table-municipal">
+                    <thead>
                       <tr>
-                        <th className="py-2.5 px-3">Model Architecture</th>
-                        <th className="py-2.5 px-3">CV MAE (°C)</th>
-                        <th className="py-2.5 px-3">CV RMSE (°C)</th>
-                        <th className="py-2.5 px-3">CV R² Score</th>
-                        <th className="py-2.5 px-3">Operational Trade-off</th>
+                        <th>Model Architecture</th>
+                        <th>CV MAE (°C)</th>
+                        <th>CV RMSE (°C)</th>
+                        <th>CV R² Score</th>
+                        <th>Operational Trade-off</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                    <tbody className="font-mono tabular-nums text-[11px]">
                       {(data?.model_comparison && data.model_comparison.length > 0
                         ? data.model_comparison
                         : [
@@ -358,20 +367,20 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                             },
                           ]
                       ).map((row) => (
-                        <tr key={row.model} className="hover:bg-slate-50/50">
-                          <td className="py-2.5 px-3 font-sans font-bold text-slate-800">
+                        <tr key={row.model}>
+                          <td className="font-sans font-bold text-slate-800">
                             {row.model === "RandomForest" ? "🌲 Random Forest Regressor" : "⚡ XGBoost Regressor (Production)"}
                           </td>
-                          <td className="py-2.5 px-3 text-slate-700">
+                          <td className="text-slate-700">
                             {row.mean_mae.toFixed(4)} ± {row.std_mae.toFixed(4)}
                           </td>
-                          <td className="py-2.5 px-3 font-bold text-slate-900">
+                          <td className="font-bold text-slate-900">
                             {row.mean_rmse.toFixed(4)} ± {row.std_rmse.toFixed(4)}
                           </td>
-                          <td className="py-2.5 px-3 text-teal-600 font-bold">
+                          <td className="text-indigo-700 font-bold">
                             {row.mean_r2.toFixed(4)} ± {row.std_r2.toFixed(4)}
                           </td>
-                          <td className="py-2.5 px-3 font-sans text-slate-600 text-[10px]">
+                          <td className="font-sans text-slate-600 text-[10px]">
                             {row.model === "RandomForest"
                               ? "Slightly lower RMSE (-0.026°C), but >120 MB artifact & higher inference latency"
                               : "186k cells/s CPU batch inference, compact 17 MB artifact, chosen for deployment"}
@@ -446,20 +455,20 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-500 uppercase border-y border-slate-200 font-semibold">
+              <div className="table-container">
+                <table className="table-municipal">
+                  <thead>
                     <tr>
-                      <th className="py-3 px-4">Season</th>
-                      <th className="py-3 px-4">Holdout Observations (N)</th>
-                      <th className="py-3 px-4">MAE (°C)</th>
-                      <th className="py-3 px-4">RMSE (°C)</th>
-                      <th className="py-3 px-4">R² Score</th>
-                      <th className="py-3 px-4">Mean Bias (°C)</th>
-                      <th className="py-3 px-4">Thermal Integrity</th>
+                      <th>Season</th>
+                      <th>Holdout Observations (N)</th>
+                      <th>MAE (°C)</th>
+                      <th>RMSE (°C)</th>
+                      <th>R² Score</th>
+                      <th>Mean Bias (°C)</th>
+                      <th>Thermal Integrity</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono">
+                  <tbody className="font-mono tabular-nums">
                     {Object.entries(qc.seasonal_performance).map(([season, metrics]) => {
                       const icon =
                         season === "summer"
@@ -471,28 +480,28 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                           : "🍂";
 
                       return (
-                        <tr key={season} className="hover:bg-slate-50/50">
-                          <td className="py-3 px-4 font-sans font-bold capitalize flex items-center gap-1.5">
+                        <tr key={season}>
+                          <td className="font-sans font-bold capitalize flex items-center gap-1.5">
                             <span>{icon}</span>
                             <span>{season.replace("_", " ")}</span>
                           </td>
-                          <td className="py-3 px-4 text-slate-700">
+                          <td className="text-slate-700">
                             {metrics.n.toLocaleString()}
                           </td>
-                          <td className="py-3 px-4 text-slate-900 font-bold">
+                          <td className="text-slate-900 font-bold">
                             {metrics.mae.toFixed(2)}°C
                           </td>
-                          <td className="py-3 px-4 text-slate-700">
+                          <td className="text-slate-700">
                             {metrics.rmse.toFixed(2)}°C
                           </td>
-                          <td className="py-3 px-4 text-teal-600 font-bold">
+                          <td className="text-indigo-700 font-bold">
                             {metrics.r2.toFixed(4)}
                           </td>
-                          <td className="py-3 px-4 text-slate-700">
+                          <td className="text-slate-700">
                             {metrics.bias > 0 ? `+${metrics.bias.toFixed(4)}` : metrics.bias.toFixed(4)}°C
                           </td>
-                          <td className="py-3 px-4 font-sans">
-                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                          <td className="font-sans">
+                            <span className="badge-evidence badge-measured">
                               Validated
                             </span>
                           </td>
@@ -519,19 +528,19 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 text-slate-500 uppercase border-y border-slate-200 font-semibold">
+              <div className="table-container">
+                <table className="table-municipal">
+                  <thead>
                     <tr>
-                      <th className="py-3 px-4">Hotspot Stratum</th>
-                      <th className="py-3 px-4">Test Cells (N)</th>
-                      <th className="py-3 px-4">MAE (°C)</th>
-                      <th className="py-3 px-4">RMSE (°C)</th>
-                      <th className="py-3 px-4">R² Score</th>
-                      <th className="py-3 px-4">Mean Bias (°C)</th>
+                      <th>Hotspot Stratum</th>
+                      <th>Test Cells (N)</th>
+                      <th>MAE (°C)</th>
+                      <th>RMSE (°C)</th>
+                      <th>R² Score</th>
+                      <th>Mean Bias (°C)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono">
+                  <tbody className="font-mono tabular-nums">
                     {Object.entries(qc.hotspot_performance).map(([stratum, metrics]) => (
                       <tr key={stratum} className="hover:bg-slate-50/50">
                         <td className="py-3 px-4 font-sans font-bold capitalize">
@@ -581,86 +590,86 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                       Conformal Prediction Coverage by Stratum (Nominal 90% Calibration)
                     </h4>
                     <p className="mt-0.5 text-xs text-slate-500">
-                      Source: <span className="font-mono">artifacts/ml_experiments/ml_experimental_evaluation.json</span> · <span className="font-semibold text-slate-700">MEASURED</span>
+                      Source: <span className="font-mono">artifacts/ml_experiments/ml_experimental_evaluation.json</span> · <span className="badge-evidence badge-measured">MEASURED</span>
                     </p>
                   </div>
-                  <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200">
+                  <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold text-indigo-800 border border-indigo-200">
                     Overall Coverage: 90.15% (±2.98°C half-width)
                   </span>
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Seasonal Subgroups */}
-                  <div className="rounded-lg border border-slate-200 overflow-hidden">
+                  <div className="table-container">
                     <div className="bg-slate-100/70 px-3 py-2 text-xs font-bold text-slate-800 border-b border-slate-200">
                       Seasonal Strata Coverage
                     </div>
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-200">
+                    <table className="table-municipal">
+                      <thead>
                         <tr>
-                          <th className="py-2 px-3">Season</th>
-                          <th className="py-2 px-3">Samples (N)</th>
-                          <th className="py-2 px-3">Coverage</th>
-                          <th className="py-2 px-3">Status</th>
+                          <th>Season</th>
+                          <th>Samples (N)</th>
+                          <th>Coverage</th>
+                          <th>Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 font-sans font-medium">Summer</td>
-                          <td className="py-2 px-3 text-slate-600">454</td>
-                          <td className="py-2 px-3 font-bold text-slate-900">90.53%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-emerald-700 font-bold">Nominal Met (+0.53%)</td>
+                      <tbody className="font-mono tabular-nums text-[11px]">
+                        <tr>
+                          <td className="font-sans font-medium">Summer</td>
+                          <td className="text-slate-600">454</td>
+                          <td className="font-bold text-slate-900">90.53%</td>
+                          <td className="font-sans text-[10px] text-emerald-700 font-bold">Nominal Met (+0.53%)</td>
                         </tr>
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 font-sans font-medium">Winter</td>
-                          <td className="py-2 px-3 text-slate-600">440</td>
-                          <td className="py-2 px-3 font-bold text-slate-900">95.68%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-blue-700 font-bold">Conservative (+5.68%)</td>
+                        <tr>
+                          <td className="font-sans font-medium">Winter</td>
+                          <td className="text-slate-600">440</td>
+                          <td className="font-bold text-slate-900">95.68%</td>
+                          <td className="font-sans text-[10px] text-indigo-700 font-bold">Conservative (+5.68%)</td>
                         </tr>
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 font-sans font-medium">Post-Monsoon</td>
-                          <td className="py-2 px-3 text-slate-600">405</td>
-                          <td className="py-2 px-3 font-bold text-slate-900">95.80%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-blue-700 font-bold">Conservative (+5.80%)</td>
+                        <tr>
+                          <td className="font-sans font-medium">Post-Monsoon</td>
+                          <td className="text-slate-600">405</td>
+                          <td className="font-bold text-slate-900">95.80%</td>
+                          <td className="font-sans text-[10px] text-indigo-700 font-bold">Conservative (+5.80%)</td>
                         </tr>
-                        <tr className="hover:bg-rose-50/40 bg-rose-50/20">
-                          <td className="py-2 px-3 font-sans font-bold text-rose-900">Monsoon</td>
-                          <td className="py-2 px-3 text-slate-600">447</td>
-                          <td className="py-2 px-3 font-bold text-rose-700">79.19%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-10.81%; possibly related to cloud contamination; not tested)</td>
+                        <tr className="bg-rose-50/40">
+                          <td className="font-sans font-bold text-rose-900">Monsoon</td>
+                          <td className="text-slate-600">447</td>
+                          <td className="font-bold text-rose-700">79.19%</td>
+                          <td className="font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-10.81%; possibly related to cloud contamination; not tested)</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
 
                   {/* Decile Subgroups */}
-                  <div className="rounded-lg border border-slate-200 overflow-hidden">
+                  <div className="table-container">
                     <div className="bg-slate-100/70 px-3 py-2 text-xs font-bold text-slate-800 border-b border-slate-200">
                       Heat Severity Decile Strata
                     </div>
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-200">
+                    <table className="table-municipal">
+                      <thead>
                         <tr>
-                          <th className="py-2 px-3">Decile Bin</th>
-                          <th className="py-2 px-3">Coverage Range</th>
-                          <th className="py-2 px-3">Behavior & Undercoverage Analysis</th>
+                          <th>Decile Bin</th>
+                          <th>Coverage Range</th>
+                          <th>Behavior & Undercoverage Analysis</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 font-sans font-medium">Deciles 1–4 (Cool–Moderate)</td>
-                          <td className="py-2 px-3 font-bold text-slate-900">89.66% – 94.86%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-emerald-700 font-bold">Well-calibrated baseline</td>
+                      <tbody className="font-mono tabular-nums text-[11px]">
+                        <tr>
+                          <td className="font-sans font-medium">Deciles 1–4 (Cool–Moderate)</td>
+                          <td className="font-bold text-slate-900">89.66% – 94.86%</td>
+                          <td className="font-sans text-[10px] text-emerald-700 font-bold">Well-calibrated baseline</td>
                         </tr>
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3 font-sans font-medium">Deciles 5–9 (Warm–High)</td>
-                          <td className="py-2 px-3 font-bold text-slate-900">87.93% – 91.38%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-slate-600">Conformal bounds stable</td>
+                        <tr>
+                          <td className="font-sans font-medium">Deciles 5–9 (Warm–High)</td>
+                          <td className="font-bold text-slate-900">87.93% – 91.38%</td>
+                          <td className="font-sans text-[10px] text-slate-600">Conformal bounds stable</td>
                         </tr>
-                        <tr className="hover:bg-rose-50/40 bg-rose-50/20">
-                          <td className="py-2 px-3 font-sans font-bold text-rose-900">Decile 10 (Hottest 10%)</td>
-                          <td className="py-2 px-3 font-bold text-rose-700">83.43%</td>
-                          <td className="py-2 px-3 font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-6.57%; possibly related to industrial roofs; not tested)</td>
+                        <tr className="bg-rose-50/40">
+                          <td className="font-sans font-bold text-rose-900">Decile 10 (Hottest 10%)</td>
+                          <td className="font-bold text-rose-700">83.43%</td>
+                          <td className="font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-6.57%; possibly related to industrial roofs; not tested)</td>
                         </tr>
                       </tbody>
                     </table>
