@@ -23,6 +23,12 @@ export interface CoolingRangeC {
   model_source: string;
 }
 
+export interface RejectedAlternative {
+  intervention_type: string;
+  title: string;
+  rejection_reason: string;
+}
+
 export interface RecommendationItem {
   type: string;
   title: string;
@@ -37,6 +43,17 @@ export interface RecommendationItem {
   maintenance_note: string;
   evidence_label: "MEASURED" | "MODELLED" | "ASSUMPTION" | "UNVERIFIED";
   missing_data_survey_requirements: string[];
+  landuse_typology?: string;
+  allowed_interventions?: string[];
+  selection_rationale?: string;
+  rejected_alternatives?: RejectedAlternative[];
+  water_need_description?: string;
+  maintenance_burden?: string;
+  construction_time?: string;
+  whole_life_cost_3yr_inr?: number;
+  whole_life_cost_per_c_m2?: number;
+  air_cooling_c?: number;
+  needs_site_survey?: boolean;
 }
 
 export interface PolygonSummary {
@@ -65,6 +82,8 @@ export interface PolygonSummary {
   data_coverage_percentage: number;
   confidence_score: number;
   confidence_tier: string;
+  landuse_typology?: string | null;
+  needs_site_survey?: boolean;
 }
 
 export interface RecommendationsResponse {

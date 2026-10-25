@@ -57,6 +57,13 @@ export default function ScenarioLab({
     cool_roof: true,
     cool_pavement: true,
     green_roof: false,
+    public_park_native_trees: true,
+    dense_miyawaki_plantation: true,
+    bioswale_rain_garden: true,
+    rainwater_fed_pond: false,
+    shaded_parking_structure: true,
+    green_wall: false,
+    permeable_ground_cover: true,
   });
 
   // Fetch benchmark planning scenarios

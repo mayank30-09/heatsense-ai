@@ -178,6 +178,29 @@ export interface ModelValidationSummary {
       heat_decile?: Record<string, { n_samples: number; coverage: number; width: number; coverage_gap: number }>;
     };
   };
+  model_evaluations?: {
+    pooled_multi_season: {
+      name: string;
+      features: string[];
+      validation_strategy: string;
+      r2: number;
+      rmse: number;
+      mae: number;
+      sample_size: number;
+      scientific_assessment: string;
+    };
+    spatial_physical_only: {
+      name: string;
+      features: string[];
+      validation_strategy: string;
+      r2: number;
+      rmse: number;
+      mae: number;
+      variance_explained_pct: number;
+      scientific_assessment: string;
+    };
+    reconciliation_note: string;
+  };
 }
 
 

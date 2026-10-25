@@ -2,7 +2,14 @@ export type InterventionType =
   | "tree_canopy"
   | "cool_roof"
   | "green_roof"
-  | "cool_pavement";
+  | "cool_pavement"
+  | "public_park_native_trees"
+  | "dense_miyawaki_plantation"
+  | "bioswale_rain_garden"
+  | "rainwater_fed_pond"
+  | "shaded_parking_structure"
+  | "green_wall"
+  | "permeable_ground_cover";
 
 export type FeasibilityStatus = "FEASIBLE" | "REJECTED";
 
@@ -26,11 +33,24 @@ export interface InterventionCandidateItem {
   cost_inr_range: [number, number];
   expected_cooling_c: number;
   expected_cooling_c_range: [number, number];
+  air_cooling_c?: number;
   evidence_status: string;
   geometry: {
     type: string;
     coordinates: number[][][];
   };
+  landuse_typology?: string;
+  needs_site_survey?: boolean;
+  selection_rationale?: string;
+  rejected_alternatives?: Array<{
+    intervention_type: string;
+    title: string;
+    rejection_reason: string;
+  }>;
+  water_need_description?: string;
+  maintenance_burden?: string;
+  construction_time?: string;
+  whole_life_cost_per_c_m2?: number;
 }
 
 export interface CandidateListResponse {

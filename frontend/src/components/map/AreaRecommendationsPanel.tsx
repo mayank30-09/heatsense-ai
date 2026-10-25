@@ -18,6 +18,20 @@ interface Props {
   onClose?: () => void;
 }
 
+const TYPOLOGY_LABELS: Record<string, string> = {
+  vacant_public_open_land: "Vacant Public Open Land",
+  vacant_private_land: "Vacant Private Land",
+  park_garden: "Park or Public Garden",
+  water_adjacent: "Water-Adjacent Buffer",
+  residential_rcc_roof: "Residential Engineered RCC Roof",
+  industrial_shed_roof: "Industrial Warehouse / Shed Roof",
+  informal_settlement_roof: "Informal Settlement Roof",
+  road_corridor: "Road Corridor & Verge",
+  parking_paved_yard: "Parking Lot or Paved Yard",
+  institutional_campus: "Institutional Campus",
+  unclassified: "Unclassified / Uncertain Land Parcel",
+};
+
 export default function AreaRecommendationsPanel({
   areaId,
   areaName,
@@ -75,6 +89,10 @@ export default function AreaRecommendationsPanel({
     const safeName = areaName.replace(/[^a-zA-Z0-9_-]/g, "_");
     exportRecommendationsToJson(data, `recommendations_${safeName}_${season}`);
   };
+
+  const typologyKey = data?.polygon_summary.landuse_typology || "unclassified";
+  const typologyTitle = TYPOLOGY_LABELS[typologyKey] || typologyKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const needsSurvey = Boolean(data?.polygon_summary.needs_site_survey || typologyKey === "unclassified");
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm text-slate-800">
@@ -159,18 +177,44 @@ export default function AreaRecommendationsPanel({
       {/* Loaded Content */}
       {data && !loading && (
         <div className="mt-2.5 space-y-3">
-          {/* Scientific Caveat Banner */}
-          <div className="rounded border border-amber-300 bg-amber-50 p-2 text-[10px] leading-tight text-amber-900 space-y-1">
-            <div className="font-bold flex items-center gap-1">
-              <span>⚠️</span>
-              <span>Evidence-Based Planning Notice</span>
+          {/* Needs Site Survey Warning Banner */}
+          {needsSurvey && (
+            <div className="rounded border-2 border-amber-400 bg-amber-50 p-2.5 text-xs text-amber-950 space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5 text-amber-900">
+                <span className="text-base">📋</span>
+                <span>NEEDS ON-SITE SURVEY</span>
+              </div>
+              <div className="text-[11px] leading-snug">
+                Land classification for this candidate parcel is unverified or ambiguous. In strict adherence to Surat municipal heat governance, <strong>no mechanical interventions are authorized</strong> until an on-site cadastral, structural, and water-supply survey is conducted.
+              </div>
             </div>
-            <div>
-              {data.caveats[0]}
+          )}
+
+          {/* Land Typology & Allowed Interventions Bar */}
+          <div className="rounded border border-indigo-100 bg-indigo-50/50 p-2 text-[10.5px] space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 font-medium">Land-Use Typology:</span>
+              <span className="font-bold text-indigo-950">{typologyTitle}</span>
             </div>
-            <div className="font-medium text-amber-950">
-              {data.caveats[1]}
+            <div className="flex items-center justify-between text-[9.5px] text-slate-500 border-t border-indigo-100/60 pt-1">
+              <span>Source: Google Open Buildings V3 & OSM</span>
+              <span>Grid Coverage: {data.polygon_summary.data_coverage_percentage}%</span>
             </div>
+            {data.recommendations.length > 0 && data.recommendations[0]?.allowed_interventions && (
+              <div className="pt-1">
+                <span className="text-slate-500 font-medium text-[9.5px] block mb-1">Permitted Typology Interventions:</span>
+                <div className="flex flex-wrap gap-1">
+                  {data.recommendations[0].allowed_interventions.map((itype) => (
+                    <span
+                      key={itype}
+                      className="rounded bg-indigo-100/70 text-indigo-900 text-[9px] px-1.5 py-0.5 font-medium"
+                    >
+                      {itype.replace(/_/g, " ")}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Special States */}
@@ -219,9 +263,9 @@ export default function AreaRecommendationsPanel({
               </strong>
             </div>
             <div>
-              <span className="text-slate-400 block">Coverage</span>
+              <span className="text-slate-400 block">Area</span>
               <strong className="text-slate-700 text-[11px]">
-                {data.polygon_summary.data_coverage_percentage}%
+                {data.polygon_summary.area_km2.toFixed(2)} km²
               </strong>
             </div>
           </div>
@@ -256,8 +300,10 @@ export default function AreaRecommendationsPanel({
           {activeTab === "recommendations" && (
             <div className="space-y-3">
               {data.recommendations.length === 0 ? (
-                <div className="text-xs text-slate-500 py-3 text-center">
-                  No interventions recommended for this area.
+                <div className="text-xs text-slate-500 py-4 text-center bg-slate-50 rounded border border-slate-100">
+                  {needsSurvey
+                    ? "Mechanical recommendations blocked pending on-site survey."
+                    : "No interventions recommended for this area."}
                 </div>
               ) : (
                 data.recommendations.map((rec) => (
@@ -325,7 +371,7 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
         <div>
           <div className="text-xs font-bold text-slate-900">{item.title}</div>
           <div className="text-[10px] text-slate-500 mt-0.5">
-            {item.quantity_basis.basis_description}
+            Quantity: <strong>{item.quantity_basis.estimated_quantity.toLocaleString()} {item.quantity_basis.unit}</strong> ({item.quantity_basis.basis_description})
           </div>
         </div>
 
@@ -338,30 +384,56 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
         </span>
       </div>
 
-      {/* Rationale */}
+      {/* Rationale & Selection Reason */}
       <div className="text-[11px] text-slate-700 leading-snug">
         {item.rationale}
       </div>
 
-      {/* Feasibility & Cost / Cooling Metrics Grid */}
+      {item.selection_rationale && (
+        <div className="text-[10px] text-indigo-900 bg-indigo-50/60 p-1.5 rounded border border-indigo-100 leading-tight">
+          <strong>Why Chosen:</strong> {item.selection_rationale}
+        </div>
+      )}
+
+      {/* Dual Cooling & Cost Metrics Grid */}
       <div className="grid grid-cols-3 gap-1.5 bg-slate-50 p-2 rounded border border-slate-100 text-[10px]">
         <div>
-          <span className="text-slate-400 block">Feasibility</span>
-          <div className="text-[10.5px] mt-0.5">{getFeasibilityBadge(item.feasibility_status)}</div>
-        </div>
-
-        <div>
-          <span className="text-slate-400 block">Cooling Range</span>
+          <span className="text-slate-400 block font-medium">Surface Skin Cooling</span>
           <div className="font-bold text-indigo-700 text-[10.5px] mt-0.5">
             {item.cooling_range_c.formatted}
           </div>
         </div>
 
         <div>
-          <span className="text-slate-400 block">Cost Range (INR)</span>
+          <span className="text-slate-400 block font-medium">Ambient Air (2m AGL)</span>
+          <div className="font-bold text-teal-700 text-[10.5px] mt-0.5">
+            {item.air_cooling_c ? `-${item.air_cooling_c.toFixed(2)}°C` : "-0.50°C"}
+          </div>
+        </div>
+
+        <div>
+          <span className="text-slate-400 block font-medium">Cost Range (INR)</span>
           <div className="font-bold text-slate-800 text-[10.5px] mt-0.5">
             {item.cost_range_inr.formatted}
           </div>
+        </div>
+      </div>
+
+      {/* Engineering Attributes: Water Need, Construction Time, Whole Life Cost */}
+      <div className="grid grid-cols-3 gap-1.5 text-[9.5px] text-slate-600 px-0.5">
+        <div>
+          <span className="text-slate-400 block">Water Need:</span>
+          <span className="font-medium text-slate-800">{item.water_need_description || "Moderate"}</span>
+        </div>
+        <div>
+          <span className="text-slate-400 block">Time to Effect:</span>
+          <span className="font-medium text-slate-800">{item.construction_time || "1-3 months"}</span>
+        </div>
+        <div>
+          <span className="text-slate-400 block">Whole-Life (3yr):</span>
+          <span className="font-medium text-slate-800">
+            {item.whole_life_cost_3yr_inr ? `₹${(item.whole_life_cost_3yr_inr / 100000).toFixed(1)}L` : "Included"}
+          </span>
         </div>
       </div>
 
@@ -377,21 +449,38 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
         </div>
       )}
 
-      {/* Collapsible Details: Maintenance & Missing Data Survey Requirements */}
+      {/* Collapsible Details: Maintenance, Rejected Alternatives, Missing Data */}
       <div>
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
           className="text-[10px] font-semibold text-indigo-700 hover:text-indigo-900 cursor-pointer flex items-center gap-1"
         >
-          <span>{expanded ? "Hide Details ▲" : "View Maintenance & Survey Requirements ▼"}</span>
+          <span>{expanded ? "Hide Engineering Details ▲" : "View Rejected Alternatives & Engineering Details ▼"}</span>
         </button>
 
         {expanded && (
           <div className="mt-2 space-y-2 text-[10px] text-slate-600 border-t border-slate-100 pt-2">
             <div>
-              <strong className="text-slate-700">Maintenance Horizon:</strong> {item.maintenance_note}
+              <strong className="text-slate-700">Maintenance Burden & Schedule:</strong> {item.maintenance_note}
             </div>
+
+            {/* Rejected Alternatives Section */}
+            {item.rejected_alternatives && item.rejected_alternatives.length > 0 && (
+              <div className="rounded bg-slate-50 p-2 border border-slate-200/80 space-y-1">
+                <strong className="text-slate-800 block text-[10px]">
+                  Disqualified Alternatives for this Typology ({item.rejected_alternatives.length}):
+                </strong>
+                <div className="space-y-1">
+                  {item.rejected_alternatives.slice(0, 4).map((alt) => (
+                    <div key={alt.intervention_type} className="text-[9.5px]">
+                      <span className="font-semibold text-rose-800">✕ {alt.title}: </span>
+                      <span className="text-slate-600">{alt.rejection_reason}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div>
               <strong className="text-slate-700">Missing Data Survey Requirements:</strong>
