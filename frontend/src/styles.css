@@ -113,6 +113,15 @@ button { font: inherit; }
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 
 /* Tabular numbers for all metrics */
 .tabular-nums {
@@ -560,9 +569,57 @@ nav { display: grid; gap: 4px; }
   font-size: 11px;
 }
 
+@media (max-width: 1024px) {
+  .app-main {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .app-main { grid-template-columns: 1fr; }
-  .sidebar { border-right: 0; border-bottom: 1px solid var(--color-border-subtle); }
-  nav { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .sidebar { border-right: 0; border-bottom: 1px solid var(--color-border-subtle); padding: 14px; }
+  nav { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
   .workspace-heading { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: 10px 14px;
+    min-height: auto;
+  }
+  .app-header > div:first-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .workspace {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+  .connection-panel {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  nav {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .nav-item {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  .map-frame {
+    min-height: 420px;
+  }
+  .leaflet-map {
+    min-height: 420px;
+  }
+  .table-container {
+    max-height: 55vh;
+  }
 }

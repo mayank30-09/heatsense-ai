@@ -85,7 +85,7 @@ export default function AreaRecommendationsPanel({
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-900">
               Intervention Recommendations
             </span>
-            <span className="rounded bg-indigo-50 border border-indigo-200 px-1.5 py-0.2 text-[9.5px] font-semibold text-indigo-700">
+            <span className="badge-evidence badge-modelled">
               MODELLED
             </span>
           </div>
@@ -406,7 +406,11 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
 
             <div className="flex items-center justify-between text-[9px] text-slate-400 pt-1">
               <span>Model Source: {item.cooling_range_c.model_source}</span>
-              <span className="rounded bg-slate-100 px-1 py-0.2 font-mono">
+              <span className={`badge-evidence ${
+                item.evidence_label === 'MEASURED' ? 'badge-measured' :
+                item.evidence_label === 'MODELLED' ? 'badge-modelled' :
+                item.evidence_label === 'ASSUMPTION' ? 'badge-assumption' : 'badge-unverified'
+              }`}>
                 {item.evidence_label}
               </span>
             </div>
