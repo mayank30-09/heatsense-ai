@@ -68,7 +68,7 @@ def test_candidate_detail_endpoint():
     assert cand["candidate_id"] == valid_id
     assert cand["intervention_type"] == "tree_canopy"
     assert cand["tree_count"] == 50
-    assert cand["cost_inr"] == 175000.0  # 50 trees * 3500 INR
+    assert cand["cost_inr"] == 173406.92  # Itemized engineering cost: materials, labour, design (6%), GST (18%), contingency (12%), setup, tanker
 
     # Malformed candidate ID returns 400
     resp_bad = client.get("/api/v1/interventions/candidates/INVALID_ID_FORMAT")

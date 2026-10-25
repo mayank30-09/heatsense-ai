@@ -73,6 +73,14 @@ class CandidateResponse(BaseModel):
     expected_cooling_c_range: list[float]
     evidence_status: str
     geometry: dict[str, Any]
+    air_cooling_c: float = 0.0
+    landuse_typology: str = "unclassified"
+    needs_site_survey: bool = False
+    selection_rationale: str = ""
+    rejected_alternatives: list[dict[str, str]] = []
+    water_need_description: str = ""
+    maintenance_burden: str = ""
+    construction_time: str = ""
 
 
 class CandidateListResponse(BaseModel):
