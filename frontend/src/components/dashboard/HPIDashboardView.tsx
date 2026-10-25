@@ -45,7 +45,7 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
   return (
     <div className="flex flex-col gap-6">
       {/* Top Banner */}
-      <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 p-6 text-white shadow-sm">
+      <div className="rounded-xl border border-slate-700/80 bg-slate-900 p-6 text-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -56,10 +56,10 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                 Operational Summer 2026 Release
               </span>
             </div>
-            <h2 className="mt-2 text-2xl font-extrabold text-white">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
               Surat Municipal Corporation · Heat Priority Index (HPI)
             </h2>
-            <p className="mt-1 max-w-2xl text-sm text-slate-300">
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-300">
               Authoritative 100m analytical grid multi-criteria prioritization combining Landsat 8/9 thermal severity,
               multi-year seasonal persistence ({dataRange}), Landsat Level-2 surface reflectance vegetation deficit, and built-up density.
             </p>
@@ -69,7 +69,7 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
             <button
               type="button"
               onClick={() => setShowGlossary(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/20 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/40"
+              className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-white hover:bg-white/20 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               <span>📖 Science Glossary</span>
             </button>
@@ -77,10 +77,10 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
             <button
               type="button"
               onClick={onSwitchToMap}
-              className="flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-red-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
               <span>Explore Interactive Heat Map</span>
-              <span>→</span>
+              <span aria-hidden="true">→</span>
             </button>
           </div>
         </div>
@@ -90,10 +90,10 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
       {loading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm animate-pulse">
-              <div className="h-3 w-24 bg-slate-200 rounded mb-3" />
-              <div className="h-8 w-32 bg-slate-300 rounded mb-2" />
-              <div className="h-3 w-40 bg-slate-200 rounded" />
+            <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+              <div className="skeleton-box h-3 w-28 mb-3" />
+              <div className="skeleton-box h-8 w-36 mb-2" />
+              <div className="skeleton-box h-3 w-44" />
             </div>
           ))}
         </div>
@@ -101,15 +101,16 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
 
       {/* Error State with Retry Button */}
       {error && !loading && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800 shadow-xs">
+        <div className="error-state-panel text-sm">
           <div className="font-bold text-base text-red-900 mb-1">Failed to Load Dashboard Data</div>
-          <p className="text-red-700">{error}</p>
+          <p className="text-red-700 max-w-md">{error}</p>
           <button
             type="button"
             onClick={loadSummary}
-            className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-500 cursor-pointer shadow-sm transition-all"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-red-700 px-4 py-2 text-xs font-bold text-white hover:bg-red-800 cursor-pointer shadow-xs transition-all focus:outline-none focus:ring-2 focus:ring-red-500"
           >
-            ↻ Retry Connection
+            <span>↻</span>
+            <span>Retry Connection</span>
           </button>
         </div>
       )}
@@ -118,35 +119,35 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
       {summary && !loading && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="decision-card p-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Authoritative Grid Cells
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-slate-900 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-slate-900 font-mono tabular-nums">
                 {summary.total_grid_cells.toLocaleString()}
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 100m resolution · SMC boundary conservation
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="decision-card p-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Mean Heat Priority Score
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-amber-600 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-amber-600 font-mono tabular-nums">
                 {summary.mean_hpi?.toFixed(1) ?? "N/A"}
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Range: {summary.min_hpi?.toFixed(1)} to {summary.max_hpi?.toFixed(1)}
               </p>
             </div>
 
-            <div className="rounded-xl border border-red-200 bg-red-50/70 p-5 shadow-sm">
+            <div className="decision-card border-red-200 bg-red-50/40 p-5">
               <span className="text-xs font-bold uppercase tracking-wider text-red-700">
                 Chronic Hotspots
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-red-700 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-red-700 font-mono tabular-nums">
                 {summary.chronic_hotspots_count}
               </div>
               <p className="mt-1 text-xs text-red-600">
@@ -154,14 +155,14 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
               </p>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <div className="decision-card p-5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 High Confidence Rating
               </span>
-              <div className="mt-1 text-3xl font-extrabold text-emerald-600 font-mono">
+              <div className="mt-1.5 text-3xl font-extrabold text-emerald-600 font-mono tabular-nums">
                 {((summary.confidence_tier_counts["HIGH"] || 0) / summary.total_grid_cells * 100).toFixed(1)}%
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 {(summary.confidence_tier_counts["HIGH"] || 0).toLocaleString()} cells with C_i ≥ 0.85
               </p>
             </div>
@@ -170,12 +171,12 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
           {/* Component Weights and Persistence Distributions */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* HPI Mathematical Formulation Card */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+            <div className="decision-card p-5">
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
                   Stage C Component Weights & Normalization Bounds
                 </h3>
-                <span className="font-mono text-xs font-semibold text-slate-400">
+                <span className="font-mono text-xs font-semibold text-slate-500">
                   {overpassTime}
                 </span>
               </div>
@@ -184,7 +185,7 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                 <div>
                   <div className="flex justify-between font-semibold">
                     <span className="text-slate-700">Thermal Severity (w_T)</span>
-                    <span className="font-mono text-red-600">40.0%</span>
+                    <span className="font-mono font-bold text-red-600 tabular-nums">40.0%</span>
                   </div>
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-red-600 rounded-full" style={{ width: "40%" }} />
@@ -197,7 +198,7 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                 <div>
                   <div className="flex justify-between font-semibold">
                     <span className="text-slate-700">Heat Persistence (w_P)</span>
-                    <span className="font-mono text-orange-600">30.0%</span>
+                    <span className="font-mono font-bold text-orange-600 tabular-nums">30.0%</span>
                   </div>
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-orange-500 rounded-full" style={{ width: "30%" }} />
@@ -210,7 +211,7 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                 <div>
                   <div className="flex justify-between font-semibold">
                     <span className="text-slate-700">Vegetation Deficit (w_V)</span>
-                    <span className="font-mono text-emerald-600">15.0%</span>
+                    <span className="font-mono font-bold text-emerald-600 tabular-nums">15.0%</span>
                   </div>
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-emerald-600 rounded-full" style={{ width: "15%" }} />
@@ -223,7 +224,7 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                 <div>
                   <div className="flex justify-between font-semibold">
                     <span className="text-slate-700">Built-Up Density (w_B)</span>
-                    <span className="font-mono text-amber-600">15.0%</span>
+                    <span className="font-mono font-bold text-amber-600 tabular-nums">15.0%</span>
                   </div>
                   <div className="mt-1 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div className="h-full bg-amber-600 rounded-full" style={{ width: "15%" }} />
@@ -236,19 +237,44 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
             </div>
 
             {/* Persistence Tiers Breakdown */}
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 mb-4">
+            <div className="decision-card p-5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-4 pb-2 border-b border-slate-100">
                 Multi-Year Persistence Tier Breakdown
               </h3>
 
-              <div className="space-y-3 text-xs">
+              <div className="space-y-3.5 text-xs">
                 {Object.entries(summary.persistence_tier_counts).map(([tier, count]) => {
                   const percentage = ((count / summary.total_grid_cells) * 100).toFixed(1);
+                  const pctNum = Number(percentage);
                   return (
-                    <div key={tier} className="flex items-center justify-between border-b border-slate-50 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${
+                    <div key={tier} className="border-b border-slate-100 pb-2.5 last:border-b-0">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              tier === "chronic_hotspot"
+                                ? "bg-red-600"
+                                : tier === "frequent_hotspot"
+                                ? "bg-orange-500"
+                                : tier === "occasional_hotspot"
+                                ? "bg-amber-500"
+                                : tier === "transient_extreme"
+                                ? "bg-purple-500"
+                                : "bg-slate-400"
+                            }`}
+                          />
+                          <span className="font-semibold text-slate-800 capitalize">
+                            {tier.replace("_", " ")}
+                          </span>
+                        </div>
+                        <div className="text-right tabular-nums">
+                          <span className="font-mono font-bold text-slate-900">{count.toLocaleString()}</span>
+                          <span className="ml-2 text-slate-500 text-[11px]">({percentage}%)</span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
                             tier === "chronic_hotspot"
                               ? "bg-red-600"
                               : tier === "frequent_hotspot"
@@ -259,14 +285,8 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
                               ? "bg-purple-500"
                               : "bg-slate-400"
                           }`}
+                          style={{ width: `${Math.min(100, Math.max(1, pctNum))}%` }}
                         />
-                        <span className="font-semibold text-slate-800 capitalize">
-                          {tier.replace("_", " ")}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-mono font-bold text-slate-900">{count.toLocaleString()}</span>
-                        <span className="ml-2 text-slate-400 text-[11px]">({percentage}%)</span>
                       </div>
                     </div>
                   );
