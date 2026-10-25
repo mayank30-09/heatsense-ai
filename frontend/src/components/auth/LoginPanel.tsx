@@ -70,10 +70,10 @@ export default function LoginPanel({
   }
 
   return (
-    <div className="mx-auto max-w-lg rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="mx-auto max-w-lg rounded-xl border border-slate-200 bg-white p-8 shadow-card">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-600"></span>
+          <span className="h-2 w-2 rounded-full bg-indigo-700"></span>
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
             Access Control
           </span>
@@ -116,7 +116,7 @@ export default function LoginPanel({
             onChange={(e) => setUsername(e.target.value)}
             disabled={isLoading}
             placeholder="Municipal username (e.g. planner_officer)"
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/30"
             required
           />
         </div>
@@ -136,7 +136,7 @@ export default function LoginPanel({
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             placeholder="Account password"
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/30"
             required
           />
         </div>
@@ -144,7 +144,7 @@ export default function LoginPanel({
         <button
           type="submit"
           disabled={isLoading || !username.trim() || !password}
-          className="w-full rounded-lg bg-emerald-700 py-2.5 px-4 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-300 transition"
+          className="w-full rounded-lg bg-indigo-700 py-2.5 px-4 text-sm font-semibold text-white shadow-xs hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 transition"
         >
           {isLoading ? "Authenticating..." : "Sign In to Access Optimization"}
         </button>

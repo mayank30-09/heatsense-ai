@@ -170,21 +170,21 @@ export default function Optimization({
   return (
     <div className="flex flex-col gap-6">
       {/* Hero Header */}
-      <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 p-6 text-white shadow-sm">
+      <div className="rounded-xl border border-slate-700/80 bg-slate-900 p-6 text-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-emerald-300 border border-emerald-500/30">
+              <span className="rounded-full bg-indigo-500/20 px-2.5 py-0.5 text-xs font-bold text-indigo-300 border border-indigo-500/30">
                 Stage D Multi-Objective Solver
               </span>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                 Genetic Algorithm & Knapsack Optimization
               </span>
             </div>
-            <h2 className="mt-2 text-2xl font-extrabold text-white">
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
               Surat Urban Cooling Optimization Engine
             </h2>
-            <p className="mt-1 max-w-3xl text-sm text-slate-300">
+            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-300">
               Pareto-optimal allocation of high-albedo coatings, native forestry, and cool pavements
               under municipal budget constraints. Strictly optimizes physical surface cooling benefit
               and chronic heat hotspot alleviation.
@@ -196,7 +196,7 @@ export default function Optimization({
               <div className="text-xs text-slate-300">
                 Logged in: <strong className="text-white">{user?.username}</strong>
               </div>
-              <span className="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              <span className="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
                 {role}
               </span>
             </div>
@@ -223,7 +223,7 @@ export default function Optimization({
               type="button"
               disabled={running}
               onClick={handleRunOptimization}
-              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-emerald-500 disabled:opacity-50 transition-all cursor-pointer"
+              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-xs hover:bg-indigo-500 disabled:opacity-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
               {running ? (
                 <>

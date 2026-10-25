@@ -225,7 +225,7 @@ export default function ScenarioLab({
   return (
     <div className="flex flex-col gap-6">
       {/* Header Banner */}
-      <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-sm">
+      <div className="rounded-xl border border-slate-700/80 bg-slate-900 p-6 text-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
