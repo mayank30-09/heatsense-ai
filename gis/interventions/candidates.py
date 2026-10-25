@@ -25,6 +25,7 @@ from gis.interventions import (
 from gis.interventions.costs import estimate_intervention_cost
 from gis.interventions.cooling_effects import estimate_cooling_effect
 from gis.interventions.feasibility import evaluate_candidate_feasibility
+from gis.interventions.landuse import LanduseClassifier
 from gis.spatial.grid import get_cell_centroid, get_cell_polygon
 
 
@@ -43,6 +44,10 @@ def generate_candidate_for_cell(
     usable_area_m2: float = 1500.0,
     tree_count: int = 40,
     is_inside_smc: bool = True,
+    landuse_typology: str | None = None,
+    has_documented_water_source: bool = False,
+    selection_rationale: str = "",
+    rejected_alternatives: list[dict[str, str]] | None = None,
 ) -> InterventionCandidate:
     """
     Construct a complete candidate object with cost, cooling effect, geometry, and feasibility.
@@ -53,12 +58,55 @@ def generate_candidate_for_cell(
 
     cand_id = f"CAND_{intervention_type.value.upper()}_R{row:03d}_C{col:03d}"
 
-    # 1. Cost model
-    cost_base, cost_min, cost_max, cost_meta = estimate_intervention_cost(
-        intervention_type=intervention_type,
-        usable_area_m2=usable_area_m2,
-        tree_count=tree_count,
-    )
+    # 1. Resolve land-use typology
+    if landuse_typology is None:
+        classifier = LanduseClassifier()
+        b_info = None
+        if cell_id in classifier.open_buildings_index:
+            ob = classifier.open_buildings_index[cell_id]
+            b_info = {
+                "building_count": ob.get("building_count", 0),
+                "total_roof_area_m2": ob.get("total_roof_area_m2", 0.0),
+                "max_building_area_m2": ob.get("max_building_area_m2", 0.0),
+            }
+        clf_res = classifier.classify(
+            pixel_id=cell_id,
+            building_info=b_info,
+            ndvi=ndvi,
+            ndbi=ndbi,
+            ndwi=ndwi,
+            locality=administrative_zone,
+        )
+        if clf_res.typology != "unclassified":
+            resolved_typology = clf_res.typology
+            site_survey_needed = clf_res.needs_site_survey
+        else:
+            # Baseline inference for candidates when OSM/footprint cache is unindexed
+            if intervention_type in (InterventionType.COOL_ROOF, InterventionType.GREEN_ROOF, InterventionType.GREEN_WALL):
+                if ndbi is not None and ndbi >= -0.10:
+                    resolved_typology = "residential_rcc_roof"
+                    site_survey_needed = False
+                else:
+                    resolved_typology = "unclassified"
+                    site_survey_needed = True
+            elif intervention_type in (InterventionType.COOL_PAVEMENT, InterventionType.SHADED_PARKING_STRUCTURE):
+                resolved_typology = "parking_paved_yard"
+                site_survey_needed = False
+            elif intervention_type in (
+                InterventionType.TREE_CANOPY,
+                InterventionType.PUBLIC_PARK_NATIVE_TREES,
+                InterventionType.DENSE_MIYAWAKI_PLANTATION,
+                InterventionType.BIOSWALE_RAIN_GARDEN,
+                InterventionType.PERMEABLE_GROUND_COVER,
+            ):
+                resolved_typology = "vacant_public_open_land"
+                site_survey_needed = False
+            else:
+                resolved_typology = "unclassified"
+                site_survey_needed = True
+    else:
+        resolved_typology = landuse_typology
+        site_survey_needed = (resolved_typology == "unclassified")
 
     # 2. Cooling effect model
     cooling_base, cooling_min, cooling_max, cooling_meta = estimate_cooling_effect(
@@ -66,6 +114,14 @@ def generate_candidate_for_cell(
         usable_area_m2=usable_area_m2,
         tree_count=tree_count,
         baseline_lst_c=baseline_lst_c,
+    )
+
+    # 3. Cost model
+    cost_base, cost_min, cost_max, cost_meta = estimate_intervention_cost(
+        intervention_type=intervention_type,
+        usable_area_m2=usable_area_m2,
+        tree_count=tree_count,
+        expected_cooling_c=cooling_base,
     )
 
     candidate = InterventionCandidate(
@@ -77,7 +133,7 @@ def generate_candidate_for_cell(
         latitude=lat,
         intervention_type=intervention_type,
         usable_area_m2=usable_area_m2,
-        tree_count=tree_count if intervention_type == InterventionType.TREE_CANOPY else 0,
+        tree_count=tree_count if intervention_type in (InterventionType.TREE_CANOPY, InterventionType.PUBLIC_PARK_NATIVE_TREES) else 0,
         baseline_hpi=baseline_hpi,
         baseline_lst_c=baseline_lst_c,
         is_chronic_hotspot=is_chronic_hotspot,
@@ -88,11 +144,21 @@ def generate_candidate_for_cell(
         expected_cooling_c=cooling_base,
         expected_cooling_c_min=cooling_min,
         expected_cooling_c_max=cooling_max,
+        air_cooling_c=cooling_meta.get("air_cooling_c", 0.0),
         evidence_status="CALIBRATED_EMPIRICAL_MICROCLIMATE",
         geometry=geom_dict,
+        landuse_typology=resolved_typology,
+        needs_site_survey=site_survey_needed,
+        selection_rationale=selection_rationale,
+        rejected_alternatives=rejected_alternatives or [],
+        water_need_description=cooling_meta.get("water_need", "None"),
+        maintenance_burden=cooling_meta.get("maintenance_burden", "Standard municipal maintenance"),
+        construction_time=cooling_meta.get("construction_time", "1-3 months"),
     )
+    # Store dynamic water source attribute for feasibility check
+    setattr(candidate, "has_documented_water_source", has_documented_water_source)
 
-    # 3. Feasibility validation
+    # 4. Feasibility validation
     status, reason, _ = evaluate_candidate_feasibility(
         candidate=candidate,
         ndvi=ndvi,

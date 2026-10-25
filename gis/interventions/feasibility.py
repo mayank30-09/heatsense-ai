@@ -76,7 +76,46 @@ def evaluate_candidate_feasibility(
                 f"Baseline Heat Priority Index ({candidate.baseline_hpi}) is below intervention threshold ({MIN_HPI_ELIGIBILITY}).",
             )
 
-    # 5. Land-cover suitability checks per intervention type
+    # 5. Land-cover suitability & structural typology checks
+    typology = getattr(candidate, "landuse_typology", "unclassified")
+
+    # Constraint A: Open vacant public/private land NEVER gets cool roof or green roof
+    if typology in ("vacant_public_open_land", "vacant_private_land"):
+        if candidate.intervention_type in (InterventionType.COOL_ROOF, InterventionType.GREEN_ROOF):
+            return (
+                FeasibilityStatus.REJECTED,
+                RejectionReason.NO_ROOF_STRUCTURE_ON_OPEN_LAND,
+                f"Open plot ({typology}) contains no building rooftop structure for {candidate.intervention_type.value}.",
+            )
+
+    # Constraint B: Industrial corrugated tin shed NEVER gets green roof (dead load collapse hazard)
+    if typology == "industrial_shed_roof" and candidate.intervention_type == InterventionType.GREEN_ROOF:
+        return (
+            FeasibilityStatus.REJECTED,
+            RejectionReason.STRUCTURAL_LOAD_COLLAPSE_RISK,
+            "CRITICAL STRUCTURAL SAFETY VIOLATION: Industrial corrugated metal/asbestos shed has live load capacity < 25 kg/m²; green roof dead load (100-150 kg/m²) causes roof collapse.",
+        )
+
+    # Constraint C: Rainwater-fed pond strictly rejected without documented water source
+    if candidate.intervention_type == InterventionType.RAINWATER_FED_POND:
+        has_water_source = getattr(candidate, "has_documented_water_source", False)
+        # Check if explicitly provided in candidate or kwargs
+        if not has_water_source:
+            return (
+                FeasibilityStatus.REJECTED,
+                RejectionReason.UNVERIFIED_WATER_SOURCE_FOR_POND,
+                "Rainwater-fed pond strictly rejected: requires verified, documented stormwater catchment (>= 5x pond area) or treated wastewater supply to prevent dry stagnant dust bowls.",
+            )
+
+    # Constraint D: Ambiguous / unclassified parcel requires on-site survey before mechanical approval
+    if typology == "unclassified" or getattr(candidate, "needs_site_survey", False):
+        return (
+            FeasibilityStatus.REJECTED,
+            RejectionReason.SITE_SURVEY_REQUIRED,
+            "Classification uncertain: site flagged for mandatory on-site structural and land-tenure survey before permit issuance.",
+        )
+
+    # Standard biophysical checks
     if candidate.intervention_type in (InterventionType.COOL_ROOF, InterventionType.GREEN_ROOF):
         if ndbi is not None and ndbi < MIN_BUILT_NDBI_FOR_ROOF:
             return (
@@ -91,7 +130,11 @@ def evaluate_candidate_feasibility(
                 f"Existing dense canopy covers structure (NDVI = {ndvi:.3f} > {MAX_EXISTING_CANOPY_NDVI}).",
             )
 
-    elif candidate.intervention_type == InterventionType.TREE_CANOPY:
+    elif candidate.intervention_type in (
+        InterventionType.TREE_CANOPY,
+        InterventionType.PUBLIC_PARK_NATIVE_TREES,
+        InterventionType.DENSE_MIYAWAKI_PLANTATION,
+    ):
         if ndvi is not None and ndvi >= MAX_EXISTING_CANOPY_NDVI:
             return (
                 FeasibilityStatus.REJECTED,

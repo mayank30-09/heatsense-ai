@@ -19,6 +19,13 @@ class InterventionType(str, Enum):
     COOL_ROOF = "cool_roof"
     GREEN_ROOF = "green_roof"
     COOL_PAVEMENT = "cool_pavement"
+    PUBLIC_PARK_NATIVE_TREES = "public_park_native_trees"
+    DENSE_MIYAWAKI_PLANTATION = "dense_miyawaki_plantation"
+    BIOSWALE_RAIN_GARDEN = "bioswale_rain_garden"
+    RAINWATER_FED_POND = "rainwater_fed_pond"
+    SHADED_PARKING_STRUCTURE = "shaded_parking_structure"
+    GREEN_WALL = "green_wall"
+    PERMEABLE_GROUND_COVER = "permeable_ground_cover"
 
 
 class FeasibilityStatus(str, Enum):
@@ -35,6 +42,11 @@ class RejectionReason(str, Enum):
     LOW_BUILT_DENSITY_FOR_ROOF = "LOW_BUILT_DENSITY_FOR_ROOF"
     HIGH_VEGETATION_CONFLICT_FOR_ROOF = "HIGH_VEGETATION_CONFLICT_FOR_ROOF"
     MISSING_HPI_EVIDENCE = "MISSING_HPI_EVIDENCE"
+    STRUCTURAL_LOAD_COLLAPSE_RISK = "STRUCTURAL_LOAD_COLLAPSE_RISK"
+    NO_ROOF_STRUCTURE_ON_OPEN_LAND = "NO_ROOF_STRUCTURE_ON_OPEN_LAND"
+    UNVERIFIED_WATER_SOURCE_FOR_POND = "UNVERIFIED_WATER_SOURCE_FOR_POND"
+    INCOMPATIBLE_LANDUSE_TYPOLOGY = "INCOMPATIBLE_LANDUSE_TYPOLOGY"
+    SITE_SURVEY_REQUIRED = "SITE_SURVEY_REQUIRED"
 
 
 @dataclass
@@ -60,8 +72,16 @@ class InterventionCandidate:
     expected_cooling_c: float = 0.0
     expected_cooling_c_min: float = 0.0
     expected_cooling_c_max: float = 0.0
+    air_cooling_c: float = 0.0
     evidence_status: str = "CALIBRATED_EMPIRICAL_MICROCLIMATE"
     geometry: dict[str, Any] = field(default_factory=dict)
+    landuse_typology: str = "unclassified"
+    needs_site_survey: bool = False
+    selection_rationale: str = ""
+    rejected_alternatives: list[dict[str, str]] = field(default_factory=list)
+    water_need_description: str = ""
+    maintenance_burden: str = ""
+    construction_time: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -84,6 +104,14 @@ class InterventionCandidate:
             "cost_inr_range": [round(self.cost_inr_min, 2), round(self.cost_inr_max, 2)],
             "expected_cooling_c": round(self.expected_cooling_c, 2),
             "expected_cooling_c_range": [round(self.expected_cooling_c_min, 2), round(self.expected_cooling_c_max, 2)],
+            "air_cooling_c": round(self.air_cooling_c, 2),
             "evidence_status": self.evidence_status,
             "geometry": self.geometry,
+            "landuse_typology": self.landuse_typology,
+            "needs_site_survey": self.needs_site_survey,
+            "selection_rationale": self.selection_rationale,
+            "rejected_alternatives": self.rejected_alternatives,
+            "water_need_description": self.water_need_description,
+            "maintenance_burden": self.maintenance_burden,
+            "construction_time": self.construction_time,
         }

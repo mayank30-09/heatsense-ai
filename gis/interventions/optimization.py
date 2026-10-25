@@ -304,15 +304,15 @@ def run_nsga2_optimizer(
                     if i != best_i:
                         fixed[i] = 0
 
-        # Enforce budget: if over budget, randomly drop candidates until under budget
-        tot_cost = np.sum(cand_costs[fixed == 1])
+        # Enforce budget: if over budget, drop least cost-effective until strictly under budget
+        tot_cost = float(np.sum(cand_costs[fixed == 1]))
         if tot_cost > budget_inr:
             active = np.where(fixed == 1)[0]
             # Drop least cost-effective first
             active_sorted = sorted(active, key=lambda i: cand_weighted_benefits[i] / max(1.0, cand_costs[i]))
             for i in active_sorted:
                 fixed[i] = 0
-                tot_cost -= cand_costs[i]
+                tot_cost = float(np.sum(cand_costs[fixed == 1]))
                 if tot_cost <= budget_inr:
                     break
         return fixed
@@ -412,8 +412,20 @@ def run_nsga2_optimizer(
             continue
         seen_hashes.add(c_ids_tuple)
 
-        tot_cost = float(final_costs[p_idx])
-        chr_cnt = int(final_chronic[p_idx])
+        # Enforce strict budget guarantee on selected candidates
+        actual_cost = sum(c.cost_inr for c in sel_cands)
+        if actual_cost > budget_inr:
+            sel_cands_sorted = sorted(sel_cands, key=lambda c: (c.usable_area_m2 * c.expected_cooling_c * (c.baseline_hpi or 0.5)) / max(1.0, c.cost_inr))
+            remaining = list(sel_cands_sorted)
+            while actual_cost > budget_inr and remaining:
+                dropped = remaining.pop(0)
+                actual_cost -= dropped.cost_inr
+            sel_cands = remaining
+            tot_cost = actual_cost
+        else:
+            tot_cost = actual_cost
+
+        chr_cnt = sum(1 for c in sel_cands if c.is_chronic_hotspot)
         util_pct = (tot_cost / budget_inr * 100.0) if budget_inr > 0 else 0.0
 
         metrics = calculate_portfolio_cooling_metrics(sel_cands, domain_area_m2=domain_area_m2)

@@ -1,0 +1,341 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-10-25",
+  "description": "Evidence-based permissible urban heat mitigation interventions and engineering constraints per land-use parcel typology in Surat, Gujarat.",
+  "typologies": {
+    "vacant_public_open_land": {
+      "title": "Vacant Public Open Land",
+      "description": "Unbuilt municipal or government-owned open plots, reserves, or municipal fallow land.",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "public_park_native_trees",
+        "dense_miyawaki_plantation",
+        "bioswale_rain_garden",
+        "tree_canopy",
+        "permeable_ground_cover"
+      ],
+      "prohibited_interventions": [
+        "cool_roof",
+        "green_roof",
+        "shaded_parking_structure"
+      ],
+      "prohibition_reasons": {
+        "cool_roof": "No building rooftop structure present on vacant open ground.",
+        "green_roof": "Requires structural engineered building slab; cannot be placed on ground.",
+        "shaded_parking_structure": "Designated for greening and public parks rather than motorized vehicle parking."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 0,
+        "min_area_m2": 200.0,
+        "requires_water_source": false,
+        "min_road_width_m": 3.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "vacant_private_land": {
+      "title": "Vacant Private Land",
+      "description": "Privately owned unbuilt parcels awaiting commercial or residential development.",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "permeable_ground_cover",
+        "tree_canopy"
+      ],
+      "prohibited_interventions": [
+        "cool_roof",
+        "green_roof",
+        "public_park_native_trees",
+        "dense_miyawaki_plantation",
+        "rainwater_fed_pond"
+      ],
+      "prohibition_reasons": {
+        "cool_roof": "No permanent rooftop structure exists on open ground.",
+        "green_roof": "Requires structural roof slab.",
+        "public_park_native_trees": "Private land ownership restricts permanent public municipal capital investment.",
+        "dense_miyawaki_plantation": "Private ownership tenure prevents permanent dense forest reservation.",
+        "rainwater_fed_pond": "Water retention bodies cannot be constructed on private development parcels."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 0,
+        "min_area_m2": 150.0,
+        "requires_water_source": false,
+        "min_road_width_m": 3.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "park_garden": {
+      "title": "Park or Public Garden",
+      "description": "Existing municipal recreation grounds, botanical gardens, and neighborhood green spaces.",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "public_park_native_trees",
+        "dense_miyawaki_plantation",
+        "bioswale_rain_garden",
+        "rainwater_fed_pond",
+        "tree_canopy",
+        "permeable_ground_cover"
+      ],
+      "prohibited_interventions": [
+        "cool_roof",
+        "green_roof",
+        "shaded_parking_structure"
+      ],
+      "prohibition_reasons": {
+        "cool_roof": "Public parks lack expansive building roofs.",
+        "green_roof": "No structural building slabs present.",
+        "shaded_parking_structure": "Incompatible with municipal recreational park zoning."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 0,
+        "min_area_m2": 500.0,
+        "requires_water_source": true,
+        "min_road_width_m": 4.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "water_adjacent": {
+      "title": "Water-Adjacent Buffer",
+      "description": "Parcels within 100 meters of the Tapi River, Khajod tidal creeks, or municipal lakes.",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "bioswale_rain_garden",
+        "public_park_native_trees",
+        "tree_canopy",
+        "rainwater_fed_pond"
+      ],
+      "prohibited_interventions": [
+        "cool_roof",
+        "green_roof",
+        "cool_pavement"
+      ],
+      "prohibition_reasons": {
+        "cool_roof": "Water-adjacent buffer zones are predominantly riparian or unbuilt embankments.",
+        "green_roof": "Riparian buffer zones do not support heavy structural roof installations.",
+        "cool_pavement": "High soil water table and tidal saturation risk destabilizing interlocking sub-bases."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 0,
+        "min_area_m2": 100.0,
+        "requires_water_source": true,
+        "min_road_width_m": 3.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": 100.0
+      }
+    },
+    "residential_rcc_roof": {
+      "title": "Residential Engineered RCC Roof",
+      "description": "Multi-story reinforced cement concrete slab roofs with load capacity >= 250 kg/m².",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "cool_roof",
+        "green_roof",
+        "green_wall"
+      ],
+      "prohibited_interventions": [
+        "tree_canopy",
+        "cool_pavement",
+        "dense_miyawaki_plantation",
+        "rainwater_fed_pond",
+        "public_park_native_trees",
+        "bioswale_rain_garden"
+      ],
+      "prohibition_reasons": {
+        "tree_canopy": "Deep taproot trees cannot be planted on elevated rooftop slabs.",
+        "cool_pavement": "Permeable pavers are intended for ground surfaces, not suspended building slabs.",
+        "dense_miyawaki_plantation": "Forest plantations require deep native ground soil.",
+        "rainwater_fed_pond": "Water bodies on residential rooftops pose critical structural hydrostatic overload and leak risks.",
+        "public_park_native_trees": "Ground trees cannot be planted on residential roofs.",
+        "bioswale_rain_garden": "Bioswales require ground-level subsoil percolation."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 250.0,
+        "min_area_m2": 50.0,
+        "requires_water_source": false,
+        "min_road_width_m": 3.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "industrial_shed_roof": {
+      "title": "Industrial Warehouse / Shed Roof",
+      "description": "Thin corrugated galvanized iron (GI), asbestos sheets, or steel purlin industrial structures (load capacity < 25 kg/m²).",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "cool_roof"
+      ],
+      "prohibited_interventions": [
+        "green_roof",
+        "tree_canopy",
+        "cool_pavement",
+        "dense_miyawaki_plantation",
+        "rainwater_fed_pond",
+        "public_park_native_trees",
+        "bioswale_rain_garden"
+      ],
+      "prohibition_reasons": {
+        "green_roof": "CRITICAL STRUCTURAL SAFETY VIOLATION: Industrial corrugated tin/asbestos sheets have live load capacity < 25 kg/m²; extensive green roofs (100-150 kg/m² saturated) cause catastrophic structural collapse.",
+        "tree_canopy": "Cannot plant ground trees on elevated metal roofs.",
+        "cool_pavement": "Pavement applies strictly to ground surfaces.",
+        "dense_miyawaki_plantation": "Cannot be planted on building roofs.",
+        "rainwater_fed_pond": "Incompatible with roof structures.",
+        "public_park_native_trees": "Incompatible with roof structures.",
+        "bioswale_rain_garden": "Requires ground percolation."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 25.0,
+        "min_area_m2": 200.0,
+        "requires_water_source": false,
+        "min_road_width_m": 6.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "informal_settlement_roof": {
+      "title": "Informal Settlement Roof",
+      "description": "High-density slum settlement dwellings with lightweight, fragile roofing (tin sheets, plastic, recycled tiles, timber rafters; load capacity < 15 kg/m²).",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "cool_roof",
+        "tree_canopy"
+      ],
+      "prohibited_interventions": [
+        "green_roof",
+        "shaded_parking_structure",
+        "rainwater_fed_pond",
+        "dense_miyawaki_plantation"
+      ],
+      "prohibition_reasons": {
+        "green_roof": "STRUCTURAL COLLAPSE RISK: Informal timber/bamboo rafters cannot support saturated soil media or drainage trays.",
+        "shaded_parking_structure": "Dense informal settlements lack dedicated vehicular parking courts.",
+        "rainwater_fed_pond": "High flood vulnerability and lack of protected catchment in informal settlements.",
+        "dense_miyawaki_plantation": "High population density leaves no contiguous plots for multi-layer dense forest."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 15.0,
+        "min_area_m2": 25.0,
+        "requires_water_source": false,
+        "min_road_width_m": 2.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "road_corridor": {
+      "title": "Road Corridor & Verge",
+      "description": "Right-of-way transport corridors, median verges, and pedestrian sidewalks.",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "tree_canopy",
+        "permeable_ground_cover",
+        "bioswale_rain_garden"
+      ],
+      "prohibited_interventions": [
+        "cool_roof",
+        "green_roof",
+        "rainwater_fed_pond",
+        "shaded_parking_structure"
+      ],
+      "prohibition_reasons": {
+        "cool_roof": "Road corridors contain no building rooftops.",
+        "green_roof": "No building roof structures present.",
+        "rainwater_fed_pond": "Ponds in road rights-of-way obstruct traffic and pose road safety hazards.",
+        "shaded_parking_structure": "Road thoroughfares must maintain vehicular flow and sightlines."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 0,
+        "min_area_m2": 100.0,
+        "requires_water_source": false,
+        "min_road_width_m": 6.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "parking_paved_yard": {
+      "title": "Parking Lot or Paved Yard",
+      "description": "Commercial, institutional, or freight parking aprons, container storage yards, and unshaded asphalt/concrete pavements.",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "cool_pavement",
+        "shaded_parking_structure",
+        "permeable_ground_cover",
+        "tree_canopy"
+      ],
+      "prohibited_interventions": [
+        "cool_roof",
+        "green_roof",
+        "rainwater_fed_pond",
+        "dense_miyawaki_plantation"
+      ],
+      "prohibition_reasons": {
+        "cool_roof": "Surface parking lots have no permanent building rooftops.",
+        "green_roof": "Ground surface; requires building roof slab.",
+        "rainwater_fed_pond": "Water retention bodies conflict with parking space and freight maneuvers.",
+        "dense_miyawaki_plantation": "Dense forest clusters conflict with vehicle maneuvering requirements."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 0,
+        "min_area_m2": 150.0,
+        "requires_water_source": false,
+        "min_road_width_m": 4.5,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "institutional_campus": {
+      "title": "Institutional Campus",
+      "description": "Universities (SVNIT, VNSGU), government secretariats, municipal hospitals, and large school complexes with mixed roofs and grounds.",
+      "needs_site_survey": false,
+      "allowed_interventions": [
+        "cool_roof",
+        "green_roof",
+        "tree_canopy",
+        "public_park_native_trees",
+        "dense_miyawaki_plantation",
+        "shaded_parking_structure",
+        "cool_pavement",
+        "bioswale_rain_garden"
+      ],
+      "prohibited_interventions": [],
+      "prohibition_reasons": {},
+      "constraints": {
+        "roof_load_capacity_kg_m2": 250.0,
+        "min_area_m2": 250.0,
+        "requires_water_source": false,
+        "min_road_width_m": 6.0,
+        "flood_zone_suitable": true,
+        "max_distance_to_existing_water_m": null
+      }
+    },
+    "unclassified": {
+      "title": "Unclassified / Uncertain Land Parcel",
+      "description": "Parcels with ambiguous or unverified satellite/OSM signatures requiring an on-site structural and land-tenure survey before any capital permit or allocation.",
+      "needs_site_survey": true,
+      "allowed_interventions": [],
+      "prohibited_interventions": [
+        "cool_roof",
+        "green_roof",
+        "tree_canopy",
+        "cool_pavement",
+        "public_park_native_trees",
+        "dense_miyawaki_plantation",
+        "bioswale_rain_garden",
+        "rainwater_fed_pond",
+        "shaded_parking_structure",
+        "green_wall",
+        "permeable_ground_cover"
+      ],
+      "prohibition_reasons": {
+        "all": "MANDATORY RESTRICTION: Site classification is uncertain. No mechanical intervention can be approved until an on-site survey verifies roof structural safety, parcel boundaries, and water availability."
+      },
+      "constraints": {
+        "roof_load_capacity_kg_m2": 0,
+        "min_area_m2": 0,
+        "requires_water_source": false,
+        "min_road_width_m": 0,
+        "flood_zone_suitable": false,
+        "max_distance_to_existing_water_m": null
+      }
+    }
+  }
+}
