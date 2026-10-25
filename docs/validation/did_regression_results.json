@@ -1,0 +1,43 @@
+{
+  "study_design": "Matched Difference-in-Differences (Summer 2022 vs Summer 2026)",
+  "sample_summary": {
+    "greening_cells_n": 4681,
+    "matched_controls_n": 2048,
+    "total_sample_n": 6729,
+    "spatial_clusters_g": 160,
+    "mean_dndvi_greening": 0.1785,
+    "mean_dndvi_control": 0.0016,
+    "mean_dlst_greening": 0.9818,
+    "mean_dlst_control": 2.3483,
+    "raw_did_effect_c": -1.3665
+  },
+  "model_1_without_dndbi_control": {
+    "specification": "dLST ~ Intercept + beta_green * Treated (Bivariate DiD with 2km spatial cluster SE)",
+    "beta_green_c": -1.3665,
+    "clustered_se_c": 0.2633,
+    "t_statistic": -5.19,
+    "p_value": 6.3322140841926e-07,
+    "ci_95": [
+      -1.8825,
+      -0.8505
+    ],
+    "normalized_cooling_per_0_10_dndvi_c": -0.7657,
+    "interpretation": "Without conditioning on post-treatment mediator dNDBI, greening significantly reduces warming by -1.37 C (or -0.77 C per +0.10 dNDVI)."
+  },
+  "model_2_with_dndbi_control": {
+    "specification": "dLST ~ Intercept + beta_green * Treated + gamma * dNDBI (Adjusted DiD with 2km spatial cluster SE)",
+    "beta_green_c": 0.2316,
+    "clustered_se_c": 0.2231,
+    "t_statistic": 1.04,
+    "p_value": 0.30075558569303507,
+    "ci_95": [
+      -0.2056,
+      0.6689
+    ],
+    "dndbi_coefficient_c": 16.9893,
+    "dndbi_clustered_se_c": 1.3284,
+    "dndbi_t_statistic": 12.79,
+    "dndbi_p_value": 0.0,
+    "interpretation": "Controlling for dNDBI absorbs the cooling effect because vegetation growth mechanically lowers NDBI (bad control / mediator). NDBI is defined as (SWIR - NIR)/(SWIR + NIR); leaf expansion increases NIR and depresses NDBI. Both specifications are reported for econometric transparency."
+  }
+}

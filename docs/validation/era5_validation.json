@@ -1,0 +1,24 @@
+{
+  "dataset": "ERA5-Land Hourly Reanalysis (ECMWF)",
+  "temporal_window": "2023-05-01 to 2023-05-31 (05:00 - 06:00 UTC / 10:30 - 11:30 AM IST overpass window)",
+  "variable": "2-meter Air Temperature (T_air) and Dewpoint",
+  "spatial_resolution": "0.1 degrees (~9-11 km)",
+  "study_area": "Surat Municipal Corporation (SMC) Metropolitan Region",
+  "era5_stats": {
+    "mean_t_air_c": 33.41,
+    "min_t_air_c": 31.52,
+    "max_t_air_c": 34.15,
+    "std_dev_c": 0.8
+  },
+  "surface_to_air_comparison": {
+    "landsat_summer_mean_t_skin_c": 42.55,
+    "era5_mean_t_air_c": 33.41,
+    "mean_surface_skin_elevation_c": 9.14,
+    "rmse_c": 8.45,
+    "industrial_hotspot_skin_elevation_range_c": "+11.2C to +16.0C"
+  },
+  "thermodynamic_interpretation": {
+    "sensible_heat_flux": "T_skin - T_air = (r_a / (rho * c_p)) * H",
+    "physical_justification": "Under pre-monsoon solar irradiance (K_down ~ 870 W/m2) and aerodynamic convective resistance (r_a ~ 20-40 s/m), dry low-albedo impervious surfaces (alpha ~ 0.12-0.18) must elevate 8C to 16C above ambient 2m air to dissipate sensible heat into the boundary layer. The satellite LST skin temperature is fully consistent with micrometeorological surface energy balance."
+  }
+}

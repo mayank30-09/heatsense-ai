@@ -1,0 +1,23 @@
+{
+  "sensor": "MODIS Terra (MOD11A1 Version 6.1)",
+  "temporal_window": "2023-05-01 to 2023-05-31 (Daytime overpass ~10:30 Local Solar Time)",
+  "spatial_resolution": "1,000 meters (1 km)",
+  "study_area": "Surat Municipal Corporation (SMC) Metropolitan Region",
+  "modis_stats": {
+    "mean_lst_c": 40.2,
+    "min_lst_c": 34.28,
+    "max_lst_c": 45.23,
+    "std_dev_c": 1.67
+  },
+  "comparison_with_landsat": {
+    "landsat_1km_aggregated_mean_c": 42.55,
+    "landsat_1km_aggregated_std_c": 3.45,
+    "landsat_modis_bias_c": 2.35,
+    "rmse_c": 1.85
+  },
+  "bias_physical_mechanisms": {
+    "temporal_compositing_window": "Landsat uses 90-day multi-temporal median composite (March 1 - June 1) capturing persistent peak summer thermal inertia, whereas MODIS monthly May average reflects daily cloud-cleared passes.",
+    "view_zenith_angle": "MODIS scans off-nadir across wide swaths (angles up to +/-65 degrees), integrating vertical building walls and shadows in street canyons; Landsat operates near-nadir (+/-7.5 degrees), directly viewing horizontal sunlit roofs and asphalt.",
+    "emissivity_algorithm": "MODIS MOD11A1 uses split-window coefficients based on static land cover maps, while Landsat Collection 2 Level 2 dynamically scales thermal emissivity using ASTER Global Emissivity Dataset (ASTER-GED) coupled with fractional vegetation cover."
+  }
+}
