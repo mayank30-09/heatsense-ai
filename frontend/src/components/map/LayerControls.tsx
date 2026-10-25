@@ -135,14 +135,14 @@ export default function LayerControls({
   // In Area Analysis mode: render ONLY season selector and thermal-raster toggle
   if (isAreaAnalysis) {
     return (
-      <div className="pointer-events-none absolute top-3 left-3 sm:left-14 z-[1000] flex flex-col gap-1.5 max-w-[calc(100vw-24px)] sm:max-w-xl">
+      <div className="pointer-events-none absolute top-3 left-12 sm:left-14 z-[1000] flex flex-col gap-1.5 max-w-[calc(100vw-60px)] sm:max-w-xl">
         <div className="pointer-events-auto flex items-center gap-2 flex-wrap">
           <button
             type="button"
             aria-pressed={showRasterTile}
             aria-label="Toggle Landsat surface temperature raster layer"
             onClick={onToggleRasterTile}
-            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-all backdrop-blur shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
+            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-all backdrop-blur shadow-xs cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${
               showRasterTile
                 ? "border-blue-300 bg-blue-50 text-blue-800"
                 : "border-slate-200 bg-white/95 text-slate-600 hover:bg-slate-50"
@@ -158,12 +158,12 @@ export default function LayerControls({
   }
 
   return (
-    <div className="pointer-events-none absolute top-3 left-3 sm:left-14 z-[1000] flex flex-col gap-2 max-w-[calc(100vw-24px)] sm:max-w-xl">
+    <div className="pointer-events-none absolute top-3 left-12 sm:left-14 z-[1000] flex flex-col gap-2 max-w-[calc(100vw-60px)] sm:max-w-xl">
       {/* Primary Layer Selector */}
       <div
         role="tablist"
         aria-label="Map thermal and priority layer modes"
-        className="pointer-events-auto flex items-center rounded-lg border border-slate-200/90 bg-white/95 p-1 shadow-md backdrop-blur flex-wrap gap-1"
+        className="pointer-events-auto flex items-center rounded-xl border border-slate-200/90 bg-white/95 p-1 shadow-sm backdrop-blur flex-wrap gap-1"
       >
         {modes.map((mode) => {
           const isActive = layerMode === mode.id;

@@ -34,7 +34,7 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
 
   return (
     <aside
-      className="pointer-events-auto absolute right-3 top-3 z-[1000] w-88 max-h-[85vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-xl backdrop-blur transition-all duration-200"
+      className="pointer-events-auto absolute right-3 top-3 z-[1000] w-[calc(100vw-24px)] sm:w-88 max-w-sm max-h-[82vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-xl backdrop-blur transition-all duration-200"
       aria-label="Grid cell details"
     >
       {/* Header with Pixel ID and Close Button */}

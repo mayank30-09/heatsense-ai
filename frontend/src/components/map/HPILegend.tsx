@@ -134,7 +134,7 @@ export default function HPILegend({
 
   return (
     <div className="pointer-events-none absolute bottom-3 sm:bottom-6 left-3 z-[1000] w-[calc(100vw-24px)] max-w-[300px] sm:max-w-xs">
-      <div className="pointer-events-auto rounded-lg border border-slate-200/90 bg-white/95 p-3 shadow-md backdrop-blur">
+      <div className="pointer-events-auto rounded-xl border border-slate-200/90 bg-white/95 p-3 shadow-md backdrop-blur">
         {/* Header with Collapse/Expand Toggle */}
         <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/80 mb-2">
           <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 truncate">

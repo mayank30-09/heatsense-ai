@@ -328,8 +328,8 @@ const handleAreaRemoved =
 
       {/* Polygon Drawing Area Analysis Drawer */}
       {isAreaAnalysis && (activeTool === "drawing" || analysisAreas.length > 0) && (
-        <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-[calc(100vw-24px)] max-w-md sm:w-[420px] max-h-[80%] overflow-y-auto">
-          <div className="pointer-events-auto rounded-lg border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
+        <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-[calc(100vw-24px)] max-w-md sm:w-[420px] max-h-[75vh] overflow-y-auto">
+          <div className="pointer-events-auto rounded-xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
@@ -390,10 +390,10 @@ function AnalysisAreaCard({
   const [showRecommendations, setShowRecommendations] = useState(true);
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
             Analysis area
           </div>
 
