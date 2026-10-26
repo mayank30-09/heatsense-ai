@@ -1,0 +1,748 @@
+{
+  "metadata": {
+    "generator": "scripts/validation/reconcile_scene_manifest.py (Earth Engine REST API discovery)",
+    "processing_level": "L2SP",
+    "collections": [
+      "LANDSAT/LC08/C02/T1_L2",
+      "LANDSAT/LC09/C02/T1_L2"
+    ],
+    "cloud_cover_filter_max_percent": 80.0,
+    "canonical_smc_grid_cells": 49747,
+    "primary_wrs_path_row": "148/045 (100% SMC area coverage: 462.68 km\u00b2)",
+    "secondary_wrs_path_row": "148/046 (23.4% southern SMC fringe: 108.17 km\u00b2)",
+    "reconciliation_notes": {
+      "monsoon_count_discrepancy": "In Monsoon 2026, WRS 148/045 has exactly 6 scenes passing CLOUD_COVER <= 80%. When including WRS 148/046 (5 scenes), total is 11. The historical dashboard count of 8 scenes was recorded in observation_support_sensitivity_report.md at an earlier cutoff checkpoint prior to the late September 2026 acquisitions (September 20 and September 28 overpasses). The operational API and manifest authoritative count is 6 scenes (representing the complete set of valid WRS 148/045 100% full-coverage SMC passes between 2026-06-08 and 2026-09-28).",
+      "summer_count": "Summer 2026 has 12 acquisition dates with 23 scenes passing CLOUD_COVER <= 80%. The 22-scene baseline corresponds to 11 paired WRS 148/045 and 148/046 overpass passes (2026-05-15 row 46 is excluded due to 84.47% cloud cover).",
+      "winter_count": "Winter 2026 has 11 acquisition dates with 21 scenes passing CLOUD_COVER <= 80%. The 20-scene baseline corresponds to 10 paired WRS 148/045 and 148/046 overpass passes (2026-01-31 row 45 is excluded due to 86.19% cloud cover).",
+      "post_monsoon_count": "Post-Monsoon 2025 has 8 acquisition dates with 14 scenes passing CLOUD_COVER <= 80% (7 complete pairs; 2025-10-27 row 46 is excluded due to 97.37% cloud cover)."
+    }
+  },
+  "seasons": {
+    "summer_2026": {
+      "season": "summer",
+      "year": 2026,
+      "effective_year": 2026,
+      "date_window": "2026-03-04 to 2026-05-31",
+      "first_acquisition_date": "2026-03-04",
+      "last_acquisition_date": "2026-05-31",
+      "n_scenes": 22,
+      "scenes": [
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260304_20260305_02_T1",
+          "date": "2026-03-04",
+          "time_utc": "05:33:19.6464820Z",
+          "cloud_cover": 0.02,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260304_20260305_02_T1",
+          "date": "2026-03-04",
+          "time_utc": "05:33:43.5502050Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260312_20260314_02_T1",
+          "date": "2026-03-12",
+          "time_utc": "05:33:01.1533210Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260312_20260314_02_T1",
+          "date": "2026-03-12",
+          "time_utc": "05:33:25.0570700Z",
+          "cloud_cover": 0.11,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260320_20260324_02_T1",
+          "date": "2026-03-20",
+          "time_utc": "05:33:07.3579390Z",
+          "cloud_cover": 1.03,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260320_20260324_02_T1",
+          "date": "2026-03-20",
+          "time_utc": "05:33:31.2616630Z",
+          "cloud_cover": 0.32,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260328_20260406_02_T1",
+          "date": "2026-03-28",
+          "time_utc": "05:32:53.5757400Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260328_20260406_02_T1",
+          "date": "2026-03-28",
+          "time_utc": "05:33:17.4752520Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260405_20260407_02_T1",
+          "date": "2026-04-05",
+          "time_utc": "05:33:03.5764840Z",
+          "cloud_cover": 32.73,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260405_20260407_02_T1",
+          "date": "2026-04-05",
+          "time_utc": "05:33:27.4717350Z",
+          "cloud_cover": 21.7,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260413_20260423_02_T1",
+          "date": "2026-04-13",
+          "time_utc": "05:32:46.8594810Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260413_20260423_02_T1",
+          "date": "2026-04-13",
+          "time_utc": "05:33:10.7547569Z",
+          "cloud_cover": 0.84,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260421_20260422_02_T1",
+          "date": "2026-04-21",
+          "time_utc": "05:32:58.2028530Z",
+          "cloud_cover": 2.43,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260421_20260422_02_T1",
+          "date": "2026-04-21",
+          "time_utc": "05:33:22.0981050Z",
+          "cloud_cover": 16.02,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260429_20260506_02_T1",
+          "date": "2026-04-29",
+          "time_utc": "05:32:42.9895930Z",
+          "cloud_cover": 1.55,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260429_20260506_02_T1",
+          "date": "2026-04-29",
+          "time_utc": "05:33:06.8848699Z",
+          "cloud_cover": 7.75,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260507_20260508_02_T1",
+          "date": "2026-05-07",
+          "time_utc": "05:32:48.1562600Z",
+          "cloud_cover": 0.59,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260507_20260508_02_T1",
+          "date": "2026-05-07",
+          "time_utc": "05:33:12.0515109Z",
+          "cloud_cover": 1.16,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260523_20260524_02_T1",
+          "date": "2026-05-23",
+          "time_utc": "05:32:31.3027680Z",
+          "cloud_cover": 11.38,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260523_20260524_02_T1",
+          "date": "2026-05-23",
+          "time_utc": "05:32:55.1980200Z",
+          "cloud_cover": 24.64,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260531_20260605_02_T1",
+          "date": "2026-05-31",
+          "time_utc": "05:32:16.7681140Z",
+          "cloud_cover": 10.06,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260531_20260605_02_T1",
+          "date": "2026-05-31",
+          "time_utc": "05:32:40.6760989Z",
+          "cloud_cover": 12.27,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        }
+      ]
+    },
+    "winter_2026": {
+      "season": "winter",
+      "year": 2026,
+      "effective_year": 2026,
+      "date_window": "2025-12-06 to 2026-02-24",
+      "first_acquisition_date": "2025-12-06",
+      "last_acquisition_date": "2026-02-24",
+      "n_scenes": 20,
+      "scenes": [
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20251206_20251216_02_T1",
+          "date": "2025-12-06",
+          "time_utc": "05:33:27.6725650Z",
+          "cloud_cover": 9.21,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20251206_20251216_02_T1",
+          "date": "2025-12-06",
+          "time_utc": "05:33:51.5763130Z",
+          "cloud_cover": 52.07,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20251214_20251215_02_T1",
+          "date": "2025-12-14",
+          "time_utc": "05:33:33.1120499Z",
+          "cloud_cover": 0.16,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20251214_20251215_02_T1",
+          "date": "2025-12-14",
+          "time_utc": "05:33:57.0157740Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20251222_20260105_02_T1",
+          "date": "2025-12-22",
+          "time_utc": "05:33:27.8356810Z",
+          "cloud_cover": 48.31,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20251222_20260105_02_T1",
+          "date": "2025-12-22",
+          "time_utc": "05:33:51.7351930Z",
+          "cloud_cover": 42.53,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20251230_20260102_02_T1",
+          "date": "2025-12-30",
+          "time_utc": "05:33:36.9899870Z",
+          "cloud_cover": 0.14,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20251230_20260102_02_T1",
+          "date": "2025-12-30",
+          "time_utc": "05:34:00.8937110Z",
+          "cloud_cover": 0.01,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260107_20260114_02_T1",
+          "date": "2026-01-07",
+          "time_utc": "05:33:18.0191910Z",
+          "cloud_cover": 0.04,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260107_20260114_02_T1",
+          "date": "2026-01-07",
+          "time_utc": "05:33:41.9144670Z",
+          "cloud_cover": 0.04,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260115_20260116_02_T1",
+          "date": "2026-01-15",
+          "time_utc": "05:33:31.9693530Z",
+          "cloud_cover": 0.31,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260115_20260116_02_T1",
+          "date": "2026-01-15",
+          "time_utc": "05:33:55.8688400Z",
+          "cloud_cover": 0.01,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260123_20260130_02_T1",
+          "date": "2026-01-23",
+          "time_utc": "05:33:19.3109339Z",
+          "cloud_cover": 7.01,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260123_20260130_02_T1",
+          "date": "2026-01-23",
+          "time_utc": "05:33:43.2104460Z",
+          "cloud_cover": 3.63,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260208_20260218_02_T1",
+          "date": "2026-02-08",
+          "time_utc": "05:33:14.0941730Z",
+          "cloud_cover": 0.45,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260208_20260218_02_T1",
+          "date": "2026-02-08",
+          "time_utc": "05:33:37.9936850Z",
+          "cloud_cover": 0.05,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260216_20260217_02_T1",
+          "date": "2026-02-16",
+          "time_utc": "05:33:22.6453930Z",
+          "cloud_cover": 0.94,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20260216_20260217_02_T1",
+          "date": "2026-02-16",
+          "time_utc": "05:33:46.5448810Z",
+          "cloud_cover": 0.07,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260224_20260227_02_T1",
+          "date": "2026-02-24",
+          "time_utc": "05:33:12.7557870Z",
+          "cloud_cover": 3.35,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20260224_20260227_02_T1",
+          "date": "2026-02-24",
+          "time_utc": "05:33:36.6468279Z",
+          "cloud_cover": 0.03,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        }
+      ]
+    },
+    "monsoon_2026": {
+      "season": "monsoon",
+      "year": 2026,
+      "effective_year": 2026,
+      "date_window": "2026-06-08 to 2026-09-28",
+      "first_acquisition_date": "2026-06-08",
+      "last_acquisition_date": "2026-09-28",
+      "n_scenes": 6,
+      "scenes": [
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260608_20260609_02_T1",
+          "date": "2026-06-08",
+          "time_utc": "05:32:27.5306000Z",
+          "cloud_cover": 25.54,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260616_20260626_02_T1",
+          "date": "2026-06-16",
+          "time_utc": "05:32:23.2341360Z",
+          "cloud_cover": 25.68,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260624_20260625_02_T1",
+          "date": "2026-06-24",
+          "time_utc": "05:32:38.9903070Z",
+          "cloud_cover": 70.59,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260710_20260711_02_T1",
+          "date": "2026-07-10",
+          "time_utc": "05:32:43.1220059Z",
+          "cloud_cover": 65.37,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20260920_20260930_02_T1",
+          "date": "2026-09-20",
+          "time_utc": "05:33:08.3975949Z",
+          "cloud_cover": 25.19,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20260928_20260929_02_T1",
+          "date": "2026-09-28",
+          "time_utc": "05:33:16.6927930Z",
+          "cloud_cover": 27.37,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        }
+      ]
+    },
+    "post_monsoon_2025": {
+      "season": "post_monsoon",
+      "year": 2025,
+      "effective_year": 2025,
+      "date_window": "2025-10-03 to 2025-11-28",
+      "first_acquisition_date": "2025-10-03",
+      "last_acquisition_date": "2025-11-28",
+      "n_scenes": 14,
+      "scenes": [
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20251003_20251114_02_T1",
+          "date": "2025-10-03",
+          "time_utc": "05:33:25.1381440Z",
+          "cloud_cover": 25.72,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20251003_20251115_02_T1",
+          "date": "2025-10-03",
+          "time_utc": "05:33:49.0334210Z",
+          "cloud_cover": 44.82,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20251011_20251012_02_T1",
+          "date": "2025-10-11",
+          "time_utc": "05:33:33.8201290Z",
+          "cloud_cover": 0.01,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20251011_20251012_02_T1",
+          "date": "2025-10-11",
+          "time_utc": "05:33:57.7196170Z",
+          "cloud_cover": 0.55,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20251019_20251119_02_T1",
+          "date": "2025-10-19",
+          "time_utc": "05:33:27.2490970Z",
+          "cloud_cover": 9.79,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20251019_20251119_02_T1",
+          "date": "2025-10-19",
+          "time_utc": "05:33:51.1486090Z",
+          "cloud_cover": 10.69,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20251104_20251126_02_T1",
+          "date": "2025-11-04",
+          "time_utc": "05:33:30.2891920Z",
+          "cloud_cover": 23.12,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20251104_20251126_02_T1",
+          "date": "2025-11-04",
+          "time_utc": "05:33:54.1887040Z",
+          "cloud_cover": 30.26,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20251112_20251115_02_T1",
+          "date": "2025-11-12",
+          "time_utc": "05:33:35.5537230Z",
+          "cloud_cover": 0.03,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20251112_20251115_02_T1",
+          "date": "2025-11-12",
+          "time_utc": "05:33:59.4532100Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148045_20251120_20251202_02_T1",
+          "date": "2025-11-20",
+          "time_utc": "05:33:30.4181780Z",
+          "cloud_cover": 0.32,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC08/C02/T1_L2",
+          "sensor": "Landsat 8 OLI/TIRS",
+          "scene_id": "LC08_L2SP_148046_20251120_20251202_02_T1",
+          "date": "2025-11-20",
+          "time_utc": "05:33:54.3176910Z",
+          "cloud_cover": 0,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148045_20251128_20251129_02_T1",
+          "date": "2025-11-28",
+          "time_utc": "05:33:33.8207229Z",
+          "cloud_cover": 0.02,
+          "path": 148,
+          "row": 45,
+          "passes_cloud_80": true
+        },
+        {
+          "collection": "LANDSAT/LC09/C02/T1_L2",
+          "sensor": "Landsat 9 OLI-2/TIRS-2",
+          "scene_id": "LC09_L2SP_148046_20251128_20251129_02_T1",
+          "date": "2025-11-28",
+          "time_utc": "05:33:57.7286820Z",
+          "cloud_cover": 0.05,
+          "path": 148,
+          "row": 46,
+          "passes_cloud_80": true
+        }
+      ]
+    }
+  }
+}

@@ -114,6 +114,7 @@ export default function HPILegend({
   const isMonsoonPartial = season === "monsoon" || (stats?.is_partial ?? false);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showSceneList, setShowSceneList] = useState(false);
 
   const getLegendTitle = () => {
     switch (layerMode) {
@@ -286,12 +287,53 @@ export default function HPILegend({
                   {stats?.date_window ?? fallback.dateWindow}
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-500">Contributing Scenes:</span>
-                <span className="font-semibold text-slate-800">
-                  {stats?.n_scenes ?? fallback.sceneCount}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-slate-800">
+                    {stats?.n_scenes ?? fallback.sceneCount}
+                  </span>
+                  {stats?.scenes && stats.scenes.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSceneList((prev) => !prev)}
+                      aria-expanded={showSceneList}
+                      aria-label="Toggle contributing scenes list"
+                      className="text-[9px] text-indigo-600 hover:text-indigo-800 underline font-medium cursor-pointer"
+                    >
+                      {showSceneList ? "Hide list" : "View scene list"}
+                    </button>
+                  )}
+                </div>
               </div>
+              {showSceneList && stats?.scenes && stats.scenes.length > 0 && (
+                <div className="mt-1 p-2 rounded border border-indigo-200 bg-indigo-50/70 text-[9px] space-y-1.5 max-h-40 overflow-y-auto">
+                  <div className="flex justify-between items-center font-bold text-slate-700 pb-0.5 border-b border-indigo-100">
+                    <span>Contributing Scenes ({stats.scenes.length})</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowSceneList(false)}
+                      className="text-slate-400 hover:text-slate-700 font-bold px-1"
+                      aria-label="Close scene list"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="space-y-1 divide-y divide-indigo-100/60 font-mono">
+                    {stats.scenes.map((sc) => (
+                      <div key={sc.scene_id} className="pt-1 first:pt-0">
+                        <div className="font-semibold text-indigo-950 truncate" title={sc.scene_id}>
+                          {sc.scene_id}
+                        </div>
+                        <div className="flex justify-between text-slate-500 text-[8px] font-sans">
+                          <span>{sc.date} • {sc.sensor.replace("Landsat ", "L")}</span>
+                          <span>WRS {sc.path}/{sc.row} • Cloud: {typeof sc.cloud_cover === 'number' ? sc.cloud_cover.toFixed(1) : sc.cloud_cover}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-slate-500">Valid Cells:</span>
                 <span className="font-semibold text-slate-800">

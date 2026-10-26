@@ -83,6 +83,18 @@ export interface CellQueryFilters {
   offset?: number;
 }
 
+export interface SceneProvenanceItem {
+  collection: string;
+  sensor: string;
+  scene_id: string;
+  date: string;
+  time_utc?: string;
+  cloud_cover: number;
+  path: number;
+  row: number;
+  passes_cloud_80?: boolean;
+}
+
 export interface LSTStats {
   season: SeasonName;
   year: number;
@@ -103,6 +115,7 @@ export interface LSTStats {
   layer_type?: string;
   sensor_source?: string;
   compositing_statistic?: string;
+  scenes?: SceneProvenanceItem[];
 }
 
 export interface ModelValidationSummary {

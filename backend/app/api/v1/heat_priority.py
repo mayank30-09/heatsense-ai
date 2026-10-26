@@ -105,34 +105,69 @@ class LSTStatsResponse(BaseModel):
     layer_type: str = "Observed seasonal composite"
     sensor_source: str = "Landsat 8/9 Collection 2 Level-2 ST_B10 (LST)"
     compositing_statistic: str = "pixel-wise seasonal median (median)"
+    scenes: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Authoritative scene metadata list for this seasonal composite",
+    )
 
 
-SEASON_PROVENANCE: dict[tuple[str, int], dict[str, Any]] = {
-    ("summer", 2026): {
-        "n_scenes": 22,
-        "first_acquisition_date": "2026-03-04",
-        "last_acquisition_date": "2026-05-31",
-        "date_window": "2026-03-04 to 2026-05-31",
-    },
-    ("winter", 2026): {
-        "n_scenes": 20,
-        "first_acquisition_date": "2025-12-06",
-        "last_acquisition_date": "2026-02-24",
-        "date_window": "2025-12-06 to 2026-02-24",
-    },
-    ("monsoon", 2026): {
-        "n_scenes": 6,
-        "first_acquisition_date": "2026-06-08",
-        "last_acquisition_date": "2026-09-28",
-        "date_window": "2026-06-08 to 2026-09-28",
-    },
-    ("post_monsoon", 2025): {
-        "n_scenes": 14,
-        "first_acquisition_date": "2025-10-03",
-        "last_acquisition_date": "2025-11-28",
-        "date_window": "2025-10-03 to 2025-11-28",
-    },
-}
+def load_seasonal_scene_manifest() -> dict[tuple[str, int], dict[str, Any]]:
+    """Load authoritative seasonal scene manifest from docs/provenance/seasonal_scene_manifest.json."""
+    manifest_path = PROJECT_ROOT / "docs" / "provenance" / "seasonal_scene_manifest.json"
+    prov: dict[tuple[str, int], dict[str, Any]] = {}
+    if manifest_path.exists():
+        try:
+            with open(manifest_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                seasons_dict = data.get("seasons", {})
+                for _season_key, season_data in seasons_dict.items():
+                    s_name = season_data.get("season")
+                    s_year = season_data.get("effective_year", season_data.get("year"))
+                    if s_name and s_year:
+                        prov[(s_name, s_year)] = {
+                            "n_scenes": season_data.get("n_scenes"),
+                            "first_acquisition_date": season_data.get("first_acquisition_date"),
+                            "last_acquisition_date": season_data.get("last_acquisition_date"),
+                            "date_window": season_data.get("date_window"),
+                            "scenes": season_data.get("scenes", []),
+                        }
+        except Exception:
+            pass
+    if not prov:
+        prov = {
+            ("summer", 2026): {
+                "n_scenes": 22,
+                "first_acquisition_date": "2026-03-04",
+                "last_acquisition_date": "2026-05-31",
+                "date_window": "2026-03-04 to 2026-05-31",
+                "scenes": [],
+            },
+            ("winter", 2026): {
+                "n_scenes": 20,
+                "first_acquisition_date": "2025-12-06",
+                "last_acquisition_date": "2026-02-24",
+                "date_window": "2025-12-06 to 2026-02-24",
+                "scenes": [],
+            },
+            ("monsoon", 2026): {
+                "n_scenes": 6,
+                "first_acquisition_date": "2026-06-08",
+                "last_acquisition_date": "2026-09-28",
+                "date_window": "2026-06-08 to 2026-09-28",
+                "scenes": [],
+            },
+            ("post_monsoon", 2025): {
+                "n_scenes": 14,
+                "first_acquisition_date": "2025-10-03",
+                "last_acquisition_date": "2025-11-28",
+                "date_window": "2025-10-03 to 2025-11-28",
+                "scenes": [],
+            },
+        }
+    return prov
+
+
+SEASON_PROVENANCE: dict[tuple[str, int], dict[str, Any]] = load_seasonal_scene_manifest()
 
 
 class GridCellScoreItem(BaseModel):
@@ -301,6 +336,7 @@ def get_heat_priority_lst_stats(
         first_acquisition_date=prov.get("first_acquisition_date"),
         last_acquisition_date=prov.get("last_acquisition_date"),
         date_window=prov.get("date_window"),
+        scenes=prov.get("scenes", []),
     )
     content_hash = hashlib.sha256(stats_resp.model_dump_json().encode("utf-8")).hexdigest()[:16]
     response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"

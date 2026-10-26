@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import math
+from pathlib import Path
 from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import select
@@ -358,5 +359,81 @@ def test_heat_priority_model_validation_endpoint() -> None:
     assert qc["holdout_evaluation"]["mae"] < 1.35
     assert "spatial_split_integrity" in qc
     assert qc["spatial_split_integrity"]["disjointness_verified"] is True
+
+
+def test_seasonal_scene_manifest_structure_and_counts() -> None:
+    """Verify seasonal scene manifest structure, metadata, and scene counts."""
+    manifest_path = Path(__file__).resolve().parents[2] / "docs" / "provenance" / "seasonal_scene_manifest.json"
+    assert manifest_path.exists(), f"Manifest file missing at {manifest_path}"
+
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert "metadata" in data
+    assert "seasons" in data
+
+    meta = data["metadata"]
+    assert meta["processing_level"] == "L2SP"
+    assert "LANDSAT/LC08/C02/T1_L2" in meta["collections"]
+    assert "LANDSAT/LC09/C02/T1_L2" in meta["collections"]
+    assert meta["cloud_cover_filter_max_percent"] == 80.0
+    assert meta["canonical_smc_grid_cells"] == 49747
+    assert "reconciliation_notes" in meta
+    assert "monsoon_count_discrepancy" in meta["reconciliation_notes"]
+
+    seasons = data["seasons"]
+    expected_counts = {
+        "summer_2026": 22,
+        "winter_2026": 20,
+        "monsoon_2026": 6,
+        "post_monsoon_2025": 14,
+    }
+
+    for s_key, exp_count in expected_counts.items():
+        assert s_key in seasons, f"Missing season key {s_key} in manifest"
+        s_data = seasons[s_key]
+        assert s_data["n_scenes"] == exp_count
+        assert len(s_data["scenes"]) == exp_count
+        assert s_data["first_acquisition_date"] <= s_data["last_acquisition_date"]
+
+        # Verify individual scene metadata integrity
+        for sc in s_data["scenes"]:
+            assert sc["scene_id"].startswith(("LC08_", "LC09_"))
+            assert sc["collection"] in meta["collections"]
+            assert sc["cloud_cover"] <= 80.0
+            assert sc["path"] == 148
+            assert sc["row"] in [45, 46]
+            assert sc["passes_cloud_80"] is True
+
+
+def test_seasonal_scene_manifest_api_reconciliation() -> None:
+    """Verify GET /api/v1/heat-priority/lst-stats reconciles exactly with manifest scenes and counts."""
+    manifest_path = Path(__file__).resolve().parents[2] / "docs" / "provenance" / "seasonal_scene_manifest.json"
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        manifest = json.load(f)["seasons"]
+
+    test_cases = [
+        ("summer", 2026, "summer_2026"),
+        ("winter", 2026, "winter_2026"),
+        ("monsoon", 2026, "monsoon_2026"),
+        ("post_monsoon", 2026, "post_monsoon_2025"),
+    ]
+
+    for season_name, req_year, manifest_key in test_cases:
+        resp = client.get(f"/api/v1/heat-priority/lst-stats?season={season_name}&year={req_year}")
+        assert resp.status_code == 200, f"Failed for {season_name} {req_year}: {resp.text}"
+        data = resp.json()
+        expected = manifest[manifest_key]
+
+        assert data["n_scenes"] == expected["n_scenes"]
+        assert data["date_window"] == expected["date_window"]
+        assert data["first_acquisition_date"] == expected["first_acquisition_date"]
+        assert data["last_acquisition_date"] == expected["last_acquisition_date"]
+        assert len(data["scenes"]) == expected["n_scenes"]
+
+        manifest_scene_ids = [sc["scene_id"] for sc in expected["scenes"]]
+        api_scene_ids = [sc["scene_id"] for sc in data["scenes"]]
+        assert api_scene_ids == manifest_scene_ids
+
 
 
