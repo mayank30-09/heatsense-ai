@@ -285,15 +285,15 @@ export default function InterventionExplorer({
                 Stage D Specification
               </span>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Surface Energy Balance Cooling Catalog
+                Linearized Heat Dissipation Cooling Catalog
               </span>
             </div>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
               Surat Urban Cooling Intervention Explorer
             </h2>
             <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-300">
-              Site-specific candidate cooling interventions calibrated via Surface Energy Balance
-              equations (R<sub>n</sub> = H + LE + G) and CPWD/SMC schedule of rates across Surat’s
+              Site-specific candidate cooling interventions calibrated via linearized heat dissipation
+              equations (h<sub>eff</sub> = 45.6 W/(m²·K)) and indicative engineering cost benchmarks across Surat’s
               highest-vulnerability analytical grid cells.
             </p>
           </div>
@@ -946,7 +946,7 @@ export default function InterventionExplorer({
                     <td className="p-3 font-semibold text-slate-500">Evidence Standard</td>
                     {selectedForCompare.map((c) => (
                       <td key={c.candidate_id} className="p-3 text-[11px] text-slate-600">
-                        {c.evidence_status} (Surface Energy Balance)
+                        {c.evidence_status} (Linearized Heat Dissipation)
                       </td>
                     ))}
                   </tr>
@@ -1014,7 +1014,7 @@ export default function InterventionExplorer({
             {/* Thermodynamics Breakdown Card */}
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Surface Energy Balance Physics (Surat Summer Overpass)
+                Linearized Heat Dissipation Physics (Surat Summer Overpass)
               </h4>
               <div className="mt-2 grid grid-cols-2 gap-3 text-xs">
                 <div className="rounded-lg bg-white p-3 border border-slate-200">
@@ -1049,7 +1049,7 @@ export default function InterventionExplorer({
             {/* Cost Breakdown */}
             <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Cost Breakdown (CPWD / SMC Schedule of Rates)
+                Cost Breakdown (Indicative Engineering Benchmarks)
               </h4>
               <div className="mt-2 flex items-center justify-between text-xs">
                 <span className="text-slate-600">Total Capital + 3-Yr Maintenance:</span>
@@ -1074,7 +1074,7 @@ export default function InterventionExplorer({
               <div className="font-bold">Evidence Standard:</div>
               <p className="mt-1 text-indigo-900 leading-relaxed">
                 {selectedCandidate.evidence_status} (Akbari 2001, Santamouris 2017, Bowler 2010; qualitative co-benefits from literature, to be verified).
-                Calculated strictly via calibrated surface energy balance and microclimate
+                Calculated strictly via calibrated linearized heat dissipation and microclimate
                 dispersion, avoiding machine learning regression coefficient fallacy.
               </p>
             </div>

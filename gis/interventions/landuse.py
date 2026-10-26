@@ -249,18 +249,18 @@ class LanduseClassifier:
             typology = "residential_rcc_roof"
             evidence_notes.append(f"Engineered residential concrete roof structure identified ({b_count} structures, {tot_roof:.1f} m² total / inferred).")
 
-        # 9. Vacant Public Open Land
+        # 9. Unbuilt Open Ground (Potential Public Greening)
         elif (
             (is_public_ownership is True and (b_count == 0 and tot_roof == 0))
             or (is_public_ownership is not False and veg_deficit is not None and veg_deficit >= 0.50 and (built_density is None or built_density < 0.50) and (ndbi is None or ndbi <= 0.10))
         ):
             typology = "vacant_public_open_land"
-            evidence_notes.append("Unbuilt public / municipal open land parcel (inferred from vegetation deficit and unbuilt footprint).")
+            evidence_notes.append("Spectral site-type heuristic: unbuilt low-canopy open ground. Note: Satellite features do not verify legal ownership or vacancy; cadastral verification required.")
 
-        # 10. Vacant Private Land
+        # 10. Unbuilt Open Ground (Private / Non-Municipal)
         elif is_public_ownership is False and (b_count == 0 and tot_roof == 0):
             typology = "vacant_private_land"
-            evidence_notes.append("Unbuilt private open land parcel.")
+            evidence_notes.append("Spectral site-type heuristic: unbuilt open plot without municipal designation. Legal ownership requires cadastral verification.")
 
         # 11. Unclassified Fallback
         else:

@@ -18,15 +18,18 @@ This document consolidates known scientific, operational, computational, and ins
 
 ---
 
-## 2. Cooling Physics & Cost Parameters (Code Constants)
-- **Literature Attribution Unverified:** Unit costs (Tree: 3,500 INR, Cool Roof: 350 INR/m² + 5,000 fixed, Green Roof: 3,600 INR/m² + 15,000 fixed, Cool Pavement: 450 INR/m² + 8,000 fixed; defined in `gis/interventions/costs.py`) and physical cooling saturation caps:
+## 2. Intervention Cooling Physics, Cost Parameters & Land Tenure Guardrails
+- **Linearized Heat Dissipation Model vs. Numerical PDE/CFD Solvers:** The active Stage D engine implements an empirical first-order linearized heat dissipation model ($\Delta T_s = f_{\text{treated}} \times |\Delta T_{s,\text{skin}}| \times \eta_{\text{cell}}$) with effective surface thermal conductance $h_{\text{eff}} = 45.6\text{ W/(m}^2\cdot\text{K)}$ under Surat summer solar irradiance ($870\text{ W/m}^2$). The system **does not solve** full continuum partial differential equations (PDEs) or 3D computational fluid dynamics (CFD) boundary layers.
+- **Physical Saturation Caps & Empirical Bounds:** Parametric caps govern cell-scale maximum cooling:
   - Tree canopy cooling cap: **3.50°C**
   - Cool roof cooling cap: **2.50°C**
   - Green roof cooling cap: **2.00°C**
   - Cool pavement cooling cap: **1.80°C**
-  - Combined multi-intervention cap: **4.50°C**
-- **Status as Simulation Baselines:** These limits are parameterized code constants in `gis/interventions/cooling_effects.py` and `gis/interventions/costs.py`. Their exact empirical calibration to Surat's specific coastal tropical microclimate is unverified by local in-situ sensor networks.
-- **Interpretation:** Counterfactual cooling projections represent comparative decision-support simulations under stated assumptions, not guaranteed contractual microclimate outcomes.
+  - Combined multi-intervention cell ceiling: **4.50°C**
+- **Unverified In-Situ Microclimate Cooling:** These cooling effects are derived from peer-reviewed literature (Akbari 2001, Santamouris 2017, Bowler 2010). Their exact microclimatic realized cooling in Surat's coastal semi-arid / humid tropical setting is **unverified by local in-situ sensor networks**.
+- **Indicative Cost Engineering & Schedule Alignment:** Costs incorporate transparent civil engineering markups (18% GST, 12% contingency, 6% design/supervision, non-linear setup scaling $\text{Base} \times \sqrt{A/500}$, water tanker ₹120/kL, and 3-year/10-year whole-life maintenance). However, raw CPWD DSR and SMC annual rate contract schedules are not committed in the repository. All base unit rates are labeled `INDICATIVE_ASSUMPTION` with schedule alignment marked `UNVERIFIED_IN_REPO`.
+- **Land Tenure & Vacancy Heuristics:** High vegetation deficit ($V_{\text{def}} \ge 0.50$) and low NDBI identify unbuilt, permeable ground. Satellite spectral features **do not establish legal municipal ownership, reservation status, or confirmed legal vacancy**. Municipal cadastral records and Town Planning Scheme (TPS) maps must be surveyed prior to project sanction.
+- **Newer Interventions & Miyawaki Planting Guardrails:** The 7 newer intervention types (public parks, Miyawaki forests, bioswales, retention ponds, shaded parking, green walls, permeable cover) have `local_field_validated: False`. In particular, Miyawaki high-density planting cooling ($9.0^\circ\text{C}$ skin, $1.4^\circ\text{C}$ air) and 3-year establishment assumptions are unverified by municipal longitudinal field trials in Surat.
 
 ---
 

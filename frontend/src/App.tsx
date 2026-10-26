@@ -174,7 +174,7 @@ function AppContent() {
           <div className="scope-note">
             <div className="font-semibold text-slate-700">Stage C & D Specification</div>
             <p className="mt-1 text-slate-500 text-xs leading-relaxed">
-              Authoritative 100m analytical grid, multi-temporal Landsat thermal observations, and surface energy balance cooling optimization for SMC Surat.
+              Authoritative 100m analytical grid, multi-temporal Landsat thermal observations, and linearized heat dissipation cooling optimization for SMC Surat.
             </p>
           </div>
         </aside>
@@ -237,7 +237,7 @@ function AppContent() {
                     <h2>Intervention Candidate Explorer</h2>
                   </div>
                   <p className="muted">
-                    Surface energy balance cooling interventions for Surat Municipal Corporation
+                    Linearized heat dissipation cooling interventions for Surat Municipal Corporation
                   </p>
                 </div>
 

@@ -248,8 +248,8 @@ export default function ScenarioLab({
             </h2>
             <p className="mt-1 max-w-3xl text-sm text-slate-300">
               Explore multi-tier capital budget benchmarks and simulate custom intervention portfolios.
-              Calibrated strictly on Surface Energy Balance equations, CPWD/SMC schedule of rates, and
-              spatially constrained optimization.
+              Calibrated on linearized microclimate heat dissipation equations, indicative engineering
+              cost benchmarks, and spatially constrained optimization.
             </p>
           </div>
 
@@ -314,7 +314,7 @@ export default function ScenarioLab({
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                Calibrated SMC UHAP Benchmarks (Surface Energy Balance Optimization Model)
+                Calibrated SMC UHAP Benchmarks (Linearized Heat Dissipation Optimization Model)
               </h3>
               <span className="text-xs text-slate-500">
                 Select a benchmark scenario to inspect physics & resource allocation
@@ -872,7 +872,7 @@ export default function ScenarioLab({
               Scientific Diminishing Marginal Returns Note:
             </h4>
             <p className="mt-1 leading-relaxed">
-              Urban cooling investments follow non-linear returns governed by Surface Energy Balance (R<sub>n</sub> = H + LE + G).
+              Urban cooling investments follow non-linear returns governed by linearized heat dissipation and microclimatic boundary-layer attenuation.
               Pilot investment (₹50 Lakhs) captures the highest-heat chronic cells with rapid local relief (-0.73°C skin cooling).
               Scaling by 20x to ₹10 Crores expands the treated physical footprint by 12.6x (from 3.7 ha to 46.5 ha), delivering
               extensive citywide thermal buffering across all 7 SMC administrative zones.

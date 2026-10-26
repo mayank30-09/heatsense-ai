@@ -76,13 +76,13 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     reference: "gis/gee/seasonal_features.py; backend/app/api/v1/rasters.py",
   },
   {
-    term: "Surface Energy Balance Intervention Model",
-    abbreviation: "R_n = H + LE + G",
+    term: "Linearized Microclimate Heat Dissipation Model",
+    abbreviation: "Linearized Energy Balance (h_eff = 45.6 W/m²·K)",
     category: "Intervention Physics",
     summary:
-      "Microclimate cooling model governed by thermodynamic energy balance rather than statistical machine-learning regression coefficients.",
+      "First-order linearized heat dissipation model governed by empirical aerodynamic and radiative conductance, not numerical PDE or CFD solvers.",
     details:
-      "Stage D estimates local skin cooling (ΔT_skin) by calculating net radiation alterations (ΔR_n = -K↓·Δα), latent heat flux enhancements from tree transpiration (LE), and sensible heat flux reduction (H = h_eff · ΔT). Enforces physical saturation caps (max tree canopy cooling -3.5°C, cool roof -2.5°C, max combined -4.5°C) and sub-additive multi-intervention attenuation.",
+      "Stage D estimates local skin cooling (ΔT_skin) using a linearized surface heat dissipation equation (ΔT_s = f_treated · |ΔT_skin| · η_cell) with total effective conductance h_eff = 45.6 W/(m²·K) (radiative h_r = 6.5 W/(m²·K), convective h_c = 38.9 W/(m²·K)) under Surat summer solar irradiance (870 W/m²). This empirical formulation enforces physical saturation caps (e.g. tree canopy -3.5°C, cool roof -2.5°C, max combined -4.5°C) and sub-additive attenuation, but is not a full numerical CFD or PDE surface-energy-balance solver.",
     reference: "Akbari et al. (2001); Santamouris (2017); Bowler et al. (2010)",
   },
   {

@@ -19,8 +19,8 @@ interface Props {
 }
 
 const TYPOLOGY_LABELS: Record<string, string> = {
-  vacant_public_open_land: "Vacant Public Open Land",
-  vacant_private_land: "Vacant Private Land",
+  vacant_public_open_land: "Unbuilt Open Ground (Public Greening Candidate)",
+  vacant_private_land: "Unbuilt Open Ground (Private / Non-Municipal)",
   park_garden: "Park or Public Garden",
   water_adjacent: "Water-Adjacent Buffer",
   residential_rcc_roof: "Residential Engineered RCC Roof",
@@ -28,7 +28,7 @@ const TYPOLOGY_LABELS: Record<string, string> = {
   informal_settlement_roof: "Informal Settlement Roof",
   road_corridor: "Road Corridor & Verge",
   parking_paved_yard: "Parking Lot or Paved Yard",
-  institutional_campus: "Institutional Campus",
+  institutional_campus: "Institutional Campus (Heuristic)",
   unclassified: "Unclassified / Uncertain Land Parcel",
 };
 

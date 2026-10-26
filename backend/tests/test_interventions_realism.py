@@ -11,6 +11,8 @@ Covers Phase 5 Requirements (Item 11):
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 import pytest
 
 from gis.interventions import (
@@ -21,7 +23,11 @@ from gis.interventions import (
 )
 from gis.interventions.candidates import generate_candidate_for_cell
 from gis.interventions.costs import estimate_intervention_cost
-from gis.interventions.cooling_effects import estimate_cooling_effect
+from gis.interventions.cooling_effects import (
+    estimate_cooling_effect,
+    compute_combined_cooling,
+    MAX_COMBINED_CELL_COOLING_C,
+)
 from gis.interventions.feasibility import evaluate_candidate_feasibility
 from gis.interventions.landuse import LanduseClassifier
 from gis.interventions.optimization import (
@@ -32,6 +38,7 @@ from gis.interventions.recommendations import (
     PolygonSummary,
     generate_polygon_recommendations,
 )
+from backend.app.api.v1.interventions import list_available_scenarios
 
 
 # ---------------------------------------------------------------------------
@@ -255,12 +262,13 @@ def test_unclassified_parcel_requires_site_survey_and_returns_zero_recommendatio
 # Test 6: Realistic itemized engineering cost model with GST, contingency & WLC
 # ---------------------------------------------------------------------------
 def test_itemized_engineering_cost_model_breakdown():
-    """Verify itemized breakdown: GST 18%, contingency 12%, scaled setup, and whole-life cost."""
+    """Verify itemized breakdown: GST 18%, contingency 12%, scaled setup, indicative rates, and whole-life cost."""
     # Tree Canopy
     cost_base, cost_min, cost_max, meta = estimate_intervention_cost(
         InterventionType.TREE_CANOPY, usable_area_m2=0.0, tree_count=50, expected_cooling_c=1.5
     )
-    assert meta["rate_status"] == "INDICATIVE"
+    assert meta["rate_status"] == "INDICATIVE_ASSUMPTION"
+    assert "UNVERIFIED_IN_REPO" in meta["schedule_alignment"]
     assert meta["gst_18_pct"] > 0
     assert meta["contingency_cost"] > 0
     assert meta["site_setup_scaled_cost"] > 0
@@ -274,8 +282,127 @@ def test_itemized_engineering_cost_model_breakdown():
     r_cost, _, _, r_meta = estimate_intervention_cost(
         InterventionType.COOL_ROOF, usable_area_m2=1000.0, expected_cooling_c=2.0
     )
-    assert r_meta["rate_status"] == "INDICATIVE"
+    assert r_meta["rate_status"] == "INDICATIVE_ASSUMPTION"
+    assert "UNVERIFIED_IN_REPO" in r_meta["schedule_alignment"]
     assert r_meta["gst_18_pct"] > 0
     assert r_meta["contingency_cost"] > 0
     assert r_meta["whole_life_cost_per_c_m2"] > 0
     assert "CPWD" in r_meta["source_to_be_replaced"]
+
+
+# ---------------------------------------------------------------------------
+# Test 7: Land-use typologies contain no unsupported legal ownership claims
+# ---------------------------------------------------------------------------
+def test_landuse_typologies_no_unsupported_ownership_claims():
+    """Verify that unbuilt open land typologies state spectral heuristic nature and disclaim legal tenure/vacancy."""
+    config_path = Path(__file__).resolve().parents[2] / "gis" / "interventions" / "config" / "landuse_interventions.json"
+    assert config_path.is_file(), f"Missing typology config: {config_path}"
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Top-level legal disclaimer must be present
+    assert "legal_disclaimer" in data
+    assert "not imply legal" in data["legal_disclaimer"].lower()
+
+    typologies = data["typologies"]
+
+    # Vacant public open land must use spectral candidate language
+    pub_open = typologies["vacant_public_open_land"]
+    assert "Unbuilt Open Ground" in pub_open["title"]
+    assert "Candidate" in pub_open["title"]
+    assert "not confirm legal municipal ownership" in pub_open["description"].lower()
+
+    # Vacant private land must disclaim ownership certainty
+    priv_open = typologies["vacant_private_land"]
+    assert "Unbuilt Open Ground" in priv_open["title"]
+    assert "verified via municipal records" in priv_open["description"].lower()
+
+    # Institutional campus must state heuristic tag nature
+    campus = typologies["institutional_campus"]
+    assert "Heuristic" in campus["title"]
+    assert "cadastral verification" in campus["description"].lower()
+
+
+# ---------------------------------------------------------------------------
+# Test 8: Newer intervention types & Miyawaki have explicit unverified field guardrails
+# ---------------------------------------------------------------------------
+def test_newer_interventions_unverified_local_field_guardrails():
+    """Verify that newer intervention types do not claim verified local Surat in-situ field validation."""
+    newer_types = [
+        InterventionType.PUBLIC_PARK_NATIVE_TREES,
+        InterventionType.DENSE_MIYAWAKI_PLANTATION,
+        InterventionType.BIOSWALE_RAIN_GARDEN,
+        InterventionType.RAINWATER_FED_POND,
+        InterventionType.SHADED_PARKING_STRUCTURE,
+        InterventionType.GREEN_WALL,
+        InterventionType.PERMEABLE_GROUND_COVER,
+    ]
+
+    for itype in newer_types:
+        cooling, c_min, c_max, meta = estimate_cooling_effect(
+            intervention_type=itype,
+            usable_area_m2=2000.0,
+            tree_count=50,
+            baseline_lst_c=42.0,
+        )
+        assert meta["local_field_validated"] is False, f"{itype} must be flagged local_field_validated=False"
+        assert meta["saturation_cap_c"] > 0
+        assert cooling <= meta["saturation_cap_c"]
+
+    # Miyawaki planting must have explicit Surat caveat in provenance
+    _, _, _, miya_meta = estimate_cooling_effect(
+        InterventionType.DENSE_MIYAWAKI_PLANTATION, usable_area_m2=1000.0, baseline_lst_c=42.0
+    )
+    assert "UNVERIFIED IN SURAT" in miya_meta["provenance"]
+    assert "in-situ sensors" in miya_meta["provenance"]
+
+
+# ---------------------------------------------------------------------------
+# Test 9: Physical cooling caps and saturation bounds
+# ---------------------------------------------------------------------------
+def test_cooling_caps_and_saturation_bounds():
+    """Verify that all 11 intervention types enforce strict physical saturation bounds under excessive area."""
+    huge_area = 500_000.0  # 50 hectares
+    extreme_lst = 52.0
+
+    for itype in InterventionType:
+        cooling, c_min, c_max, meta = estimate_cooling_effect(
+            intervention_type=itype,
+            usable_area_m2=huge_area,
+            tree_count=5000,
+            baseline_lst_c=extreme_lst,
+        )
+        cap = meta["saturation_cap_c"]
+        assert cooling <= cap + 1e-6, f"{itype} cooling ({cooling}) exceeded saturation cap ({cap})"
+        assert c_max <= cap + 1e-6, f"{itype} max cooling ({c_max}) exceeded saturation cap ({cap})"
+
+    # Multi-intervention combined cooling ceiling (4.5°C)
+    large_effects = [3.5, 3.2, 2.8, 2.5, 2.0]
+    combined = compute_combined_cooling(large_effects)
+    assert combined <= MAX_COMBINED_CELL_COOLING_C, (
+        f"Combined cooling {combined} exceeded physical ceiling {MAX_COMBINED_CELL_COOLING_C}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test 10: Scenario budget consistency and provenance
+# ---------------------------------------------------------------------------
+def test_scenario_budget_consistency_and_provenance():
+    """Verify that reference scenarios obey budget ceilings and carry full optimizer provenance."""
+    scenarios = list_available_scenarios()
+    assert len(scenarios) == 3
+
+    for sc in scenarios:
+        assert sc["tier"] in ("low", "medium", "high")
+        assert sc["total_cost_inr"] <= sc["budget_inr"], (
+            f"Scenario {sc['scenario_name']} cost ({sc['total_cost_inr']}) exceeds budget ({sc['budget_inr']})"
+        )
+        assert sc["budget_utilized_percent"] <= 100.0
+        assert sc["budget_utilized_percent"] > 95.0  # Greedy knapsack achieves high budget utilization
+        assert sc["provenance"] == "PRECOMPUTED_OPTIMIZER_BENCHMARK"
+        assert sc["optimizer_algorithm"] == "BASELINE_GREEDY_KNAPSACK"
+        assert "greedy knapsack run" in sc["optimization_basis"]
+        assert "trees_count" in sc["breakdown"]
+        assert "cool_roof_m2" in sc["breakdown"]
+

@@ -11,11 +11,11 @@ CRITICAL ENGINEERING REALISM PRINCIPLES:
    - Water Supply / Municipal Tanker Provision
    - 3-Year and 10-Year Maintenance Horizons
    - Plant Mortality Replacement Provision (based on survival rate)
-2. All rates are explicitly marked as "INDICATIVE".
-3. Every rate specifies the exact official benchmark to be replaced at procurement:
-   - CPWD Delhi Schedule of Rates (DSR 2023-2024)
-   - SMC Parks and Gardens Annual Rate Contract
-   - Or explicitly tagged as "TO BE CONFIRMED" (no fabricated item numbers).
+2. All rates are explicitly marked as "INDICATIVE_ASSUMPTION".
+3. Every rate specifies the normative benchmark framework modeled for procurement:
+   - CPWD Delhi Schedule of Rates (DSR 2023-2024) [schedule unverified locally in repo]
+   - SMC Parks and Gardens Annual Rate Contract [schedule unverified locally in repo]
+   - Or explicitly tagged as "UNVERIFIED IN REPO" (no claim of committed source schedules).
 4. Calculates Whole-Life Cost (WLC) and WLC per degree-cell-area (INR / (°C·m²)).
 """
 
@@ -97,7 +97,7 @@ def estimate_intervention_cost(
 
         # Uncertainty bounds: ±20% market variance
         unc_frac = 0.20
-        source = "SMC Parks & Gardens Dept Annual Rate Contract for Plantation"
+        source = "Indicative engineering estimate modeled on SMC Parks & Gardens Dept Annual Rate Contract for Plantation (schedule unverified locally in repo)"
         unit_str = "INR per tree"
         quantity = count
 
@@ -128,7 +128,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.15
-        source = "CPWD DSR 2023 Item 12.58 / SMC Waterproofing & Painting Schedule"
+        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Item 12.58 / SMC Waterproofing & Painting Schedule (schedule unverified locally in repo)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -161,7 +161,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr + plant_replacement
 
         unc_frac = 0.25
-        source = "Specialized Vendor Quotes (e.g. Indian Green Building Council rate cards) [TO BE CONFIRMED]"
+        source = "Indicative engineering estimate modeled on Specialized Vendor Quotes (e.g. Indian Green Building Council rate cards) [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -192,7 +192,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.18
-        source = "CPWD DSR 2023 Item 16.68 / SMC Road Works Schedule"
+        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Item 16.68 / SMC Road Works Schedule (schedule unverified locally in repo)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -225,7 +225,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr + plant_replacement
 
         unc_frac = 0.22
-        source = "SMC Parks & Gardens Schedule / CPWD DSR 2023 Horticulture Works"
+        source = "Indicative engineering estimate modeled on SMC Parks & Gardens Schedule / CPWD DSR 2023 Horticulture Works (schedule unverified locally in repo)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -259,7 +259,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr + plant_replacement
 
         unc_frac = 0.25
-        source = "SMC CSR Plantation Rate Benchmarks [TO BE CONFIRMED]"
+        source = "Indicative engineering estimate modeled on SMC CSR Plantation Rate Benchmarks [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -292,7 +292,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr + plant_replacement
 
         unc_frac = 0.20
-        source = "CPWD DSR 2023 Roadside Drainage Works [TO BE CONFIRMED]"
+        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Roadside Drainage Works [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -325,7 +325,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.25
-        source = "SMC Water Works / Stormwater Drainage Schedule [TO BE CONFIRMED]"
+        source = "Indicative engineering estimate modeled on SMC Water Works / Stormwater Drainage Schedule [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -356,7 +356,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.15
-        source = "CPWD DSR 2023 Structural Steel & Fabric Works Item 10.25"
+        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Structural Steel & Fabric Works Item 10.25 (schedule unverified locally in repo)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -389,7 +389,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr + plant_replacement
 
         unc_frac = 0.22
-        source = "Commercial Vendor Quotations (IGBC / LEED India) [TO BE CONFIRMED]"
+        source = "Indicative engineering estimate modeled on Commercial Vendor Quotations (IGBC / LEED India) [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -420,7 +420,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.15
-        source = "CPWD DSR 2023 Item 16.12 Gravel and Aggregate Pathways"
+        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Item 16.12 Gravel and Aggregate Pathways (schedule unverified locally in repo)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -436,7 +436,8 @@ def estimate_intervention_cost(
     max_cost = round(capital_cost * (1.0 + unc_frac), 2)
 
     metadata: dict[str, Any] = {
-        "rate_status": "INDICATIVE",
+        "rate_status": "INDICATIVE_ASSUMPTION",
+        "schedule_alignment": "UNVERIFIED_IN_REPO (Model estimates based on published public norms; official schedule PDFs/CSVs not in repo)",
         "unit": unit_str,
         "quantity": quantity,
         "materials_cost": round(materials, 2),

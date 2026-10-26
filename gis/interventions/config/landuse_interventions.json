@@ -1,11 +1,12 @@
 {
-  "version": "1.0",
-  "last_updated": "2026-10-25",
+  "version": "1.1",
+  "last_updated": "2026-10-26",
   "description": "Evidence-based permissible urban heat mitigation interventions and engineering constraints per land-use parcel typology in Surat, Gujarat.",
+  "legal_disclaimer": "Land-use typologies are spectral and OpenStreetMap heuristic classifications for planning exploration only. They do NOT imply legal land ownership, property title, or confirmed vacancy.",
   "typologies": {
     "vacant_public_open_land": {
-      "title": "Vacant Public Open Land",
-      "description": "Unbuilt municipal or government-owned open plots, reserves, or municipal fallow land.",
+      "title": "Unbuilt Open Ground (Public Greening Candidate)",
+      "description": "Spectral site-type heuristic: low-built, low-canopy open ground suitable for municipal greening. Note: Satellite data identifies spectral openness and lack of structures; it does NOT confirm legal municipal ownership or legal vacancy, which must be verified via municipal cadastral records.",
       "needs_site_survey": false,
       "allowed_interventions": [
         "public_park_native_trees",
@@ -20,7 +21,7 @@
         "shaded_parking_structure"
       ],
       "prohibition_reasons": {
-        "cool_roof": "No building rooftop structure present on vacant open ground.",
+        "cool_roof": "No building rooftop structure present on unbuilt open ground.",
         "green_roof": "Requires structural engineered building slab; cannot be placed on ground.",
         "shaded_parking_structure": "Designated for greening and public parks rather than motorized vehicle parking."
       },
@@ -34,8 +35,8 @@
       }
     },
     "vacant_private_land": {
-      "title": "Vacant Private Land",
-      "description": "Privately owned unbuilt parcels awaiting commercial or residential development.",
+      "title": "Unbuilt Open Ground (Private / Non-Municipal)",
+      "description": "Spectral site-type heuristic: unbuilt open plot without municipal designation. Legal ownership tenure and planned private development must be verified via municipal records.",
       "needs_site_survey": false,
       "allowed_interventions": [
         "permeable_ground_cover",
@@ -283,8 +284,8 @@
       }
     },
     "institutional_campus": {
-      "title": "Institutional Campus",
-      "description": "Universities (SVNIT, VNSGU), government secretariats, municipal hospitals, and large school complexes with mixed roofs and grounds.",
+      "title": "Institutional Campus (Heuristic)",
+      "description": "Site classification heuristic based on OpenStreetMap educational, medical, or civic facility tags. Campus perimeter boundaries and institutional approvals require cadastral verification.",
       "needs_site_survey": false,
       "allowed_interventions": [
         "cool_roof",

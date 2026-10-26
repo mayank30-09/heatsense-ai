@@ -1,8 +1,13 @@
 """Calibrated Microclimate Cooling Effect Models for HEATSENSE AI.
 
 CRITICAL SCIENTIFIC PRINCIPLE:
-Cooling effects are derived strictly from empirical microclimate field literature
-and physical boundary-layer heat balance models for tropical urban climates.
+Cooling effects are modeled using an empirical linearized heat dissipation equation:
+    Delta T_s = f_treated * |Delta T_s,skin| * eta_cell
+where |Delta T_s,skin| is derived from effective thermal conductance h_eff = 45.6 W/(m²·K)
+and calibrated albedo/shading parameters under Surat May solar irradiance (870 W/m²).
+THIS ACTIVE CODE USES LINEARIZED FIRST-ORDER HEAT DISSIPATION AND EMPIRICAL LITERATURE
+SATURATION CAPS, NOT A NUMERICAL CFD OR PDE SURFACE-ENERGY-BALANCE CONTINUUM SOLVER.
+
 SHAP values from machine-learning models represent diagnostic decision-tree
 feature importance on satellite observables, NOT physical causal intervention impacts.
 SHAP VALUES MUST NEVER BE MULTIPLIED BY INTERVENTION SIZE TO PREDICT COOLING.
@@ -203,7 +208,7 @@ def estimate_cooling_effect(
         cooling = min(MAX_COOLING_COOL_ROOF_C, raw_cooling)
         unc = cooling * UNCERTAINTY_COOL_ROOF
         meta = {
-            "model": "Surface Energy Balance Albedo Model (Santamouris et al. 2017)",
+            "model": "Linearized Heat Dissipation Albedo Model (Santamouris et al. 2017)",
             "mechanism": f"Solar reflection (Delta-alpha = +{ALBEDO_SHIFT_COOL_ROOF_AGED:.2f}, ASTM D7897 weathered)",
             "direct_skin_cooling_c": SKIN_COOLING_COOL_ROOF_AGED_C,
             "air_cooling_c": AIR_COOLING_COOL_ROOF_C,
@@ -223,7 +228,7 @@ def estimate_cooling_effect(
         cooling = min(MAX_COOLING_GREEN_ROOF_C, raw_cooling)
         unc = cooling * UNCERTAINTY_GREEN_ROOF
         meta = {
-            "model": "Extensive Green Roof Heat-Flux Model (Akbari et al. 2001)",
+            "model": "Extensive Green Roof Linearized Heat-Flux Model (Akbari et al. 2001)",
             "mechanism": "Substrate thermal mass + vegetation canopy transpiration",
             "direct_skin_cooling_c": SKIN_COOLING_GREEN_ROOF_C,
             "air_cooling_c": AIR_COOLING_GREEN_ROOF_C,
@@ -273,7 +278,8 @@ def estimate_cooling_effect(
             "water_need": "Moderate-High (25-35 L/m²/week in summer; recycled water preferred) [ASSUMPTION]",
             "maintenance_burden": "High (mowing, weeding, 3-year survival replacement, watering)",
             "construction_time": "4-8 months initial works (5-7 years full maturity)",
-            "provenance": "DERIVED (Beer-Lambert canopy extinction + turf latent heat, Bowler et al. 2010)",
+            "local_field_validated": False,
+            "provenance": "ASSUMPTION / DERIVED (Beer-Lambert canopy extinction + turf latent heat, Bowler et al. 2010; unverified in-situ in Surat)",
         }
         return cooling, max(0.2, cooling - unc), min(3.80, cooling + unc), meta
 
@@ -295,7 +301,8 @@ def estimate_cooling_effect(
             "water_need": "High in Years 1-2 (40-50 L/m²/week); self-sustaining post Year 3 under mulch [ASSUMPTION]",
             "maintenance_burden": "High in Years 1-2 (intensive weeding & composting); minimal post Year 3",
             "construction_time": "2-3 months planting (24-36 months to dense micro-forest)",
-            "provenance": "ASSUMPTION (Miyawaki afforestation method in semi-arid coastal Gujarat)",
+            "local_field_validated": False,
+            "provenance": "UNVERIFIED IN SURAT: High-density Miyawaki planting microclimate cooling values (9.0°C skin, 1.4°C air) and 3-year establishment assumptions are unverified by in-situ sensors in Surat's coastal semi-arid / humid tropical climate.",
         }
         return cooling, max(0.2, cooling - unc), min(4.00, cooling + unc), meta
 
@@ -317,7 +324,8 @@ def estimate_cooling_effect(
             "water_need": "Low (monsoon stormwater fed; 10 L/m²/week dry-spell supplement for native grasses) [ASSUMPTION]",
             "maintenance_burden": "Moderate (sediment desilting, trash cleanout, perennial pruning)",
             "construction_time": "1-2 months",
-            "provenance": "ASSUMPTION (bioretention surface energy balance)",
+            "local_field_validated": False,
+            "provenance": "ASSUMPTION (bioretention surface energy balance; unverified local Surat field effect)",
         }
         return cooling, max(0.1, cooling - unc), min(2.20, cooling + unc), meta
 
@@ -339,7 +347,8 @@ def estimate_cooling_effect(
             "water_need": "Continuous dedicated catchment (>= 5x pond area) or treated wastewater replenishment (15 mm/day evaporation loss)",
             "maintenance_burden": "High (algal bloom aeration, sediment dredging, vector mosquito control)",
             "construction_time": "3-6 months",
-            "provenance": "SOURCED (Theeuwes et al. 2013; modeled mainly as air-temperature effect)",
+            "local_field_validated": False,
+            "provenance": "ASSUMPTION / SOURCED (Theeuwes et al. 2013; modeled mainly as air-temperature effect; unverified local Surat water body effect)",
         }
         return cooling, max(0.1, cooling - unc), min(1.50, cooling + unc), meta
 
@@ -361,7 +370,8 @@ def estimate_cooling_effect(
             "water_need": "None (zero water)",
             "maintenance_burden": "Low (annual structural tension inspection and fabric washing)",
             "construction_time": "1-3 months",
-            "provenance": "DERIVED: Total solar irradiance interception on dark asphalt (Akbari et al. 2001)",
+            "local_field_validated": False,
+            "provenance": "DERIVED: Total solar irradiance interception on dark asphalt (Akbari et al. 2001; unverified local Surat parking effect)",
         }
         return cooling, max(0.15, cooling - unc), min(3.00, cooling + unc), meta
 
@@ -383,7 +393,8 @@ def estimate_cooling_effect(
             "water_need": "High (automated drip irrigation, 15-25 L/m²/week) [ASSUMPTION]",
             "maintenance_burden": "High (drip emitter inspection, vertical pruning, root containment)",
             "construction_time": "1-2 months",
-            "provenance": "ASSUMPTION (Perez et al. 2014 vertical greenery review)",
+            "local_field_validated": False,
+            "provenance": "ASSUMPTION (Perez et al. 2014 vertical greenery review; unverified local Surat facade effect)",
         }
         return cooling, max(0.1, cooling - unc), min(1.80, cooling + unc), meta
 
@@ -405,7 +416,8 @@ def estimate_cooling_effect(
             "water_need": "None (zero water, self-draining)",
             "maintenance_burden": "Low (periodic gravel replenishment and grading)",
             "construction_time": "2-4 weeks",
-            "provenance": "DERIVED: Substrate conduction and porosity modification (Santamouris 2017)",
+            "local_field_validated": False,
+            "provenance": "DERIVED: Substrate conduction and porosity modification (Santamouris 2017; unverified local Surat ground effect)",
         }
         return cooling, max(0.1, cooling - unc), min(1.90, cooling + unc), meta
 

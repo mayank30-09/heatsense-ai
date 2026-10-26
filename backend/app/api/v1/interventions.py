@@ -9,13 +9,17 @@ Exposes:
 
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from pydantic import BaseModel, Field
 import pandas as pd
 from sqlalchemy import select, and_
 from sqlalchemy.orm import Session
+
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 
 from backend.app.config import get_settings
 from backend.app.core.auth import User, UserRole, require_planner_or_admin
@@ -451,58 +455,96 @@ def optimize_interventions(
 
 @router.get("/scenarios", response_model=list[dict[str, Any]])
 def list_available_scenarios():
-    """List reference urban heat mitigation budget scenarios for Surat Municipal Corporation."""
+    """List reference urban heat mitigation budget scenarios for Surat Municipal Corporation with full provenance."""
+    summary_path = PROJECT_ROOT / "docs" / "validation" / "scenario_summary.json"
+    scenario_data: dict[str, Any] = {}
+    if summary_path.is_file():
+        try:
+            with open(summary_path, "r", encoding="utf-8") as f:
+                scenario_data = json.load(f)
+        except Exception:
+            scenario_data = {}
+
+    notes = scenario_data.get("notes", {})
+    low_data = scenario_data.get("low", {})
+    med_data = scenario_data.get("medium", {})
+    high_data = scenario_data.get("high", {})
+
     return [
         {
             "scenario_name": "SMC Neighborhood Cool Corridors (Pilot Tier)",
             "tier": "low",
-            "budget_inr": 5000000.0,  # 50 Lakhs INR
+            "budget_inr": low_data.get("budget_limit", 5000000.0),
+            "total_cost_inr": low_data.get("total_cost", 4972500.0),
+            "budget_utilized_percent": round((low_data.get("total_cost", 4972500.0) / low_data.get("budget_limit", 5000000.0)) * 100, 2),
             "target_focus": "Targeted pilot cooling for extreme chronic hotspots in vulnerable wards",
             "recommended_types": ["tree_canopy", "cool_roof"],
-            "treated_cells": 39,
-            "total_treated_m2": 36915.0,
-            "mean_dlst_treated": [-0.5, -0.73, -1.0],
-            "peak_hotspot_dlst": [-0.54, -0.78, -1.07],
-            "breakdown": {
+            "treated_cells": low_data.get("treated_cells", 39),
+            "total_treated_m2": low_data.get("total_treated_m2", 36915.0),
+            "pct_city_area_treated": low_data.get("pct_city_area_treated", 0.007),
+            "mean_dlst_treated": low_data.get("mean_dlst_treated", [-0.5, -0.73, -1.0]),
+            "peak_hotspot_dlst": low_data.get("peak_hotspot_dlst", [-0.54, -0.78, -1.07]),
+            "citywide_mean_dlst": low_data.get("citywide_mean_dlst", [-0.0004, -0.0006, -0.0008]),
+            "breakdown": low_data.get("breakdown", {
                 "cool_roof_m2": 7500.0,
                 "cool_paver_m2": 0.0,
                 "green_roof_m2": 0.0,
                 "trees_count": 585,
-            },
+            }),
+            "provenance": "PRECOMPUTED_OPTIMIZER_BENCHMARK",
+            "optimizer_algorithm": "BASELINE_GREEDY_KNAPSACK",
+            "optimization_basis": "Derived from greedy knapsack run on Stage C HPI priority grid under physical feasibility constraints",
+            "maturity_notes": notes.get("tree_maturity_state", "Evaluated at mature canopy (Year 7-10)."),
         },
         {
             "scenario_name": "SMC Smart City Phase 1: High-Priority Hotspots",
             "tier": "medium",
-            "budget_inr": 25000000.0,  # 2.5 Crore INR
+            "budget_inr": med_data.get("budget_limit", 25000000.0),
+            "total_cost_inr": med_data.get("total_cost", 24972000.0),
+            "budget_utilized_percent": round((med_data.get("total_cost", 24972000.0) / med_data.get("budget_limit", 25000000.0)) * 100, 2),
             "target_focus": "Chronic hotspots and central commercial wards across core municipal zones",
             "recommended_types": ["tree_canopy", "cool_roof", "cool_pavement"],
-            "treated_cells": 138,
-            "total_treated_m2": 152130.0,
-            "mean_dlst_treated": [-0.57, -0.83, -1.14],
-            "peak_hotspot_dlst": [-0.62, -0.9, -1.23],
-            "breakdown": {
+            "treated_cells": med_data.get("treated_cells", 138),
+            "total_treated_m2": med_data.get("total_treated_m2", 152130.0),
+            "pct_city_area_treated": med_data.get("pct_city_area_treated", 0.031),
+            "mean_dlst_treated": med_data.get("mean_dlst_treated", [-0.57, -0.83, -1.14]),
+            "peak_hotspot_dlst": med_data.get("peak_hotspot_dlst", [-0.62, -0.9, -1.23]),
+            "citywide_mean_dlst": med_data.get("citywide_mean_dlst", [-0.0016, -0.0023, -0.0032]),
+            "breakdown": med_data.get("breakdown", {
                 "cool_roof_m2": 30240.0,
                 "cool_paver_m2": 10800.0,
                 "green_roof_m2": 0.0,
                 "trees_count": 2208,
-            },
+            }),
+            "provenance": "PRECOMPUTED_OPTIMIZER_BENCHMARK",
+            "optimizer_algorithm": "BASELINE_GREEDY_KNAPSACK",
+            "optimization_basis": "Derived from greedy knapsack run on Stage C HPI priority grid under physical feasibility constraints",
+            "maturity_notes": notes.get("tree_maturity_state", "Evaluated at mature canopy (Year 7-10)."),
         },
         {
             "scenario_name": "SMC Full Urban Heat Action Plan (UHAP 2026)",
             "tier": "high",
-            "budget_inr": 100000000.0,  # 10 Crore INR
+            "budget_inr": high_data.get("budget_limit", 100000000.0),
+            "total_cost_inr": high_data.get("total_cost", 99963000.0),
+            "budget_utilized_percent": round((high_data.get("total_cost", 99963000.0) / high_data.get("budget_limit", 100000000.0)) * 100, 2),
             "target_focus": "Citywide comprehensive deployment across all 7 administrative zones",
             "recommended_types": ["tree_canopy", "cool_roof", "green_roof", "cool_pavement"],
-            "treated_cells": 371,
-            "total_treated_m2": 465355.0,
-            "mean_dlst_treated": [-0.64, -0.94, -1.29],
-            "peak_hotspot_dlst": [-0.76, -1.12, -1.53],
-            "breakdown": {
+            "treated_cells": high_data.get("treated_cells", 371),
+            "total_treated_m2": high_data.get("total_treated_m2", 465355.0),
+            "pct_city_area_treated": high_data.get("pct_city_area_treated", 0.094),
+            "mean_dlst_treated": high_data.get("mean_dlst_treated", [-0.64, -0.94, -1.29]),
+            "peak_hotspot_dlst": high_data.get("peak_hotspot_dlst", [-0.76, -1.12, -1.53]),
+            "citywide_mean_dlst": high_data.get("citywide_mean_dlst", [-0.0048, -0.007, -0.0096]),
+            "breakdown": high_data.get("breakdown", {
                 "cool_roof_m2": 86800.0,
                 "cool_paver_m2": 36000.0,
                 "green_roof_m2": 6800.0,
                 "trees_count": 6678,
-            },
+            }),
+            "provenance": "PRECOMPUTED_OPTIMIZER_BENCHMARK",
+            "optimizer_algorithm": "BASELINE_GREEDY_KNAPSACK",
+            "optimization_basis": "Derived from greedy knapsack run on Stage C HPI priority grid under physical feasibility constraints",
+            "maturity_notes": notes.get("tree_maturity_state", "Evaluated at mature canopy (Year 7-10)."),
         },
     ]
 
