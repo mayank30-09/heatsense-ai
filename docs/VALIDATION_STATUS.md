@@ -4,7 +4,7 @@
 **Target City:** Surat, Gujarat, India (Surat Municipal Corporation — SMC)  
 **Spec Version:** v2.0 Operational (2026 Summer Baseline)  
 **Validation Suite:** `scripts/validation_harness.py`  
-**Overall Validation Status:** `PASS` (14/14 Automated Invariants Verified, 4 Documented Field Limitations Cataloged)
+**Overall Validation Status:** `PASS` (18/18 Verified Invariants & Checks, 7 Documented Field Limitations Cataloged)
 
 ---
 
@@ -45,12 +45,19 @@ graph TD
 | **`CHK-10-SCENE-PROVENANCE`** | Scene Provenance | Reconciled seasonal Landsat 8/9 scene manifest | Summer: 22, Winter: 20, Monsoon: 6, Post-Monsoon: 14 | 62 authentic USGS/EE scenes exactly matched | **PASS** |
 | **`CHK-11-MONSOON-DISCREP`** | Scene Provenance | Monsoon 2026 scene count discrepancy cause | Documented audit cause (cutoff date vs full season) | Documented: 8 at early cutoff, 6 full-SMC WRS 148/045 | **PASS** |
 | **`CHK-12-GRID-INVARIANTS`** | Geospatial Invariants | Canonical SMC domain and chronic hotspot counts | 49,747 100m grid cells, 223 chronic cells | 49,747 canonical cells, 223 chronic hotspots | **PASS** |
-| **`CHK-13-INTERVENTION-CAPS`**| Cooling Physics | Thermodynamic cooling saturation caps | Tree $\le 3.50^\circ\text{C}$, Roof $\le 2.50^\circ\text{C}$, Cell $\le 4.50^\circ\text{C}$ | All 5 saturation caps and attenuation factor verified | **PASS** |
+| **`CHK-13-INTERVENTION-CAPS`**| Cooling Physics | Linearized heat model & physical saturation caps | Tree $\le 3.50^\circ\text{C}$, Roof $\le 2.50^\circ\text{C}$, Cell $\le 4.50^\circ\text{C}$ | $h_{\text{eff}} = 45.6\text{ W/(m}^2\cdot\text{K)}$; all 11 saturation caps verified | **PASS** |
 | **`CHK-14-PARKED-PATCH`** | Stage D Governance | Experimental Stage D research patch status | Parked and unapplied (no contract drift) | `stage_d_science_wip.patch` parked and unapplied | **PASS** |
-| **`CHK-15-ROOF-STRUCTURAL`** | Field Limitation | Roof civil load-bearing capacity | Satellite-based structural verification | `UNVERIFIED` — Requires on-site civil survey | `UNVERIFIED` |
-| **`CHK-16-SLUM-POPULATION`** | Field Limitation | Ward/slum micro-demographic census linking | 100m grid-level population exposure weighting | `UNVERIFIED` — Returns `POPULATION_DATA_UNAVAILABLE` | `UNVERIFIED` |
-| **`CHK-17-SPECIES-GROWTH`** | Field Limitation | Botanical species 10-year growth curves | Dynamic allometric growth curves in active runtime | `UNVERIFIED` — Retained in parked Stage D patch | `UNVERIFIED` |
-| **`CHK-18-1D-ENERGY-BALANCE`**| Field Limitation | 1D Surface Energy Balance differential solver | Iterative numerical heat flux solver ($R_n = H+LE+G$) | `UNVERIFIED` — Platform uses empirical formulas | `UNVERIFIED` |
+| **`CHK-15-HPI-SENSITIVITY`** | Decision Robustness | Controlled 4-scenario HPI sensitivity analysis | Re-ranking across 49,747 cells; Spearman $\rho \ge 0.90$ | Spearman $\rho \in [0.942, 0.993]$ across 4 policy scenarios | **PASS** |
+| **`CHK-16-COST-REALISM`** | Cost Provenance | Itemized markups & schedule alignment disclaimer | 18% GST, 12% contingency, setup scaling | All 11 types itemized; `schedule_alignment: UNVERIFIED_IN_REPO` | **PASS** |
+| **`CHK-17-LANDUSE-DISCLAIMER`**| Land Tenure | Unbuilt open land ownership disclaimer | Typology titles use spectral candidate heuristics | Legal disclaimer present; no claim of legal municipal title | **PASS** |
+| **`CHK-18-NEWER-INTERVENTIONS`**| Guardrails | Newer interventions & Miyawaki unverified tags | `local_field_validated: False` across 7 newer types | Miyawaki tagged `UNVERIFIED IN SURAT`; caps enforced | **PASS** |
+| **`CHK-19-ROOF-STRUCTURAL`** | Field Limitation | Roof civil load-bearing capacity | Satellite-based structural verification | `UNVERIFIED` — Requires on-site civil structural survey | `UNVERIFIED` |
+| **`CHK-20-SLUM-POPULATION`** | Field Limitation | Ward/slum micro-demographic census linking | 100m grid-level population exposure weighting | `UNVERIFIED` — Returns `POPULATION_DATA_UNAVAILABLE` | `UNVERIFIED` |
+| **`CHK-21-SPECIES-GROWTH`** | Field Limitation | Botanical species 10-year growth curves | Dynamic allometric growth curves in active runtime | `UNVERIFIED` — Retained in parked Stage D patch | `UNVERIFIED` |
+| **`CHK-22-1D-ENERGY-BALANCE`**| Field Limitation | Numerical CFD / PDE continuum solvers | 3D coupled turbulent boundary layer solver | `UNVERIFIED` — Active code uses linearized heat dissipation | `UNVERIFIED` |
+| **`CHK-23-LOCAL-SENSOR-VALID`**| Field Limitation | Local in-situ microclimatic sensor validation in Surat | Physical cooling verification against ground stations | `UNVERIFIED` — Modeled literature parameters | `UNVERIFIED` |
+| **`CHK-24-RAW-SCHEDULE-PDFS`** | Field Limitation | Raw CPWD / SMC schedule documents in repository | Committed official government tender rate PDFs | `UNVERIFIED` — Base unit rates are indicative assumptions | `UNVERIFIED` |
+| **`CHK-25-CADASTRAL-TITLE`** | Field Limitation | Legal municipal ownership and confirmed vacancy | Proof of municipal reservation or legal vacancy | `UNVERIFIED` — Requires SMC TPS cadastral survey | `UNVERIFIED` |
 
 ---
 

@@ -12,17 +12,17 @@
 Urban heat mitigation in tropical climates requires balancing microclimatic thermodynamics with empirical citywide feasibility. Machine learning models (e.g., XGBoost, Random Forests) trained on satellite imagery are diagnostic tools that identify spatial associations and predict surface temperatures from observable indices; **they are not structural causal intervention models**. Multiplying a machine learning regression coefficient or SHAP value by an intervention footprint is a recognized scientific fallacy that conflates predictive association with causal counterfactual response.
 
 The HEATSENSE AI Cooling Recommendation Engine bridges this gap by strictly decoupling **diagnostic detection** (Stage C Heat Priority Index) from **prescriptive intervention modeling** (Stage D). The engine is grounded in:
-1. **Calibrated Surface Energy Balance ($R_n = H + LE + G$):** Direct mathematical modeling of radiation, sensible heat flux, latent evapotranspiration, and substrate conduction.
+1. **Linearized Microclimate Heat Dissipation ($h_{\text{eff}} = 45.6\text{ W/(m}^2\cdot\text{K)}$):** Direct first-order mathematical modeling of radiation and sensible heat dissipation, avoiding claims of numerical PDE or CFD continuum solving.
 2. **First-Principles Astronomical Solar Modeling:** Rigorous calculation of solar geometry ($K_{\downarrow} = 870\text{ W/m}^2$) at satellite overpass for Surat's exact latitude ($21.17^\circ\text{N}$) and longitude ($72.83^\circ\text{E}$) in peak May summer.
 3. **Causal Repository Calibration:** Empirical comparison of cross-sectional OLS vs. a matched multi-year natural experiment (2022 vs. 2026) using spatially clustered standard errors to isolate true vegetative cooling while controlling for background climate and omitted variables.
 4. **Physical-Only Predictive Evaluation:** Evaluating surface biophysical drivers under spatially blocked cross-validation (blocks $\ge 2\text{ km}$) without data-leakage or retrieval-quality artifacts.
 5. **Decoupled Thermal Domains:** Strictly separating radiant surface skin temperature ($T_{\text{skin}}$) from ambient canopy-layer air temperature ($T_{\text{air}}$), eliminating unphysical spatial diffusion of solid skin temperatures.
 6. **Site-Level Geometry & Structural Safety:** Integrating vector building footprints (OpenStreetMap / Google Open Buildings) to calculate real plot-level roof areas, classifying roof structural types (preventing green roofs on industrial corrugated tin sheds), and tagging unverified sites for mandatory field surveys.
-7. **Transparent Indicative Costing:** Using standard engineering rate breakdowns grounded in CPWD/SMC benchmarks, accompanied by clear sensitivity bounds (Tornado analysis) and a formal ground validation protocol.
+7. **Transparent Indicative Costing:** Using standard civil engineering rate breakdowns modeled on normative public frameworks (18% GST, 12% contingency, setup scaling), with schedule alignment marked as unverified in the repository.
 
 ---
 
-## 2. Surface Energy Balance Calibration for Surat
+## 2. Microclimate Heat Dissipation & Parameter Calibration for Surat
 
 ### 2.1 Astronomical Derivation of Solar Irradiance ($K_{\downarrow}$) for Surat in May
 
