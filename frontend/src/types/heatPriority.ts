@@ -220,4 +220,67 @@ export interface ModelValidationSummary {
   };
 }
 
+export interface SensitivityScenarioMetrics {
+  mean_hpi: number;
+  std_hpi: number;
+  min_hpi: number;
+  max_hpi: number;
+  score_diff_mean: number;
+  score_diff_abs_mean: number;
+  pearson_r: number;
+  spearman_rho: number;
+  top_10pct_jaccard_pct: number;
+  top_500_jaccard_pct: number;
+  mean_rank_shift: number;
+  max_rank_shift: number;
+  cells_shifted_over_1k: number;
+  cells_shifted_over_5k: number;
+  top_10pct_shared_count: number;
+  top_500_shared_count: number;
+}
+
+export interface SensitivityScenario {
+  id: string;
+  name: string;
+  weights: {
+    w_thermal: number;
+    w_persistence: number;
+    w_vegetation: number;
+    w_builtup: number;
+  };
+  formula: string;
+  policy_rationale: string;
+  metrics: SensitivityScenarioMetrics;
+}
+
+export interface HPISensitivityAnalysisResponse {
+  analysis_name: string;
+  generated_at_utc: string;
+  status: string;
+  evidence_paths: Record<string, string>;
+  baseline: {
+    total_cells: number;
+    mean_hpi: number;
+    std_hpi: number;
+    min_hpi: number;
+    max_hpi: number;
+    median_hpi: number;
+    chronic_hotspots_count: number;
+    max_recomputation_discrepancy: number;
+    weights: {
+      w_thermal: number;
+      w_persistence: number;
+      w_vegetation: number;
+      w_builtup: number;
+    };
+    formula: string;
+  };
+  scenarios: SensitivityScenario[];
+  scientific_caveats: {
+    sensitivity_vs_validation: string;
+    no_retraining_or_mutation: string;
+    policy_guidance: string;
+  };
+}
+
 

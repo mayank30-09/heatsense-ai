@@ -5,6 +5,7 @@ import type {
   HeatPrioritySummary,
   LSTStats,
   ModelValidationSummary,
+  HPISensitivityAnalysisResponse,
   SeasonName,
 } from "../types/heatPriority";
 
@@ -124,5 +125,14 @@ export async function fetchModelValidation(signal?: AbortSignal): Promise<ModelV
     throw new Error(`Failed to load model validation metadata: HTTP ${response.status}`);
   }
   return response.json() as Promise<ModelValidationSummary>;
+}
+
+export async function fetchHPISensitivityAnalysis(signal?: AbortSignal): Promise<HPISensitivityAnalysisResponse> {
+  const url = `${HEAT_PRIORITY_BASE_URL}/sensitivity-analysis`;
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(`Failed to load HPI sensitivity analysis: HTTP ${response.status}`);
+  }
+  return response.json() as Promise<HPISensitivityAnalysisResponse>;
 }
 

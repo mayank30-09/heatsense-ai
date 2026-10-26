@@ -680,3 +680,31 @@ def get_model_validation_summary(response: Response) -> dict[str, Any]:
 
     return val_payload
 
+
+@router.get("/sensitivity-analysis", response_model=dict[str, Any])
+def get_hpi_sensitivity_analysis(
+    response: Response,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Retrieve controlled HPI sensitivity analysis across 4 policy-justified weighting scenarios."""
+    report_path = PROJECT_ROOT / "reports" / "hpi_sensitivity_analysis.json"
+    payload: dict[str, Any] | None = None
+    if report_path.exists():
+        try:
+            with open(report_path, encoding="utf-8") as f:
+                payload = json.load(f)
+        except Exception:
+            payload = None
+
+    if payload is None:
+        from scripts.analyze_hpi_sensitivity import run_sensitivity_analysis
+        payload = run_sensitivity_analysis(db=db)
+
+    content_hash = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()[:16]
+    response.headers["Cache-Control"] = "public, max-age=86400, must-revalidate"
+    response.headers["ETag"] = f'"{content_hash}"'
+
+    return payload
+

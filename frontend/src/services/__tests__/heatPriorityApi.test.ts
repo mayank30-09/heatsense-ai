@@ -4,6 +4,7 @@ import {
   fetchGridCells,
   fetchHeatPrioritySummary,
   fetchModelValidation,
+  fetchHPISensitivityAnalysis,
 } from "../heatPriorityApi";
 
 describe("heatPriorityApi", () => {
@@ -155,6 +156,49 @@ describe("heatPriorityApi", () => {
 
       await expect(fetchModelValidation()).rejects.toThrow(
         "Failed to load model validation metadata: HTTP 500"
+      );
+    });
+  });
+
+  describe("fetchHPISensitivityAnalysis", () => {
+    it("fetches HPI sensitivity analysis payload", async () => {
+      const mockSensitivity = {
+        analysis_name: "Stage C Heat Priority Index (HPI) Sensitivity Analysis",
+        status: "COMPLETED",
+        baseline: { total_cells: 49747, mean_hpi: 42.14 },
+        scenarios: [
+          {
+            id: "thermal_dominant",
+            name: "Thermal-Dominant (Heatwave Emergency)",
+            weights: { w_thermal: 0.6, w_persistence: 0.2, w_vegetation: 0.1, w_builtup: 0.1 },
+            metrics: { mean_hpi: 51.06, spearman_rho: 0.9802 },
+          },
+        ],
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockSensitivity,
+      });
+
+      const result = await fetchHPISensitivityAnalysis();
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const callUrl = (fetch as any).mock.calls[0][0];
+      expect(callUrl).toContain("/api/v1/heat-priority/sensitivity-analysis");
+      expect(result.status).toBe("COMPLETED");
+      expect(result.baseline.total_cells).toBe(49747);
+      expect(result.scenarios[0].metrics.spearman_rho).toBe(0.9802);
+    });
+
+    it("throws when server returns error response", async () => {
+      (fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      await expect(fetchHPISensitivityAnalysis()).rejects.toThrow(
+        "Failed to load HPI sensitivity analysis: HTTP 500"
       );
     });
   });
