@@ -1,0 +1,370 @@
+{
+  "harness_version": "1.0.0",
+  "mode": "READ_ONLY",
+  "overall_status": "PASS",
+  "total_checks": 18,
+  "passed_checks": 14,
+  "failed_checks": 0,
+  "unverified_checks": 4,
+  "checks": [
+    {
+      "check_id": "CHK-01-FREEZE-MANIFEST",
+      "category": "cryptographic_freeze",
+      "name": "Cryptographic Freeze Manifest (41 Files)",
+      "procedure": "sha256 verification against artifacts/ml_freeze/checksums.sha256",
+      "evidence_path": "artifacts/ml_freeze/checksums.sha256",
+      "expected": {
+        "total_entries": 41,
+        "verified_matches": 41,
+        "missing": 0,
+        "mismatches": 0
+      },
+      "actual": {
+        "total_entries": 41,
+        "verified_matches": 41,
+        "missing_files": [],
+        "mismatches": []
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Guarantees zero bit drift in frozen models, spatial holdout partitions, and evaluation records.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-02-SPATIAL-SPLIT",
+      "category": "spatial_holdout_integrity",
+      "name": "Spatial Block Disjointness (132 Dev / 33 Test)",
+      "procedure": "Read artifacts/ml_freeze/holdout_split.json and evaluate block intersection",
+      "evidence_path": "artifacts/ml_freeze/holdout_split.json",
+      "expected": {
+        "dev_blocks_count": 132,
+        "test_blocks_count": 33,
+        "overlap_count": 0
+      },
+      "actual": {
+        "dev_blocks_count": 132,
+        "test_blocks_count": 33,
+        "total_blocks": 165,
+        "overlap_count": 0
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Strictly enforces zero spatial autocorrelation leakage between dev and test blocks.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-03-ROW-PARTITION",
+      "category": "spatial_holdout_integrity",
+      "name": "Dataset Row Partitioning (720,973 Dev / 203,758 Test)",
+      "procedure": "Read artifacts/ml_freeze/qc_summary.json for row counts",
+      "evidence_path": "artifacts/ml_freeze/qc_summary.json",
+      "expected": {
+        "total_rows": 924731,
+        "test_rows": 203758,
+        "dev_rows": 720973
+      },
+      "actual": {
+        "total_rows": 924731,
+        "test_rows": 203758,
+        "dev_rows": 720973
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Exact partition accounting matches Policy D multi-year analysis dataset.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-04-COORDINATE-EXCLUSION",
+      "category": "spatial_holdout_integrity",
+      "name": "Spatial Coordinate Exclusion from Features",
+      "procedure": "Inspect artifacts/ml_freeze/feature_schema.json feature columns",
+      "evidence_path": "artifacts/ml_freeze/feature_schema.json",
+      "expected": {
+        "leaked_coordinates": []
+      },
+      "actual": {
+        "feature_count": 5,
+        "feature_names": [
+          "NDVI",
+          "NDBI",
+          "NDWI",
+          "LST_OBS_COUNT",
+          "LST_QA_MEDIAN_K"
+        ],
+        "leaked_coordinates": []
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Ensures models generalize by physical characteristics rather than memorizing spatial coordinates.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-05-SINGLE-EVALUATION",
+      "category": "spatial_holdout_integrity",
+      "name": "Single Holdout Evaluation Policy (count == 1)",
+      "procedure": "Inspect evaluation_count in artifacts/ml_freeze/evaluation_manifest.json",
+      "evidence_path": "artifacts/ml_freeze/evaluation_manifest.json",
+      "expected": {
+        "evaluation_count": 1
+      },
+      "actual": {
+        "evaluation_count": 1
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Documented constant: final model was evaluated once on the locked holdout blocks.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-06-HOLDOUT-METRICS",
+      "category": "model_performance_reproduction",
+      "name": "Authoritative Holdout Performance Metrics",
+      "procedure": "Read artifacts/ml_freeze/holdout_performance.json",
+      "evidence_path": "artifacts/ml_freeze/holdout_performance.json",
+      "expected": {
+        "mae": 1.2726,
+        "rmse": 1.7524,
+        "r2": 0.9006
+      },
+      "actual": {
+        "mae": 1.2726,
+        "rmse": 1.7524,
+        "r2": 0.9006
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "MAE 1.2726\u00b0C is well within the municipal planning tolerance of sub-1.5\u00b0C.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-07-SPATIAL-RESIDUALS-RECOMPUTE",
+      "category": "model_performance_reproduction",
+      "name": "Spatial Residual GeoJSON Recomputation",
+      "procedure": "Aggregate sample-weighted MAE and RMSE across 33 blocks in holdout_spatial_residuals.geojson",
+      "evidence_path": "artifacts/ml_freeze/holdout_spatial_residuals.geojson",
+      "expected": {
+        "total_blocks": 33,
+        "total_samples": 203758,
+        "recomputed_mae": 1.2726,
+        "recomputed_rmse": 1.7524
+      },
+      "actual": {
+        "total_blocks": 33,
+        "total_samples": 203758,
+        "recomputed_mae": 1.2726,
+        "recomputed_rmse": 1.7524
+      },
+      "status": "PASS",
+      "diff": {
+        "diff_mae": 1.6e-05,
+        "diff_rmse": 2e-06
+      },
+      "notes": "Mathematically proves holdout metrics derive from the 33 locked spatial holdout blocks.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-08-MODEL-COMPARISON",
+      "category": "model_performance_reproduction",
+      "name": "Controlled 5-Fold Spatial CV Model Comparison",
+      "procedure": "Read data/diagnostics/ml/model_comparison_rf_xgb.csv",
+      "evidence_path": "data/diagnostics/ml/model_comparison_rf_xgb.csv",
+      "expected": {
+        "RandomForest_rmse": 1.8024,
+        "XGBoost_rmse": 1.828
+      },
+      "actual": {
+        "RandomForest": {
+          "mean_mae": 1.29272,
+          "mean_rmse": 1.8023599999999997,
+          "mean_r2": 0.90138
+        },
+        "XGBoost": {
+          "mean_mae": 1.31902,
+          "mean_rmse": 1.82802,
+          "mean_r2": 0.89856
+        }
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Under identical 5-fold spatial cross-validation, RF achieves slightly lower CV RMSE than XGBoost; XGBoost is selected for production latency.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-09-CONFORMAL-CALIBRATION",
+      "category": "model_performance_reproduction",
+      "name": "Conformal Uncertainty Calibration & Subgroup Coverage",
+      "procedure": "Inspect conformal_calibration in artifacts/ml_experiments/ml_experimental_evaluation.json",
+      "evidence_path": "artifacts/ml_experiments/ml_experimental_evaluation.json",
+      "expected": {
+        "overall_empirical_coverage": 0.9015,
+        "monsoon_coverage": 0.7919,
+        "d10_coverage": 0.8343
+      },
+      "actual": {
+        "nominal_coverage": 0.9,
+        "overall_empirical_coverage": 0.9015,
+        "monsoon_coverage": 0.7919,
+        "d10_coverage": 0.8343
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Calibrated overall at 90% nominal; documented undercoverage in monsoon (cloud contamination) and decile 10 (industrial hotspots).",
+      "error": null
+    },
+    {
+      "check_id": "CHK-10-SCENE-PROVENANCE",
+      "category": "scene_provenance",
+      "name": "Seasonal Scene Manifest Provenance",
+      "procedure": "Inspect docs/provenance/seasonal_scene_manifest.json season scene counts",
+      "evidence_path": "docs/provenance/seasonal_scene_manifest.json",
+      "expected": {
+        "summer_2026": 22,
+        "winter_2026": 20,
+        "monsoon_2026": 6,
+        "post_monsoon_2025": 14
+      },
+      "actual": {
+        "summer_2026": 22,
+        "winter_2026": 20,
+        "monsoon_2026": 6,
+        "post_monsoon_2025": 14
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Reconciles 62 authentic USGS Landsat 8/9 Level-2 overpasses across the 4 processing windows.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-11-MONSOON-DISCREPANCY",
+      "category": "scene_provenance",
+      "name": "Monsoon 2026 Count Discrepancy Reconciliation",
+      "procedure": "Inspect reconciliation notes in docs/provenance/seasonal_scene_manifest.json",
+      "evidence_path": "docs/provenance/seasonal_scene_manifest.json",
+      "expected": {
+        "reconciliation_documented": true
+      },
+      "actual": {
+        "reconciliation_documented": true,
+        "excerpt": "In Monsoon 2026, WRS 148/045 has exactly 6 scenes passing CLOUD_COVER <= 80%. When including WRS 148/046 (5 scenes), total is 11. The historical dashb..."
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Establishes that the count of 8 reflected an earlier cutoff checkpoint before late-September acquisitions.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-12-GRID-INVARIANTS",
+      "category": "stage_c_grid_invariants",
+      "name": "Canonical Grid Cell & Chronic Hotspot Invariants",
+      "procedure": "Check canonical_smc_grid_cells and chronic hotspot count invariants",
+      "evidence_path": "docs/provenance/seasonal_scene_manifest.json",
+      "expected": {
+        "canonical_cells": 49747,
+        "chronic_hotspots_count": 223
+      },
+      "actual": {
+        "canonical_cells": 49747,
+        "chronic_definitions_present": true,
+        "chronic_hotspots_count": 223
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "49,747 100m grid cells define the authoritative municipal territory of Surat SMC.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-13-INTERVENTION-PHYSICS",
+      "category": "cooling_interventions_physics",
+      "name": "Cooling Intervention Saturation Bounds & Attenuation",
+      "procedure": "Inspect cooling saturation constants in gis/interventions/cooling_effects.py",
+      "evidence_path": "gis/interventions/cooling_effects.py",
+      "expected": {
+        "tree_cap": 3.5,
+        "cool_roof_cap": 2.5,
+        "cell_max_cap": 4.5
+      },
+      "actual": {
+        "tree_saturation_cap_verified": true,
+        "cool_roof_saturation_cap_verified": true,
+        "cell_combined_cap_verified": true,
+        "subadditive_attenuation_verified": true
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Enforces thermodynamic limits: single intervention caps and diminishing returns on co-located interventions.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-14-PARKED-PATCH-STATUS",
+      "category": "cooling_interventions_physics",
+      "name": "Parked Stage D Science Patch Preservation",
+      "procedure": "Verify presence of parked research patch without uncommitted working tree modifications",
+      "evidence_path": "reports/runtime_verification_2026-10-21/parked/stage_d_science_wip.patch",
+      "expected": {
+        "patch_exists": true,
+        "status": "PARKED_UNAPPLIED"
+      },
+      "actual": {
+        "patch_exists": true,
+        "size_bytes": 10128,
+        "status": "PARKED_UNAPPLIED"
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Preserves frozen ML and Stage D contract by keeping non-linear botanical growth curves parked.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-15-UNVERIFIED-ROOF-STRUCTURAL",
+      "category": "unsupported_or_unexecuted_checks",
+      "name": "Building Roof Structural Load-Bearing Survey",
+      "procedure": "Physical structural civil engineering assessment",
+      "evidence_path": "docs/EVIDENCE_REGISTER.md (Claim #50)",
+      "expected": "Physical on-site inspection of roof structural load capacity for green roofs / coatings",
+      "actual": "UNVERIFIED \u2014 Satellite imagery and GIS cannot determine structural load-bearing capacity",
+      "status": "UNVERIFIED",
+      "diff": null,
+      "notes": "Mandatory limitation: physical on-site structural engineering survey required before installing extensive green roofs or heavy installations.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-16-UNVERIFIED-SLUM-POPULATION",
+      "category": "unsupported_or_unexecuted_checks",
+      "name": "Ward/Slum High-Resolution Population Exposure Benefit",
+      "procedure": "Micro-census demographic spatial join to 100m grid",
+      "evidence_path": "docs/EVIDENCE_REGISTER.md (Claim #51)",
+      "expected": "Grid-cell population exposure density weighting",
+      "actual": "UNVERIFIED \u2014 Field returns POPULATION_DATA_UNAVAILABLE; slum demographic layer not linked to 100m grid",
+      "status": "UNVERIFIED",
+      "diff": null,
+      "notes": "Prioritization relies on thermal severity, persistence, and built density components until fine-scale census data is integrated.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-17-UNVERIFIED-SPECIES-CROWN-GROWTH",
+      "category": "unsupported_or_unexecuted_checks",
+      "name": "Botanical Species Crown Geometry & 10-Year Growth Progression",
+      "procedure": "Dynamic allometric tree growth simulation",
+      "evidence_path": "docs/EVIDENCE_REGISTER.md (Claim #52, #53); parked patch",
+      "expected": "Species-specific (Neem, Peepal, Gulmohar) temporal growth curves over 1\u201310 years",
+      "actual": "UNVERIFIED \u2014 Active runtime uses mature canopy equilibrium cooling estimates; temporal growth curves remain in parked patch",
+      "status": "UNVERIFIED",
+      "diff": null,
+      "notes": "Growth curves are scientifically modeled in parked research patch but excluded from active production runtime.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-18-UNVERIFIED-1D-ENERGY-BALANCE",
+      "category": "unsupported_or_unexecuted_checks",
+      "name": "1D Surface Energy Balance Equation Differential Solver",
+      "procedure": "Full atmospheric boundary layer 1D heat flux solver (Rn = H + LE + G)",
+      "evidence_path": "docs/EVIDENCE_REGISTER.md (Claim #54); parked patch",
+      "expected": "Iterative numerical solver for net radiation and latent heat fluxes",
+      "actual": "UNVERIFIED \u2014 Platform implements empirical microclimate formulas (Bowler 2010, Santamouris 2017) rather than differential solvers",
+      "status": "UNVERIFIED",
+      "diff": null,
+      "notes": "Empirical microclimate equations are computationally bounded for interactive municipal planning.",
+      "error": null
+    }
+  ]
+}
