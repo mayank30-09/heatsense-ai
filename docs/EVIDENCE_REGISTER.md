@@ -5,7 +5,7 @@
 **Date:** October 26, 2026  
 **Active Branch:** `audit-fixes`  
 **Cryptographic Integrity Invariant:** 41/41 Verified SHA-256 Checksums (`[PASS]`)  
-**Validation Invariant Status:** 14/14 Invariants Verified via `scripts/validation_harness.py`  
+**Validation Invariant Status:** 14/14 Automated Invariants Verified via `scripts/validation_harness.py` (Harness: 14 Passed, 4 Unverified, 0 Failed, Overall: PASS)  
 
 ---
 
@@ -68,7 +68,7 @@ In compliance with the post-audit scientific integrity mandate, every quantitati
 |---|---|---|---|---|
 | **Baseline HPI Formulation** ($0.40 T_{\text{norm}} + 0.30 P_{\text{persist}} + 0.15 V_{\text{deficit}} + 0.15 B_{\text{density}}$) | Assumption or heuristic | `gis/heat_priority/scoring.py`; `backend/app/db/models/stage_c.py` | Multi-criteria spatial vulnerability index normalized to $[0, 100]$. Bounds: $T \in [30, 50]^\circ\text{C}$, $\text{NDVI} \in [0.05, 0.45]$, $\text{NDBI} \in [-0.25, 0.15]$. | Reflects policy choices and stakeholder weighting, not a conserved thermodynamic physical property. |
 | **Chronic Heat Hotspots Count (223 Cells)** | Assumption or heuristic | `backend/app/db/models/stage_c.py` (`is_chronic_hotspot`); `scripts/analyze_hotspot_persistence.py` | High-frequency extreme heat persistence ($\ge 90$th percentile across multi-year summer seasons). | Evaluated using fixed 19-season archive denominator. 10 cells differ (233 vs 223) if evaluated across locally valid seasons. |
-| **Four Controlled HPI Sensitivity Scenarios** (Baseline, Extreme Thermal, Nature-First, Built-Density) | Verified by a reproducible command or committed artifact | `reports/hpi_sensitivity_analysis.json`; `reports/hpi_sensitivity_analysis.md`; `backend/tests/test_hpi_sensitivity.py` | Controlled sensitivity scenarios re-ranking all 49,747 cells while holding underlying data fixed. | Spearman rank correlations are high ($\rho \in [0.942, 0.993]$) due to shared thermal severity; stability does **not** prove causal correctness. |
+| **Four Controlled HPI Sensitivity Scenarios** (Baseline, Extreme Thermal, Nature-First, Built-Density) | Verified by a reproducible command or committed artifact | `reports/hpi_sensitivity_analysis.json`; `reports/hpi_sensitivity_analysis.md`; `backend/tests/test_hpi_sensitivity.py` | Controlled sensitivity scenarios re-ranking all 49,747 cells while holding underlying data fixed. | Spearman rank correlations are high ($\rho \in [0.9660, 0.9917]$) due to shared thermal severity; stability does **not** prove causal correctness. |
 
 ---
 

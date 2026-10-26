@@ -169,7 +169,7 @@ cd ..
 - Multi-criteria spatial vulnerability index normalized to $[0, 100]$:
   $$HPI = 100 \times (0.40 T_{\text{norm}} + 0.30 P_{\text{persist}} + 0.15 V_{\text{deficit}} + 0.15 B_{\text{density}})$$
 - **Hotspot Persistence:** Evaluated across the multi-year archive, identifying **223 chronic heat hotspots** ($\ge 90$th percentile across summer overpasses under the fixed 19-season denominator).
-- **Sensitivity Scenarios:** Tested across 4 policy-justified scenarios (Baseline, Extreme Thermal, Nature-First, Built-Density). Spearman rank correlations ($\rho \in [0.94, 0.99]$) demonstrate ranking robustness across policy weights while recognizing that stability reflects component correlation rather than causal truth.
+- **Sensitivity Scenarios:** Tested across 4 policy-justified scenarios (Baseline, Extreme Thermal, Nature-First, Built-Density). Spearman rank correlations ($\rho \in [0.966, 0.992]$) demonstrate ranking robustness across policy weights while recognizing that stability reflects component correlation rather than causal truth.
 
 ### 4. Prescriptive Interventions & Linearized Heat Dissipation
 - Models 11 field-grade urban cooling strategies across 11 land-use typologies.

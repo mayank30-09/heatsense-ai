@@ -3,14 +3,18 @@
 **Document Version:** 1.0.0 (Authoritative Verification Baseline)  
 **Target City:** Surat, Gujarat, India (Surat Municipal Corporation — SMC)  
 **Spec Version:** v2.0 Operational (2026 Summer Baseline)  
-**Validation Suite:** `scripts/validation_harness.py`  
-**Overall Validation Status:** `PASS` (18/18 Verified Invariants & Checks, 7 Documented Field Limitations Cataloged)
+**Validation Suite:** `scripts/validation_harness.py` (CLI Harness) & Backend Pytest Regression Suites  
+**Validation Suite Execution Result:** `PASS` (Validation Harness: 14/18 Passed, 4 Unverified, 0 Failed; Pytest Suites: 33/33 Passed; 7 Documented Field Limitations Cataloged)
 
 ---
 
 ## 1. Executive Summary
 
-The HeatSense AI platform implements an automated, reproducible validation harness (`scripts/validation_harness.py`) designed to empirically audit all cryptographic, spatial, statistical, and geospatial claims without mutating frozen models or regenerating protected analytical datasets.
+The HeatSense AI platform implements a multi-tiered verification architecture designed to empirically audit all cryptographic, spatial, statistical, and geospatial claims without mutating frozen models or regenerating protected analytical datasets:
+
+1. **Automated Validation Harness (`scripts/validation_harness.py`):** Runs 18 registered harness checks auditing SHA-256 manifests, spatial holdout partitions, model metric reproduction, scene provenance, grid domains, and parked patch preservation (14 PASS, 4 UNVERIFIED, 0 FAIL).
+2. **Dedicated Pytest Regression Suites:** Execute 33 unit and integration tests verifying HPI policy sensitivity (`backend/tests/test_hpi_sensitivity.py`), intervention realism guardrails (`backend/tests/test_interventions_realism.py`), and documentation consistency (`backend/tests/test_documentation_consistency.py`).
+3. **Master Limitations Register:** Catalogs 7 operational, cadastral, structural, and microclimatic boundary conditions marked strictly as `UNVERIFIED` where remote sensing cannot substitute for on-site municipal engineering.
 
 Every quantitative claim and algorithmic threshold is cataloged under strict evidentiary statuses:
 - **PASS (Verified Invariant):** Statistically, mathematically, or cryptographically reproduced from authentic stored artifacts and active runtime code.
@@ -31,6 +35,8 @@ graph TD
 
 ## 2. Master Validation Matrix
 
+### Tier 1: Core Automated Harness Invariants (`scripts/validation_harness.py`)
+
 | Check ID | Category | Description | Target Invariant | Actual Result | Status |
 | :--- | :--- | :--- | :--- | :--- | :---: |
 | **`CHK-01-FREEZE-MANIFEST`** | Cryptographic Freeze | SHA-256 digest verification across all frozen artifacts | 41 valid entries, 41 verified matches | 41/41 matches exact (0 mismatches, 0 missing) | **PASS** |
@@ -47,10 +53,20 @@ graph TD
 | **`CHK-12-GRID-INVARIANTS`** | Geospatial Invariants | Canonical SMC domain and chronic hotspot counts | 49,747 100m grid cells, 223 chronic cells | 49,747 canonical cells, 223 chronic hotspots | **PASS** |
 | **`CHK-13-INTERVENTION-CAPS`**| Cooling Physics | Linearized heat model & physical saturation caps | Tree $\le 3.50^\circ\text{C}$, Roof $\le 2.50^\circ\text{C}$, Cell $\le 4.50^\circ\text{C}$ | $h_{\text{eff}} = 45.6\text{ W/(m}^2\cdot\text{K)}$; all 11 saturation caps verified | **PASS** |
 | **`CHK-14-PARKED-PATCH`** | Stage D Governance | Experimental Stage D research patch status | Parked and unapplied (no contract drift) | `stage_d_science_wip.patch` parked and unapplied | **PASS** |
-| **`CHK-15-HPI-SENSITIVITY`** | Decision Robustness | Controlled 4-scenario HPI sensitivity analysis | Re-ranking across 49,747 cells; Spearman $\rho \ge 0.90$ | Spearman $\rho \in [0.942, 0.993]$ across 4 policy scenarios | **PASS** |
+
+### Tier 2: Extended Subsystem Invariants (Verified via Pytest Test Suites)
+
+| Check ID | Category | Description | Target Invariant | Actual Result | Status |
+| :--- | :--- | :--- | :--- | :--- | :---: |
+| **`CHK-15-HPI-SENSITIVITY`** | Decision Robustness | Controlled 4-scenario HPI sensitivity analysis | Re-ranking across 49,747 cells; Spearman $\rho \ge 0.90$ | Spearman $\rho \in [0.9660, 0.9917]$ across 4 policy scenarios | **PASS** |
 | **`CHK-16-COST-REALISM`** | Cost Provenance | Itemized markups & schedule alignment disclaimer | 18% GST, 12% contingency, setup scaling | All 11 types itemized; `schedule_alignment: UNVERIFIED_IN_REPO` | **PASS** |
 | **`CHK-17-LANDUSE-DISCLAIMER`**| Land Tenure | Unbuilt open land ownership disclaimer | Typology titles use spectral candidate heuristics | Legal disclaimer present; no claim of legal municipal title | **PASS** |
 | **`CHK-18-NEWER-INTERVENTIONS`**| Guardrails | Newer interventions & Miyawaki unverified tags | `local_field_validated: False` across 7 newer types | Miyawaki tagged `UNVERIFIED IN SURAT`; caps enforced | **PASS** |
+
+### Tier 3: Documented Empirical & Operational Field Limitations
+
+| Check ID | Category | Description | Target Invariant | Actual Result | Status |
+| :--- | :--- | :--- | :--- | :--- | :---: |
 | **`CHK-19-ROOF-STRUCTURAL`** | Field Limitation | Roof civil load-bearing capacity | Satellite-based structural verification | `UNVERIFIED` — Requires on-site civil structural survey | `UNVERIFIED` |
 | **`CHK-20-SLUM-POPULATION`** | Field Limitation | Ward/slum micro-demographic census linking | 100m grid-level population exposure weighting | `UNVERIFIED` — Returns `POPULATION_DATA_UNAVAILABLE` | `UNVERIFIED` |
 | **`CHK-21-SPECIES-GROWTH`** | Field Limitation | Botanical species 10-year growth curves | Dynamic allometric growth curves in active runtime | `UNVERIFIED` — Retained in parked Stage D patch | `UNVERIFIED` |
