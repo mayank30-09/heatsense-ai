@@ -69,6 +69,8 @@ def test_heat_priority_summary_endpoint() -> None:
     assert norm["w_vegetation"] == 0.15
     assert norm["w_builtup"] == 0.15
     assert "10:30" in norm["overpass_solar_time"]
+    assert "seasonal_observation_dates" in data
+    assert "Summer 2026" in data["seasonal_observation_dates"]
 
 
 def test_heat_priority_cells_endpoint() -> None:
@@ -291,6 +293,9 @@ def test_heat_priority_lst_stats_default_summer() -> None:
     assert round(data["min_c"], 2) == 29.64
     assert round(data["max_c"], 2) == 58.65
     assert round(data["p90_c"], 2) == 47.40
+    assert data["layer_type"] == "Observed seasonal composite"
+    assert "Landsat 8/9 Collection 2 Level-2 ST_B10 (LST)" in data["sensor_source"]
+    assert "pixel-wise seasonal median (median)" in data["compositing_statistic"]
 
 
 @pytest.mark.parametrize(

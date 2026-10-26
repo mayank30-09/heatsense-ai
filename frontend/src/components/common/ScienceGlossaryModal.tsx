@@ -85,6 +85,16 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
       "Stage D estimates local skin cooling (ΔT_skin) by calculating net radiation alterations (ΔR_n = -K↓·Δα), latent heat flux enhancements from tree transpiration (LE), and sensible heat flux reduction (H = h_eff · ΔT). Enforces physical saturation caps (max tree canopy cooling -3.5°C, cool roof -2.5°C, max combined -4.5°C) and sub-additive multi-intervention attenuation.",
     reference: "Akbari et al. (2001); Santamouris (2017); Bowler et al. (2010)",
   },
+  {
+    term: "Canonical 100m Analytical Grid & Resolution",
+    abbreviation: "100m Grid",
+    category: "Remote Sensing",
+    summary:
+      "100 m is the analysis/reporting grid. Landsat TIRS native thermal sampling is about 100 m (distributed at 30 m); 30 m optical indices are aggregated to the grid. Cells are not building- or street-level measurements.",
+    details:
+      "100 m is the analysis/reporting grid. Landsat TIRS native thermal sampling is about 100 m (distributed at 30 m); 30 m optical indices are aggregated to the grid. Cells are not building- or street-level measurements.",
+    reference: "USGS Landsat 8/9 Level-2 Science Product Guide; SMC Analytical Domain",
+  },
 ];
 
 export default function ScienceGlossaryModal({

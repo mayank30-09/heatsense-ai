@@ -51,6 +51,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
               <span className="text-xs font-mono text-slate-300">
                 Commit: {meta?.git_commit ? meta.git_commit.substring(0, 10) : "c91bc69038"}
               </span>
+              <span className="badge-evidence badge-modelled">MODEL ESTIMATE</span>
             </div>
             <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
               Model Validation & Scientific Trust Center
@@ -413,7 +414,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                       Controlled Architecture Benchmark (Identical 5-Fold Spatial CV)
                     </h4>
                     <p className="mt-0.5 text-[11px] text-slate-500">
-                      Source: <span className="font-mono">data/diagnostics/ml/model_comparison_rf_xgb.csv</span> · <span className="badge-evidence badge-measured">MEASURED</span>
+                      Source: <span className="font-mono">data/diagnostics/ml/model_comparison_rf_xgb.csv</span> · <span className="badge-evidence badge-modelled">MODEL ESTIMATE</span>
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-slate-700 border border-slate-200">
@@ -590,8 +591,8 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                             {metrics.bias > 0 ? `+${metrics.bias.toFixed(4)}` : metrics.bias.toFixed(4)}°C
                           </td>
                           <td className="font-sans">
-                            <span className="badge-evidence badge-measured">
-                              Validated
+                            <span className="badge-evidence badge-modelled">
+                              MODEL ESTIMATE
                             </span>
                           </td>
                         </tr>
@@ -679,7 +680,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                       Conformal Prediction Coverage by Stratum (Nominal 90% Calibration)
                     </h4>
                     <p className="mt-0.5 text-xs text-slate-500">
-                      Source: <span className="font-mono">artifacts/ml_experiments/ml_experimental_evaluation.json</span> · <span className="badge-evidence badge-measured">MEASURED</span>
+                      Source: <span className="font-mono">artifacts/ml_experiments/ml_experimental_evaluation.json</span> · <span className="badge-evidence badge-modelled">MODEL ESTIMATE</span>
                     </p>
                   </div>
                   <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold text-indigo-800 border border-indigo-200">

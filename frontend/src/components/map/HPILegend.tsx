@@ -189,6 +189,42 @@ export default function HPILegend({
               </div>
             ) : null}
 
+            {/* T1(b) Provenance Strip for Latest Scene */}
+            <div className="mt-2 rounded bg-white p-2 border border-slate-200/90 text-[10px] space-y-1 text-slate-700">
+              <div className="flex justify-between items-center font-bold text-slate-800 border-b border-slate-100 pb-1">
+                <span>Provenance Strip</span>
+                <span className="font-mono text-[9px] text-indigo-700">Single scene</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Source:</span>
+                <span className="font-medium text-right text-slate-800">
+                  {selectedScene ? selectedScene.sensor : "Landsat 8/9 Collection 2 Level-2 ST_B10 (LST)"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Composite Window:</span>
+                <span className="font-mono text-[9px] text-slate-800">
+                  {selectedScene?.acquisition_date ?? "Instantaneous Overpass"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Contributing Scenes:</span>
+                <span className="font-semibold text-slate-800">1</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Valid Cells:</span>
+                <span className="font-semibold text-slate-800">
+                  {selectedScene
+                    ? `${Math.round(selectedScene.valid_pixel_fraction * totalCells).toLocaleString()} of ${totalCells.toLocaleString()}`
+                    : `0 of ${totalCells.toLocaleString()}`}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Compositing Statistic:</span>
+                <span className="font-medium text-slate-800 text-right">Instantaneous clear-pixel</span>
+              </div>
+            </div>
+
             {!hasRecentScene && (
               <div className="mt-2 flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-900">
                 <span>⚠️</span>
@@ -197,52 +233,90 @@ export default function HPILegend({
             )}
           </div>
         ) : (
-          <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-2.5 shadow-sm">
+          <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-2.5 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Active Layer
+                Active Season & Year
               </span>
-              <span className="rounded bg-slate-200/80 px-2 py-0.5 font-mono text-[11px] font-bold text-slate-800">
-                {fallback.label} / {displayYear}
+              <span className="rounded bg-indigo-100 px-2 py-0.5 font-mono text-[11px] font-bold text-indigo-900 border border-indigo-200">
+                {fallback.label} {displayYear}
               </span>
             </div>
 
-            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
               <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
-                <div className="text-[9px] uppercase tracking-wide text-slate-400">Mean LST</div>
+                <div className="text-[9px] uppercase tracking-wide text-slate-400">
+                  Observed Mean LST
+                </div>
                 <div className="text-sm font-bold text-blue-700">
                   {meanLst.toFixed(1)}°C
                 </div>
               </div>
               <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
-                <div className="text-[9px] uppercase tracking-wide text-slate-400">Max LST</div>
+                <div className="text-[9px] uppercase tracking-wide text-slate-400">
+                  Observed Max LST
+                </div>
                 <div className="text-sm font-bold text-red-700">
                   {maxLst.toFixed(1)}°C
                 </div>
               </div>
             </div>
 
-            {/* Seasonal Scene Provenance */}
-            <div className="mt-2 rounded bg-white p-1.5 border border-slate-100 text-[10px] space-y-0.5 text-slate-600">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Composite:</span>
-                <span className="font-semibold">{stats?.n_scenes ?? fallback.sceneCount} contributing scenes</span>
+            {/* T1(b) Provenance Strip */}
+            <div className="rounded bg-white p-2 border border-slate-200/90 text-[10px] space-y-1 text-slate-700">
+              <div className="flex justify-between items-center font-bold text-slate-800 border-b border-slate-100 pb-1">
+                <span>Provenance Strip</span>
+                <span className="font-mono text-[9px] text-indigo-700">
+                  {layerMode === "lst"
+                    ? (stats?.layer_type ?? "Observed seasonal composite")
+                    : layerMode === "hpi"
+                    ? "HPI baseline"
+                    : "Stage C QC / Analysis"}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Date Window:</span>
-                <span className="font-mono text-[9px]">{stats?.date_window ?? fallback.dateWindow}</span>
+                <span className="text-slate-500">Source:</span>
+                <span className="font-medium text-right text-slate-800">
+                  {stats?.sensor_source ?? "Landsat 8/9 Collection 2 Level-2 ST_B10 (LST)"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Composite Window:</span>
+                <span className="font-mono text-[9px] text-slate-800">
+                  {stats?.date_window ?? fallback.dateWindow}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Contributing Scenes:</span>
+                <span className="font-semibold text-slate-800">
+                  {stats?.n_scenes ?? fallback.sceneCount}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Valid Cells:</span>
+                <span className="font-semibold text-slate-800">
+                  {stats?.n_valid
+                    ? `${stats.n_valid.toLocaleString()} of ${totalCells.toLocaleString()}`
+                    : `${totalCells.toLocaleString()} of ${totalCells.toLocaleString()}`}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Compositing Statistic:</span>
+                <span className="font-medium text-slate-800 text-right">
+                  {stats?.compositing_statistic ?? "pixel-wise seasonal median (median)"}
+                </span>
               </div>
             </div>
 
             {isPostMonsoonNotice && (
-              <div className="mt-2 flex items-center gap-1.5 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-800">
+              <div className="flex items-center gap-1.5 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-800">
                 <span>ℹ️</span>
                 <span>Year 2026 incomplete; validated 2025 observation data is shown.</span>
               </div>
             )}
 
             {isMonsoonPartial && (
-              <div className="mt-2 flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-900">
+              <div className="flex items-center gap-1.5 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-900">
                 <span>⚠️</span>
                 <span>
                   {stats?.n_valid
@@ -257,6 +331,11 @@ export default function HPILegend({
         {/* Layer Mode: HPI Priority */}
         {layerMode === "hpi" && (
           <div>
+            {/* T1(d) Prominent HPI Baseline Notice */}
+            <div className="mb-2.5 rounded bg-amber-50 p-2 border border-amber-200 text-[10px] font-semibold text-amber-900 leading-snug">
+              <span>ℹ️ <strong>HPI Baseline:</strong> HPI is a fixed Summer 2026 baseline and does not change with the season selector.</span>
+            </div>
+
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
                 Heat Priority Index (HPI)
@@ -274,32 +353,39 @@ export default function HPILegend({
               }}
             />
 
-            <div className="mt-1 flex justify-between text-[10px] font-semibold text-slate-600">
-              <span>0 (Low)</span>
-              <span>30 (Mod)</span>
-              <span>60 (High)</span>
-              <span>100 (Critical)</span>
+            {/* T1(c) Class thresholds defined in code (hpiColorScales.ts) */}
+            <div className="mt-1 grid grid-cols-3 gap-1 text-[9.5px] font-medium text-slate-600">
+              <span>&lt;15 (Low)</span>
+              <span>15–30 (Low-Mod)</span>
+              <span>30–45 (Mod)</span>
+              <span>45–60 (Mod-High)</span>
+              <span>60–75 (High)</span>
+              <span>≥75 (Extreme)</span>
             </div>
 
             <div className="mt-3 space-y-1.5 border-t border-slate-100 pt-2 text-[11px]">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-slate-600">
-                  <span className="inline-block h-3 w-3 rounded-full border-2 border-red-600 bg-red-800 shadow-sm" />
-                  Chronic Hotspot (Citywide)
+                  <span className="inline-flex items-center justify-center h-3.5 w-3.5 rounded-full border-2 border-red-600 bg-red-800 shadow-xs text-center text-[9px] leading-[11px] text-white font-bold">
+                    ◎
+                  </span>
+                  Chronic Hotspot (symbol + outline)
                 </span>
                 <span className="font-bold text-red-700">{chronicCount} cells</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-slate-600">
-                  <span className="inline-block h-3 w-3 rounded-sm border border-slate-400 bg-slate-400" />
-                  Unavailable / Excluded
+                  <span
+                    className="inline-block h-3.5 w-3.5 rounded-xs border border-slate-400 bg-slate-300"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
+                    }}
+                  />
+                  <span>Missing Data (no valid observation)</span>
                 </span>
                 <span className="font-medium text-slate-500">SQL NULL</span>
               </div>
-            </div>
-
-            <div className="mt-2.5 rounded bg-slate-50 p-2 border border-slate-200 text-[9.5px] leading-tight text-slate-600">
-              <span className="font-bold">HPI Baseline:</span> The HPI composite score represents baseline Summer 2026 heat vulnerability and is invariant to the seasonal LST layer selector.
             </div>
           </div>
         )}
@@ -312,11 +398,11 @@ export default function HPILegend({
                 Observed {fallback.label} LST
               </span>
               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                Landsat 8/9 · ~10:30 LST (~11:00 IST)
+                Observed (Landsat L2 ST)
               </span>
             </div>
 
-            {/* Unified 20°C - 60°C standard thermal gradient */}
+            {/* T1(c) Fixed 20°C - 60°C standard thermal gradient */}
             <div
               className="mt-2 h-3.5 w-full rounded"
               style={{
@@ -344,6 +430,19 @@ export default function HPILegend({
                 <span>Study Area Extent:</span>
                 <span className="font-medium text-slate-800">{totalCells.toLocaleString()} cells (100m)</span>
               </div>
+              <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                <span className="flex items-center gap-1.5 text-slate-600">
+                  <span
+                    className="inline-block h-3.5 w-3.5 rounded-xs border border-slate-400 bg-slate-300"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
+                    }}
+                  />
+                  <span>Missing Data (no valid observation)</span>
+                </span>
+                <span className="font-medium text-slate-500">Transparent</span>
+              </div>
             </div>
 
             <div className="mt-2 rounded bg-amber-50/90 p-2 border border-amber-200/70 text-[9.5px] leading-snug text-amber-900">
@@ -357,29 +456,48 @@ export default function HPILegend({
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                Confidence & Quality Tier
+                Observational Quality Tier
               </span>
               <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
                 Stage C QC
               </span>
             </div>
 
-            <div className="mt-2.5 grid grid-cols-2 gap-1.5 text-[11px]">
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-emerald-600" />
-                <span className="font-medium text-slate-700">HIGH (≥0.85)</span>
+            {/* T1(c) Quality tiers with symbols + text, not colour alone */}
+            <div className="mt-2.5 space-y-1.5 text-[11px]">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
+                  ✓
+                </span>
+                <span className="font-medium text-slate-800">HIGH (C_i ≥ 0.85)</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-blue-600" />
-                <span className="font-medium text-slate-700">MODERATE (0.70-0.85)</span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center h-4 w-4 rounded-xs bg-blue-600 text-white text-[10px] font-bold">
+                  ▲
+                </span>
+                <span className="font-medium text-slate-800">MODERATE (0.70 ≤ C_i &lt; 0.85)</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-amber-600" />
-                <span className="font-medium text-slate-700">LOW (0.50-0.70)</span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center h-4 w-4 rounded-xs bg-amber-600 text-white text-[10px] font-bold">
+                  ◆
+                </span>
+                <span className="font-medium text-slate-800">LOW (0.50 ≤ C_i &lt; 0.70)</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-rose-600" />
-                <span className="font-medium text-slate-700">INSUFFICIENT (&lt;0.50)</span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center h-4 w-4 rounded-xs bg-rose-600 text-white text-[10px] font-bold">
+                  ✕
+                </span>
+                <span className="font-medium text-slate-800">INSUFFICIENT (C_i &lt; 0.50)</span>
+              </div>
+              <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
+                <span
+                  className="inline-block h-4 w-4 rounded-xs border border-slate-400 bg-slate-300"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
+                  }}
+                />
+                <span className="font-medium text-slate-600">Missing Data (no valid observation)</span>
               </div>
             </div>
 
@@ -388,7 +506,7 @@ export default function HPILegend({
             </div>
 
             <div className="mt-2 text-[10px] text-amber-800 italic bg-amber-50 rounded p-1.5 border border-amber-200">
-              Notice: Confidence index is a heuristic, not a calibrated probability.
+              Notice: Heuristic quality index from QA/observation support, not a probability of correctness.
             </div>
           </div>
         )}
@@ -398,20 +516,33 @@ export default function HPILegend({
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-red-800">
-                Chronic Hotspots Only
+                Chronic Hotspots
               </span>
               <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-800">
-                {chronicCount} Persistent Hotspots
+                {chronicCount} Hotspots
               </span>
             </div>
 
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-700">
-              <span className="inline-block h-4 w-4 rounded-full border-2 border-red-600 bg-red-800" />
-              <span>Multi-year persistent extreme heat cells</span>
+              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full border-2 border-red-600 bg-red-800 text-white text-[10px] font-bold">
+                ◎
+              </span>
+              <span>Persistent extreme heat cells (symbol + outline)</span>
+            </div>
+
+            <div className="mt-2 flex items-center gap-2 pt-1 border-t border-slate-100 text-[11px]">
+              <span
+                className="inline-block h-4 w-4 rounded-xs border border-slate-400 bg-slate-300"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
+                }}
+              />
+              <span className="font-medium text-slate-600">Missing Data (no valid observation)</span>
             </div>
 
             <p className="mt-2 text-[10px] leading-tight text-slate-500">
-              Criterion: Hotspot frequency ≥50%, ≥3 hot seasons, ≥2 distinct years, and ≥4 qualifying seasons.
+              Criterion: Hotspot recurrence frequency ≥ 50% across valid seasons, ≥ 3 hot seasons, ≥ 2 distinct years.
             </p>
           </div>
         )}
@@ -424,7 +555,7 @@ export default function HPILegend({
                 Observed Single Scene LST
               </span>
               <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-800">
-                20°C – 60°C
+                Observed (Landsat L2 ST)
               </span>
             </div>
 
@@ -444,6 +575,7 @@ export default function HPILegend({
               <span>60°C</span>
             </div>
 
+            {/* T1(g) Latest Scene panel */}
             {selectedScene && (
               <div className="mt-2.5 rounded bg-slate-50 p-2 text-[11px] text-slate-700 space-y-1">
                 <div className="flex justify-between items-center">
@@ -457,18 +589,6 @@ export default function HPILegend({
                   <span className="font-semibold">{selectedScene.sensor}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Cloud Cover:</span>
-                  <span className="font-semibold">
-                    {selectedScene.cloud_cover !== null ? `${selectedScene.cloud_cover.toFixed(1)}%` : "N/A"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Clear Pixels (SMC):</span>
-                  <span className="font-semibold text-emerald-700">
-                    {(selectedScene.valid_pixel_fraction * 100).toFixed(1)}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-slate-500">Acquisition (UTC):</span>
                   <span className="font-mono text-[9.5px]">{selectedScene.acquisition_time}</span>
                 </div>
@@ -480,11 +600,34 @@ export default function HPILegend({
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-slate-500">Cloud Cover:</span>
+                  <span className="font-semibold">
+                    {selectedScene.cloud_cover !== null ? `${selectedScene.cloud_cover.toFixed(1)}%` : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Valid Pixels inside SMC:</span>
+                  <span className="font-semibold text-emerald-700">
+                    {(selectedScene.valid_pixel_fraction * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-slate-500">Units:</span>
                   <span className="font-semibold">°C (Celsius)</span>
                 </div>
               </div>
             )}
+
+            <div className="mt-2 flex items-center gap-2 pt-1 border-t border-slate-100 text-[11px]">
+              <span
+                className="inline-block h-4 w-4 rounded-xs border border-slate-400 bg-slate-300"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
+                }}
+              />
+              <span className="font-medium text-slate-600">Missing Data (no valid observation)</span>
+            </div>
 
             <div className="mt-2.5 border-t border-slate-100 pt-2 text-[10px] font-medium text-slate-700 leading-4">
               Skin temperature at ~10:30 local solar time (about 11:00 IST), single scene, not a seasonal composite.
@@ -493,12 +636,13 @@ export default function HPILegend({
             <div className="mt-1 text-[9px] font-medium text-amber-700 bg-amber-50 rounded p-1 border border-amber-200">
               ⚠️ NRT scenes use a different QA mask from the frozen seasonal composites and are not comparable.
             </div>
-
-            <div className="mt-1 text-[9px] text-slate-400">
-              Cloud-masked or unobserved pixels render transparent (nodata). Single-scene values do not flow into HPI, predictions, or recommendations.
-            </div>
           </div>
         )}
+
+        {/* T1(e) Resolution Note */}
+        <div className="mt-2.5 rounded bg-slate-100/90 p-2 border border-slate-200 text-[9px] leading-relaxed text-slate-600">
+          <strong>Resolution Note:</strong> 100 m is the analysis/reporting grid. Landsat TIRS native thermal sampling is about 100 m (distributed at 30 m); 30 m optical indices are aggregated to the grid. Cells are not building- or street-level measurements.
+        </div>
       </div>
     )}
   </div>

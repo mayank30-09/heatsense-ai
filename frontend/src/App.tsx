@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { getHealth, type HealthResponse } from "./services/api";
+import { fetchHeatPrioritySummary } from "./services/heatPriorityApi";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ScienceGlossaryModal from "./components/common/ScienceGlossaryModal";
 import "./styles.css";
@@ -41,6 +42,7 @@ function AppContent() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [showGlossary, setShowGlossary] = useState<boolean>(false);
+  const [observationDates, setObservationDates] = useState<Record<string, string> | null>(null);
 
   const checkHealth = () => {
     getHealth()
@@ -57,6 +59,15 @@ function AppContent() {
 
   useEffect(() => {
     checkHealth();
+    fetchHeatPrioritySummary()
+      .then((data) => {
+        if (data.seasonal_observation_dates) {
+          setObservationDates(data.seasonal_observation_dates);
+        }
+      })
+      .catch(() => {
+        // Fallback or offline state handled gracefully
+      });
   }, []);
 
   const backendConnected = health?.status === "ok";
@@ -312,6 +323,17 @@ function AppContent() {
                 <span>{databaseConnected ? "Connected (127.0.0.1:5433)" : "Unavailable"}</span>
               </span>
             </div>
+
+            {observationDates && (
+              <div className="connection-item text-slate-600 text-xs flex-wrap">
+                <span className="connection-label font-bold text-slate-700">Latest observation date:</span>
+                <span className="font-mono text-[11px] text-slate-800">
+                  {Object.entries(observationDates)
+                    .map(([season, date]) => `${season}: ${date}`)
+                    .join(" · ")}
+                </span>
+              </div>
+            )}
 
             {apiError && (
               <div className="connection-item text-rose-700">

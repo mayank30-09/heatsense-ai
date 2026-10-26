@@ -103,8 +103,8 @@ export default function AreaRecommendationsPanel({
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-900">
               Intervention Recommendations
             </span>
-            <span className="badge-evidence badge-modelled">
-              MODELLED
+            <span className="badge-evidence badge-assumption">
+              ASSUMPTION-BASED ESTIMATE
             </span>
           </div>
           <div className="text-xs font-semibold text-slate-700 truncate max-w-[240px]">
@@ -245,8 +245,8 @@ export default function AreaRecommendationsPanel({
           {/* Polygon Baseline Context Bar */}
           <div className="grid grid-cols-4 gap-1.5 text-[10px] bg-slate-50 p-2 rounded border border-slate-100">
             <div>
-              <span className="text-slate-400 block">Mean LST</span>
-              <strong className="text-slate-700 text-[11px]">
+              <span className="text-slate-400 block" title="Observed (Landsat L2 ST)">Observed LST (Landsat L2 ST)</span>
+              <strong className="text-slate-700 text-[11px]" title="Observed (Landsat L2 ST)">
                 {data.polygon_summary.mean_lst_c !== null ? `${data.polygon_summary.mean_lst_c}°C` : "N/A"}
               </strong>
             </div>

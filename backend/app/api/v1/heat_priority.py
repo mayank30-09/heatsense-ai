@@ -75,6 +75,14 @@ class HeatPrioritySummaryResponse(BaseModel):
     confidence_tier_counts: dict[str, int]
     persistence_tier_counts: dict[str, int]
     normalization_constants: NormalizationConstants = Field(default_factory=NormalizationConstants)
+    seasonal_observation_dates: dict[str, str] = Field(
+        default_factory=lambda: {
+            "Summer 2026": "2026-05-31",
+            "Winter 2026": "2026-02-24",
+            "Monsoon 2026": "2026-09-28",
+            "Post-Monsoon 2025": "2025-11-28",
+        }
+    )
 
 
 class LSTStatsResponse(BaseModel):
@@ -94,6 +102,9 @@ class LSTStatsResponse(BaseModel):
     first_acquisition_date: str | None = None
     last_acquisition_date: str | None = None
     date_window: str | None = None
+    layer_type: str = "Observed seasonal composite"
+    sensor_source: str = "Landsat 8/9 Collection 2 Level-2 ST_B10 (LST)"
+    compositing_statistic: str = "pixel-wise seasonal median (median)"
 
 
 SEASON_PROVENANCE: dict[tuple[str, int], dict[str, Any]] = {
@@ -203,6 +214,11 @@ def get_heat_priority_summary(
     )
     pers_counts = {tier: count for tier, count in db.execute(pers_q).all()}
 
+    obs_dates = {
+        f"{s_key[0].replace('_', '-').title()} {s_key[1]}": p_val.get("last_acquisition_date", "")
+        for s_key, p_val in SEASON_PROVENANCE.items()
+    }
+
     summary_resp = HeatPrioritySummaryResponse(
         scoring_period=scoring_period,
         spec_version=spec_version,
@@ -215,6 +231,7 @@ def get_heat_priority_summary(
         confidence_tier_counts=conf_counts,
         persistence_tier_counts=pers_counts,
         normalization_constants=NormalizationConstants(),
+        seasonal_observation_dates=obs_dates,
     )
     content_hash = hashlib.sha256(summary_resp.model_dump_json().encode("utf-8")).hexdigest()[:16]
     response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"

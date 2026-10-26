@@ -155,15 +155,18 @@ export default function HPIDashboardView({ onSwitchToMap }: HPIDashboardViewProp
               </p>
             </div>
 
-            <div className="decision-card p-5">
+            <div
+              className="decision-card p-5"
+              title="Heuristic quality index from QA/observation support, not a probability of correctness"
+            >
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                High Confidence Rating
+                Observational Quality
               </span>
-              <div className="mt-1.5 text-3xl font-extrabold text-emerald-600 font-mono tabular-nums">
-                {((summary.confidence_tier_counts["HIGH"] || 0) / summary.total_grid_cells * 100).toFixed(1)}%
+              <div className="mt-1.5 text-2xl font-extrabold text-emerald-600 font-mono tabular-nums">
+                {(summary.confidence_tier_counts["HIGH"] || 0).toLocaleString()} of {summary.total_grid_cells.toLocaleString()}
               </div>
-              <p className="mt-1 text-xs text-slate-600">
-                {(summary.confidence_tier_counts["HIGH"] || 0).toLocaleString()} cells with C_i ≥ 0.85
+              <p className="mt-1 text-xs text-slate-600" title="Heuristic quality index from QA/observation support, not a probability of correctness">
+                Cells meeting observational-quality criteria (C_i &ge; 0.85): {(summary.confidence_tier_counts["HIGH"] || 0).toLocaleString()} of {summary.total_grid_cells.toLocaleString()}
               </p>
             </div>
           </div>

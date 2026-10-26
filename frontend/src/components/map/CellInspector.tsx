@@ -210,16 +210,19 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
             Observed Summer LST
           </span>
           <div className="mt-0.5 text-sm font-bold text-slate-900 font-mono">
-            {cell.observed_lst_c !== null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}
+            {cell.observed_lst_c != null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}
           </div>
         </div>
 
-        <div className="rounded-lg bg-slate-50 p-2.5">
+        <div
+          className="rounded-lg bg-slate-50 p-2.5"
+          title="Heuristic quality index from QA/observation support, not a probability of correctness"
+        >
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400">
-              Confidence Tier
+              Observational Quality
             </span>
-            <span className="text-[9px] text-slate-400 italic">Heuristic</span>
+            <span className="text-[9px] text-slate-400 italic">Heuristic C_i</span>
           </div>
           <div
             className="mt-0.5 text-sm font-bold"
@@ -228,12 +231,12 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
             {cell.confidence_tier || "N/A"}{" "}
             {cell.confidence_index !== null && (
               <span className="text-[11px] font-normal text-slate-500 font-mono">
-                ({cell.confidence_index.toFixed(2)})
+                (C_i: {cell.confidence_index.toFixed(2)})
               </span>
             )}
           </div>
-          <div className="mt-1 text-[9px] text-slate-400 italic leading-tight">
-            Confidence index is a heuristic, not a calibrated probability.
+          <div className="mt-1 text-[9px] text-slate-500 leading-tight">
+            Heuristic quality index from QA/observation support, not a probability of correctness
           </div>
         </div>
 

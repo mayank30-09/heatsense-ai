@@ -26,6 +26,7 @@ export interface HeatPrioritySummary {
   confidence_tier_counts: Record<string, number>;
   persistence_tier_counts: Record<string, number>;
   normalization_constants?: NormalizationConstants;
+  seasonal_observation_dates?: Record<string, string>;
 }
 
 export interface GridCellScoreItem {
@@ -99,6 +100,9 @@ export interface LSTStats {
   first_acquisition_date?: string;
   last_acquisition_date?: string;
   date_window?: string;
+  layer_type?: string;
+  sensor_source?: string;
+  compositing_statistic?: string;
 }
 
 export interface ModelValidationSummary {
