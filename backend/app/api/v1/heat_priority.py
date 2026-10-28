@@ -14,13 +14,14 @@ from pathlib import Path as FilePath
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import Float, cast, func, literal, select
+from sqlalchemy.orm import Session, aliased
 
 from backend.app.db.models.stage_c import (
     StageCGridCell,
     StageCGridObservation,
     StageCHeatPriorityScore,
+    StageCSceneObservation,
 )
 from backend.app.db.session import get_db
 from backend.app.raster.catalog import Season
@@ -170,6 +171,26 @@ def load_seasonal_scene_manifest() -> dict[tuple[str, int], dict[str, Any]]:
 SEASON_PROVENANCE: dict[tuple[str, int], dict[str, Any]] = load_seasonal_scene_manifest()
 
 
+class SeasonalObservationItem(BaseModel):
+    """Detailed observation status for an individual season."""
+    season: str = Field(..., description="Season key (summer, winter, post_monsoon, monsoon)")
+    season_label: str = Field(..., description="Human-readable label (e.g. Summer 2026)")
+    year: int = Field(..., description="Observation year")
+    observed_lst_c: float | None = Field(None, description="Observed land surface temperature in Celsius")
+    status: str = Field("Valid", description="Observation status (Valid, Cloud-masked, Unobserved)")
+    reason: str | None = Field(None, description="Explicit quality or masking explanation")
+    obs_count: int | None = Field(None, description="Number of contributing overpasses")
+    delta_to_summer_c: float | None = Field(None, description="Paired difference to summer observation (°C), only where both observations are valid")
+
+
+class MultiYearSummerItem(BaseModel):
+    """Multi-year summer observation record for chronic persistence verification."""
+    year: int = Field(..., description="Summer year")
+    observed_lst_c: float | None = Field(None, description="Summer land surface temperature in Celsius")
+    is_extreme: bool = Field(False, description="Whether LST exceeded thermal extreme threshold in this summer")
+    obs_count: int | None = Field(None, description="Contributing summer scenes")
+
+
 class GridCellScoreItem(BaseModel):
     pixel_id: str
     row_idx: int
@@ -191,6 +212,14 @@ class GridCellScoreItem(BaseModel):
     eligibility_status: str | None = None
     observed_lst_c: float | None = None
     optical_imputation_flag: str | None = None
+    # Multi-season, baseline, and NRT fields
+    active_season: str | None = Field(None, description="Observation season active during query")
+    active_year: int | None = Field(None, description="Observation year active during query")
+    summer_lst_c: float | None = Field(None, description="Authoritative summer baseline LST (°C) that defines HPI")
+    scene_id: str | None = Field(None, description="NRT satellite scene identifier if querying scene layer")
+    scene_lst_c: float | None = Field(None, description="Observed LST (°C) for the specified NRT scene")
+    seasonal_observations: list[SeasonalObservationItem] = Field(default_factory=list, description="4-season observation table")
+    summer_history: list[MultiYearSummerItem] = Field(default_factory=list, description="Multi-year summer persistence history")
 
 
 class GridCellsPaginatedResponse(BaseModel):
@@ -352,6 +381,7 @@ def get_grid_cells(
     spec_version: str = Query("v2.0", description="Specification version"),
     season: Season = Query(Season.summer, description="Observation season to join (summer, winter, post_monsoon, monsoon)"),
     year: int = Query(2026, ge=2020, le=2030, description="Observation year to join"),
+    scene_id: str | None = Query(None, description="Landsat scene ID for single-scene NRT layer"),
     min_hpi: float | None = Query(None, ge=0.0, le=100.0, description="Filter cells with HPI >= min_hpi"),
     is_chronic_hotspot: bool | None = Query(None, description="Filter by chronic hotspot flag"),
     confidence_tier: str | None = Query(
@@ -376,29 +406,40 @@ def get_grid_cells(
 ) -> GridCellsPaginatedResponse:
     """Retrieve paginated grid cells with their HPI scores, observations, and spatial properties."""
     effective_year = 2025 if season == Season.post_monsoon and year == 2026 else year
+    SummerObs = aliased(StageCGridObservation)
+
+    select_cols = [
+        StageCGridCell.pixel_id,
+        StageCGridCell.row_idx,
+        StageCGridCell.col_idx,
+        StageCGridCell.latitude,
+        StageCGridCell.longitude,
+        StageCGridCell.nearest_osm_place_name,
+        StageCGridCell.nearest_osm_distance_m,
+        StageCHeatPriorityScore.heat_priority_score,
+        StageCHeatPriorityScore.thermal_severity_component,
+        StageCHeatPriorityScore.persistence_component,
+        StageCHeatPriorityScore.vegetation_deficit_component,
+        StageCHeatPriorityScore.built_density_component,
+        StageCHeatPriorityScore.confidence_index,
+        StageCHeatPriorityScore.confidence_tier,
+        StageCHeatPriorityScore.persistence_tier,
+        StageCHeatPriorityScore.is_chronic_hotspot,
+        StageCHeatPriorityScore.hotspot_frequency,
+        StageCHeatPriorityScore.eligibility_status,
+        StageCGridObservation.observed_lst_c,
+        StageCGridObservation.optical_imputation_flag,
+        SummerObs.observed_lst_c.label("summer_lst_c"),
+    ]
+
+    if scene_id:
+        SceneObs = aliased(StageCSceneObservation)
+        select_cols.append(SceneObs.observed_lst_c.label("scene_lst_c"))
+    else:
+        select_cols.append(cast(literal(None), Float).label("scene_lst_c"))
+
     query = (
-        select(
-            StageCGridCell.pixel_id,
-            StageCGridCell.row_idx,
-            StageCGridCell.col_idx,
-            StageCGridCell.latitude,
-            StageCGridCell.longitude,
-            StageCGridCell.nearest_osm_place_name,
-            StageCGridCell.nearest_osm_distance_m,
-            StageCHeatPriorityScore.heat_priority_score,
-            StageCHeatPriorityScore.thermal_severity_component,
-            StageCHeatPriorityScore.persistence_component,
-            StageCHeatPriorityScore.vegetation_deficit_component,
-            StageCHeatPriorityScore.built_density_component,
-            StageCHeatPriorityScore.confidence_index,
-            StageCHeatPriorityScore.confidence_tier,
-            StageCHeatPriorityScore.persistence_tier,
-            StageCHeatPriorityScore.is_chronic_hotspot,
-            StageCHeatPriorityScore.hotspot_frequency,
-            StageCHeatPriorityScore.eligibility_status,
-            StageCGridObservation.observed_lst_c,
-            StageCGridObservation.optical_imputation_flag,
-        )
+        select(*select_cols)
         .join(
             StageCHeatPriorityScore,
             StageCGridCell.pixel_id == StageCHeatPriorityScore.pixel_id,
@@ -409,6 +450,23 @@ def get_grid_cells(
             & (StageCGridObservation.year == effective_year)
             & (StageCGridObservation.season == season.value),
         )
+        .outerjoin(
+            SummerObs,
+            (StageCGridCell.pixel_id == SummerObs.pixel_id)
+            & (SummerObs.year == 2026)
+            & (SummerObs.season == "summer"),
+        )
+    )
+
+    if scene_id:
+        query = query.outerjoin(
+            SceneObs,
+            (StageCGridCell.pixel_id == SceneObs.pixel_id)
+            & (SceneObs.scene_id == scene_id),
+        )
+
+    query = (
+        query
         .where(StageCHeatPriorityScore.scoring_period == scoring_period)
         .where(StageCHeatPriorityScore.spec_version == spec_version)
     )
@@ -485,6 +543,11 @@ def get_grid_cells(
             eligibility_status=r.eligibility_status,
             observed_lst_c=safe_float(r.observed_lst_c, 2),
             optical_imputation_flag=r.optical_imputation_flag,
+            active_season=season.value,
+            active_year=effective_year,
+            summer_lst_c=safe_float(r.summer_lst_c, 2),
+            scene_id=scene_id,
+            scene_lst_c=safe_float(r.scene_lst_c, 2) if scene_id else None,
         )
         for r in results
     ]
@@ -507,10 +570,12 @@ def get_grid_cell_detail(
     spec_version: str = Query("v2.0", description="Specification version"),
     season: Season = Query(Season.summer, description="Observation season to join"),
     year: int = Query(2026, ge=2020, le=2030, description="Observation year to join"),
+    scene_id: str | None = Query(None, description="Landsat scene ID for single-scene NRT layer"),
     db: Session = Depends(get_db),
 ) -> GridCellScoreItem:
     """Retrieve detailed Stage C HPI score and components for a specific grid cell."""
     effective_year = 2025 if season == Season.post_monsoon and year == 2026 else year
+
     cell_query = (
         select(
             StageCGridCell.pixel_id,
@@ -531,20 +596,12 @@ def get_grid_cell_detail(
             StageCHeatPriorityScore.is_chronic_hotspot,
             StageCHeatPriorityScore.hotspot_frequency,
             StageCHeatPriorityScore.eligibility_status,
-            StageCGridObservation.observed_lst_c,
-            StageCGridObservation.optical_imputation_flag,
         )
         .outerjoin(
             StageCHeatPriorityScore,
             (StageCGridCell.pixel_id == StageCHeatPriorityScore.pixel_id)
             & (StageCHeatPriorityScore.scoring_period == scoring_period)
             & (StageCHeatPriorityScore.spec_version == spec_version),
-        )
-        .outerjoin(
-            StageCGridObservation,
-            (StageCGridCell.pixel_id == StageCGridObservation.pixel_id)
-            & (StageCGridObservation.year == effective_year)
-            & (StageCGridObservation.season == season.value),
         )
         .where(StageCGridCell.pixel_id == pixel_id)
     )
@@ -555,6 +612,109 @@ def get_grid_cell_detail(
             status_code=404,
             detail=f"Grid cell '{pixel_id}' does not exist.",
         )
+
+    # Query all historical and seasonal observations for this grid cell
+    obs_q = (
+        select(
+            StageCGridObservation.year,
+            StageCGridObservation.season,
+            StageCGridObservation.observed_lst_c,
+            StageCGridObservation.obs_count,
+            StageCGridObservation.optical_imputation_flag,
+        )
+        .where(StageCGridObservation.pixel_id == pixel_id)
+        .order_by(StageCGridObservation.year.desc(), StageCGridObservation.season)
+    )
+    all_obs = db.execute(obs_q).all()
+    obs_map = {(row.season, row.year): row for row in all_obs}
+
+    # Active season observation
+    active_row = obs_map.get((season.value, effective_year))
+    active_lst = safe_float(active_row.observed_lst_c, 2) if active_row else None
+    active_flag = active_row.optical_imputation_flag if active_row else None
+
+    # Summer baseline observation (Summer 2026, or latest summer)
+    summer_2026_row = obs_map.get(("summer", 2026))
+    if summer_2026_row and summer_2026_row.observed_lst_c is not None:
+        summer_baseline_lst = safe_float(summer_2026_row.observed_lst_c, 2)
+    else:
+        # Fallback to any summer observation
+        summer_candidates = [row for row in all_obs if row.season == "summer" and row.observed_lst_c is not None]
+        summer_baseline_lst = safe_float(summer_candidates[0].observed_lst_c, 2) if summer_candidates else None
+
+    # Assemble compact 4-season observation table
+    # If a specific same-year comparison year is provided (e.g. 2022-2025 where all 4 exist):
+    if year in (2022, 2023, 2024, 2025):
+        canonical_seasons = [
+            ("summer", year, f"Summer {year}"),
+            ("winter", year, f"Winter {year}"),
+            ("post_monsoon", year, f"Post-Monsoon {year}"),
+            ("monsoon", year, f"Monsoon {year}"),
+        ]
+        summer_obs_row = obs_map.get(("summer", year))
+    else:
+        canonical_seasons = [
+            ("summer", 2026, "Summer 2026"),
+            ("winter", 2026, "Winter 2026"),
+            ("post_monsoon", 2025, "Post-Monsoon 2025"),
+            ("monsoon", 2026, "Monsoon 2026"),
+        ]
+        summer_obs_row = obs_map.get(("summer", 2026))
+
+    summer_ref_c = safe_float(summer_obs_row.observed_lst_c, 2) if (summer_obs_row and summer_obs_row.observed_lst_c is not None) else None
+
+    seasonal_observations: list[SeasonalObservationItem] = []
+    for s_key, s_yr, s_label in canonical_seasons:
+        c_row = obs_map.get((s_key, s_yr))
+        if c_row and c_row.observed_lst_c is not None:
+            c_cnt = int(c_row.obs_count) if c_row.obs_count is not None else None
+            status_str = "Valid"
+            reason_str = f"Valid ({c_cnt} overpasses)" if c_cnt else "Valid observation"
+            obs_c = safe_float(c_row.observed_lst_c, 2)
+        else:
+            status_str = "Cloud-masked"
+            reason_str = f"Cloud-masked in {s_key.replace('_', ' ')} {s_yr} (QA filtered)"
+            obs_c = None
+            c_cnt = None
+
+        # Paired difference only where both seasons have valid observations
+        delta_val = round(obs_c - summer_ref_c, 2) if (obs_c is not None and summer_ref_c is not None) else None
+
+        seasonal_observations.append(
+            SeasonalObservationItem(
+                season=s_key,
+                season_label=s_label,
+                year=s_yr,
+                observed_lst_c=obs_c,
+                status=status_str,
+                reason=reason_str,
+                obs_count=c_cnt,
+                delta_to_summer_c=delta_val,
+            )
+        )
+
+    # Multi-year summer history for persistence evaluation
+    summer_history: list[MultiYearSummerItem] = []
+    for row in all_obs:
+        if row.season == "summer":
+            is_ext = bool(row.observed_lst_c is not None and row.observed_lst_c >= 45.0)
+            summer_history.append(
+                MultiYearSummerItem(
+                    year=row.year,
+                    observed_lst_c=safe_float(row.observed_lst_c, 2),
+                    is_extreme=is_ext,
+                    obs_count=int(row.obs_count) if row.obs_count is not None else None,
+                )
+            )
+
+    # NRT Scene observation
+    scene_lst_val: float | None = None
+    if scene_id:
+        scene_obs_q = select(StageCSceneObservation.observed_lst_c).where(
+            StageCSceneObservation.scene_id == scene_id,
+            StageCSceneObservation.pixel_id == pixel_id,
+        )
+        scene_lst_val = safe_float(db.scalar(scene_obs_q), 2)
 
     cell_resp = GridCellScoreItem(
         pixel_id=r.pixel_id,
@@ -575,8 +735,15 @@ def get_grid_cell_detail(
         is_chronic_hotspot=bool(r.is_chronic_hotspot) if r.is_chronic_hotspot is not None else False,
         hotspot_frequency=safe_float(r.hotspot_frequency, 4),
         eligibility_status=r.eligibility_status,
-        observed_lst_c=safe_float(r.observed_lst_c, 2),
-        optical_imputation_flag=r.optical_imputation_flag,
+        observed_lst_c=active_lst,
+        optical_imputation_flag=active_flag,
+        active_season=season.value,
+        active_year=effective_year,
+        summer_lst_c=summer_baseline_lst,
+        scene_id=scene_id,
+        scene_lst_c=scene_lst_val,
+        seasonal_observations=seasonal_observations,
+        summer_history=summer_history,
     )
     content_hash = hashlib.sha256(cell_resp.model_dump_json().encode("utf-8")).hexdigest()[:16]
     response.headers["Cache-Control"] = "public, max-age=1800, must-revalidate"

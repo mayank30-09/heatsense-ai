@@ -29,6 +29,24 @@ export interface HeatPrioritySummary {
   seasonal_observation_dates?: Record<string, string>;
 }
 
+export interface SeasonalObservationItem {
+  season: string;
+  season_label: string;
+  year: number;
+  observed_lst_c: number | null;
+  status: string;
+  reason?: string | null;
+  obs_count?: number | null;
+  delta_to_summer_c?: number | null;
+}
+
+export interface MultiYearSummerItem {
+  year: number;
+  observed_lst_c: number | null;
+  is_extreme: boolean;
+  obs_count?: number | null;
+}
+
 export interface GridCellScoreItem {
   pixel_id: string;
   row_idx: number;
@@ -50,6 +68,14 @@ export interface GridCellScoreItem {
   eligibility_status: string | null;
   observed_lst_c: number | null;
   optical_imputation_flag: string | null;
+  // Multi-season, baseline, and NRT fields
+  active_season?: string | null;
+  active_year?: number | null;
+  summer_lst_c?: number | null;
+  scene_id?: string | null;
+  scene_lst_c?: number | null;
+  seasonal_observations?: SeasonalObservationItem[];
+  summer_history?: MultiYearSummerItem[];
 }
 
 export interface GridCellsPaginatedResponse {
@@ -79,6 +105,7 @@ export interface CellQueryFilters {
   locality?: string;
   season?: SeasonName;
   year?: number;
+  scene_id?: string;
   limit?: number;
   offset?: number;
 }

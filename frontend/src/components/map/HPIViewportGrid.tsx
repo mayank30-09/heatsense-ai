@@ -20,6 +20,7 @@ interface HPIViewportGridProps {
   minHpiFilter?: number;
   season?: SeasonName;
   year?: number;
+  sceneId?: string;
 }
 
 const MIN_ZOOM_FOR_CELLS = 12;
@@ -31,16 +32,19 @@ export default function HPIViewportGrid({
   minHpiFilter,
   season = "summer",
   year,
+  sceneId,
 }: HPIViewportGridProps) {
   const map = useMap();
   const [cells, setCells] = useState<GridCellScoreItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUsingCachedData, setIsUsingCachedData] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(map.getZoom());
   const [totalInView, setTotalInView] = useState(0);
 
   const debounceTimer = useRef<number | null>(null);
   const abortController = useRef<AbortController | null>(null);
+  const cellCache = useRef<Map<string, { items: GridCellScoreItem[]; total: number }>>(new Map());
 
   const resolvedYear = year ?? 2026;
   const effectiveYear = season === "post_monsoon" && resolvedYear === 2026 ? 2025 : resolvedYear;
@@ -49,12 +53,13 @@ export default function HPIViewportGrid({
     const currentZoom = map.getZoom();
     setZoomLevel(currentZoom);
 
-    // Guardrail: Do not download thousands of cells at low zoom!
+    // Guardrail: Do not download thousands of cells at low zoom unless chronic mode
     if (currentZoom < MIN_ZOOM_FOR_CELLS && layerMode !== "chronic") {
       setCells([]);
       setTotalInView(0);
       setIsLoading(false);
       setError(null);
+      setIsUsingCachedData(false);
       return;
     }
 
@@ -68,9 +73,6 @@ export default function HPIViewportGrid({
       }
       abortController.current = new AbortController();
 
-      setIsLoading(true);
-      setError(null);
-
       const bounds = map.getBounds();
       const bbox: ViewportBBox = {
         min_lon: bounds.getWest(),
@@ -79,40 +81,52 @@ export default function HPIViewportGrid({
         max_lat: bounds.getNorth(),
       };
 
-      if (layerMode === "latest_scene") {
-        setCells([]);
-        setTotalInView(0);
-        return;
+      // Composite cache key explicitly includes layerMode + season + effectiveYear + sceneId + cell bounds
+      const cacheKey = `${layerMode}:${season}:${effectiveYear}:${sceneId ?? ""}:${minHpiFilter ?? ""}:${bbox.min_lon.toFixed(3)},${bbox.min_lat.toFixed(3)},${bbox.max_lon.toFixed(3)},${bbox.max_lat.toFixed(3)}`;
+
+      // Check cache first for instant responsiveness
+      const cached = cellCache.current.get(cacheKey);
+      if (cached) {
+        setCells(cached.items);
+        setTotalInView(cached.total);
       }
+
+      setIsLoading(true);
+      setError(null);
 
       try {
         const res = await fetchGridCells(
           {
             bbox: layerMode === "chronic" && currentZoom < MIN_ZOOM_FOR_CELLS ? undefined : bbox,
             is_chronic_hotspot: layerMode === "chronic" ? true : undefined,
-            min_hpi: minHpiFilter,
+            min_hpi: layerMode === "latest_scene" ? undefined : minHpiFilter,
             season: season,
             year: effectiveYear,
+            scene_id: layerMode === "latest_scene" ? sceneId : undefined,
             limit: 350,
           },
           abortController.current.signal
         );
 
+        cellCache.current.set(cacheKey, { items: res.items, total: res.total });
         setCells(res.items);
         setTotalInView(res.total);
+        setIsUsingCachedData(false);
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === "AbortError") {
-          return; // Ignore aborted requests
+          return;
         }
         const message = err instanceof Error ? err.message : "Failed to load grid cells";
         setError(message);
+        if (cached) {
+          setIsUsingCachedData(true);
+        }
       } finally {
         setIsLoading(false);
       }
     }, 250);
-  }, [map, layerMode, minHpiFilter, season, effectiveYear]);
+  }, [map, layerMode, minHpiFilter, season, effectiveYear, sceneId]);
 
-  // Hook into Leaflet map events for bounded viewport loading
   useMapEvents({
     moveend: () => loadViewportCells(),
     zoomend: () => loadViewportCells(),
@@ -139,6 +153,8 @@ export default function HPIViewportGrid({
       fillColor = getHPIColor(cell.heat_priority_score, cell.is_chronic_hotspot);
     } else if (layerMode === "lst") {
       fillColor = getLSTColor(cell.observed_lst_c);
+    } else if (layerMode === "latest_scene") {
+      fillColor = getLSTColor(cell.scene_lst_c ?? cell.observed_lst_c);
     } else if (layerMode === "confidence") {
       fillColor = getConfidenceColor(cell.confidence_tier);
     } else if (layerMode === "chronic") {
@@ -160,13 +176,9 @@ export default function HPIViewportGrid({
     };
   };
 
-  if (layerMode === "latest_scene") {
-    return null;
-  }
-
   return (
     <>
-      {/* Zoom level warning / banner when zoomed out */}
+      {/* Zoom level warning banner when zoomed out */}
       {zoomLevel < MIN_ZOOM_FOR_CELLS && layerMode !== "chronic" && (
         <div className="pointer-events-none absolute top-3 left-1/2 z-[1000] -translate-x-1/2">
           <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-blue-200 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur">
@@ -193,15 +205,25 @@ export default function HPIViewportGrid({
         </div>
       )}
 
+      {/* Offline cached data notice */}
+      {isUsingCachedData && (
+        <div className="pointer-events-none absolute top-12 left-14 z-[1000]">
+          <div className="pointer-events-auto flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50/95 px-3 py-1.5 shadow-sm backdrop-blur text-amber-900 text-xs font-medium">
+            <span>⚠️</span>
+            <span>Backend unavailable: displaying cached grid cells.</span>
+          </div>
+        </div>
+      )}
+
       {/* Error & Retry Banner */}
-      {error && (
+      {error && !isUsingCachedData && (
         <div className="pointer-events-none absolute top-3 left-14 z-[1000]">
           <div className="pointer-events-auto flex items-center gap-2 rounded-md border border-red-200 bg-red-50/95 px-3 py-1.5 shadow-sm backdrop-blur">
             <span className="text-xs font-medium text-red-800">{error}</span>
             <button
               type="button"
               onClick={loadViewportCells}
-              className="rounded bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white hover:bg-red-700 focus:outline-none"
+              className="rounded bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white hover:bg-red-700 focus:outline-none cursor-pointer"
             >
               Retry
             </button>
@@ -221,6 +243,8 @@ export default function HPIViewportGrid({
       {/* Render grid cell markers */}
       {cells.map((cell) => {
         const style = getMarkerStyle(cell);
+        const summerVal = cell.summer_lst_c ?? (season === "summer" ? cell.observed_lst_c : null);
+
         return (
           <CircleMarker
             key={cell.pixel_id}
@@ -239,27 +263,46 @@ export default function HPIViewportGrid({
             <Tooltip direction="top" offset={[0, -6]} opacity={0.95}>
               <div className="font-sans text-xs">
                 <div className="font-bold text-slate-900 font-mono">{cell.pixel_id}</div>
+
                 {layerMode === "hpi" && (
                   <>
                     <div>
                       HPI: <strong>{cell.heat_priority_score !== null ? cell.heat_priority_score.toFixed(1) : "Unavailable"}</strong>
                     </div>
                     <div className="text-[11px] text-slate-600">
-                      LST ({season}): <strong>{cell.observed_lst_c !== null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}</strong>
+                      Summer LST (Baseline): <strong>{summerVal !== null ? `${summerVal.toFixed(1)}°C` : "N/A"}</strong>
                     </div>
                   </>
                 )}
+
                 {layerMode === "lst" && (
                   <div>
-                    LST ({season} {effectiveYear}): <strong>{cell.observed_lst_c !== null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}</strong>
+                    Observed LST ({season} {effectiveYear}): <strong>{cell.observed_lst_c !== null ? `${cell.observed_lst_c.toFixed(1)}°C` : "Cloud-masked"}</strong>
                   </div>
                 )}
+
+                {layerMode === "latest_scene" && (
+                  <div>
+                    Scene LST: <strong>{(cell.scene_lst_c ?? cell.observed_lst_c) !== null ? `${(cell.scene_lst_c ?? cell.observed_lst_c)!.toFixed(1)}°C` : "N/A"}</strong>
+                  </div>
+                )}
+
                 {layerMode === "confidence" && (
                   <div>
                     Tier: <strong>{cell.confidence_tier || "N/A"}</strong> ({cell.confidence_index?.toFixed(2)})
                   </div>
                 )}
-                {cell.is_chronic_hotspot && (
+
+                {layerMode === "chronic" && (
+                  <div>
+                    <div className="text-red-700 font-bold">Chronic Hotspot (HPI {cell.heat_priority_score?.toFixed(1)})</div>
+                    <div className="text-[11px] text-slate-600">
+                      Summer LST: <strong>{summerVal !== null ? `${summerVal.toFixed(1)}°C` : "N/A"}</strong>
+                    </div>
+                  </div>
+                )}
+
+                {cell.is_chronic_hotspot && layerMode !== "chronic" && (
                   <div className="text-[10px] font-bold text-red-600 uppercase">Chronic Hotspot</div>
                 )}
                 <div className="text-[10px] text-slate-500">Click to inspect full details</div>

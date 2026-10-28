@@ -249,3 +249,66 @@ class StageCSceneObservation(Base):
 
     scene = relationship("StageCScene", back_populates="observations")
     grid_cell = relationship("StageCGridCell", back_populates="scene_observations")
+
+
+class StageCSceneRegistry(Base):
+    """Near-real-time scene lifecycle registry tracking discovery to publication/rejection."""
+
+    __tablename__ = "stage_c_scene_registry"
+
+    scene_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    sensor: Mapped[str] = mapped_column(String(32), nullable=False)
+    acquisition_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    acquisition_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    path: Mapped[int] = mapped_column(Integer, nullable=False, default=148)
+    row: Mapped[int] = mapped_column(Integer, nullable=False, default=45)
+    cloud_cover: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    valid_pixel_fraction: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    clear_threshold: Mapped[float] = mapped_column(Float(24), nullable=False, default=0.40)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="discovered", index=True)
+    rejection_reason: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    mean_lst_c: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    max_lst_c: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    cog_path: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('discovered', 'downloaded', 'qa_passed', 'scored', 'published', 'rejected')",
+            name="ck_scene_registry_status",
+        ),
+        CheckConstraint(
+            "clear_threshold >= 0.0 AND clear_threshold <= 1.0",
+            name="ck_scene_registry_threshold",
+        ),
+    )
+
+
+class StageCProvisionalHotspot(Base):
+    """Provisional single-scene NRT hotspot flagged independently of frozen HPI tables."""
+
+    __tablename__ = "stage_c_provisional_hotspots"
+
+    scene_id: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
+    pixel_id: Mapped[str] = mapped_column(
+        String(16), ForeignKey("stage_c_grid_cells.pixel_id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    observed_lst_c: Mapped[float] = mapped_column(Float(24), nullable=False)
+    climatology_lst_c: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    thermal_anomaly_c: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    percentile_rank: Mapped[float | None] = mapped_column(Float(24), nullable=True)
+    is_provisional_hotspot: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    hotspot_type: Mapped[str] = mapped_column(
+        String(64), nullable=False, default="Provisional NRT hotspot, single scene"
+    )
+    flagged_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    grid_cell = relationship("StageCGridCell")
+

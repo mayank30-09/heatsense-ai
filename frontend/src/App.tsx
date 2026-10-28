@@ -325,9 +325,9 @@ function AppContent() {
             </div>
 
             {observationDates && (
-              <div className="connection-item text-slate-600 text-xs flex-wrap">
-                <span className="connection-label font-bold text-slate-700">Latest observation date:</span>
-                <span className="font-mono text-[11px] text-slate-800">
+              <div className="connection-item text-slate-600 text-xs flex-wrap max-w-full">
+                <span className="connection-label font-bold text-slate-700 shrink-0">Latest observation date:</span>
+                <span className="font-mono text-[11px] text-slate-800 break-words leading-tight">
                   {Object.entries(observationDates)
                     .map(([season, date]) => `${season}: ${date}`)
                     .join(" · ")}

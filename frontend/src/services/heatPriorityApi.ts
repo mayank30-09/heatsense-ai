@@ -70,6 +70,10 @@ export async function fetchGridCells(
     params.set("year", filters.year.toString());
   }
 
+  if (filters.scene_id) {
+    params.set("scene_id", filters.scene_id);
+  }
+
   params.set("limit", (filters.limit ?? 250).toString());
   params.set("offset", (filters.offset ?? 0).toString());
 
@@ -82,13 +86,27 @@ export async function fetchGridCells(
 
 export async function fetchGridCellDetail(
   pixelId: string,
+  season?: SeasonName,
+  year?: number,
+  sceneId?: string,
   scoringPeriod: string = "2026_summer_operational",
   specVersion: string = "v2.0",
   signal?: AbortSignal
 ): Promise<GridCellScoreItem> {
-  const url = `${HEAT_PRIORITY_BASE_URL}/cell/${encodeURIComponent(pixelId)}?scoring_period=${encodeURIComponent(
-    scoringPeriod
-  )}&spec_version=${encodeURIComponent(specVersion)}`;
+  const params = new URLSearchParams();
+  params.set("scoring_period", scoringPeriod);
+  params.set("spec_version", specVersion);
+  if (season) {
+    params.set("season", season);
+  }
+  if (year !== undefined && year !== null) {
+    params.set("year", year.toString());
+  }
+  if (sceneId) {
+    params.set("scene_id", sceneId);
+  }
+
+  const url = `${HEAT_PRIORITY_BASE_URL}/cell/${encodeURIComponent(pixelId)}?${params.toString()}`;
 
   const response = await fetch(url, { signal });
   if (!response.ok) {

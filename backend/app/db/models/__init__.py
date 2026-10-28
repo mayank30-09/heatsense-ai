@@ -7,6 +7,8 @@ from backend.app.db.models.stage_c import (
     StageCHeatPriorityScore,
     StageCScene,
     StageCSceneObservation,
+    StageCSceneRegistry,
+    StageCProvisionalHotspot,
 )
 
 from backend.app.db.models.stage_d import (
@@ -23,6 +25,8 @@ __all__ = [
     "StageCHeatPriorityScore",
     "StageCScene",
     "StageCSceneObservation",
+    "StageCSceneRegistry",
+    "StageCProvisionalHotspot",
     "StageDInterventionCandidate",
     "StageDScenarioResult",
 ]

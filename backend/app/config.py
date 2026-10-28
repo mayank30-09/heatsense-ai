@@ -29,6 +29,15 @@ class Settings(BaseSettings):
     auth_rate_limit_window_seconds: int = Field(
         default=60, ge=1, le=86400, validation_alias="AUTH_RATE_LIMIT_WINDOW_SECONDS"
     )
+    nrt_min_valid_fraction: float = Field(
+        default=0.40, ge=0.0, le=1.0, validation_alias="NRT_MIN_VALID_FRACTION"
+    )
+    nrt_provisional_hotspot_percentile: float = Field(
+        default=0.90, ge=0.50, le=1.0, validation_alias="NRT_PROVISIONAL_HOTSPOT_PERCENTILE"
+    )
+    nrt_anomaly_threshold_c: float = Field(
+        default=3.0, ge=0.0, le=20.0, validation_alias="NRT_ANOMALY_THRESHOLD_C"
+    )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

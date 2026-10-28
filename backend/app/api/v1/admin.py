@@ -29,6 +29,39 @@ class CostParameterUpdateRequest(BaseModel):
     cool_pavement_per_m2_inr: float = Field(..., gt=0.0, description="Cost per m² cool pavement in INR")
 
 
+class SceneCheckRequest(BaseModel):
+    mock: bool = Field(default=False, description="Process synthetic mock scene for offline testing")
+    dry_run: bool = Field(default=False, description="Run without persisting changes")
+    min_valid_fraction: float | None = Field(default=None, ge=0.0, le=1.0)
+    target_date: str | None = Field(default=None, description="Target date YYYY-MM-DD")
+    start_date: str | None = Field(default=None, description="Start date YYYY-MM-DD")
+    end_date: str | None = Field(default=None, description="End date YYYY-MM-DD")
+
+
+@router.post("/scenes/check")
+def check_nrt_scenes(
+    payload: SceneCheckRequest = SceneCheckRequest(),
+    current_user: User = Depends(require_admin),
+) -> dict[str, Any]:
+    """Trigger NRT Landsat scene discovery and processing. Restricted to Admin."""
+    from scripts.discover_nrt_scenes import run_discovery
+
+    results = run_discovery(
+        mock=payload.mock,
+        dry_run=payload.dry_run,
+        clear_threshold=payload.min_valid_fraction or 0.40,
+        target_date=payload.target_date,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+    )
+    return {
+        "status": "success",
+        "operator": current_user.username,
+        "scenes_processed": len(results),
+        "results": results,
+    }
+
+
 class IngestDatasetRequest(BaseModel):
     dataset_name: str = Field(..., min_length=3, max_length=100)
     source_type: str = Field(..., pattern=r"^(landsat|sentinel|osm|dem|weather)$")
