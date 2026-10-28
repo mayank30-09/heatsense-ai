@@ -254,7 +254,7 @@ Execute the backend test suite inside the Python virtual environment:
 
 # Run specific domain test suites:
 # 1. Zonal Analysis & Recommendations:
-.\.venv\Scripts\python.exe -m pytest backend/tests/test_analysis.py backend/tests/test_analysis_recommendations.py -v
+.\.venv\Scripts\python.exe -m pytest backend/tests/test_analysis.py backend/tests/test_recommendations.py -v
 
 # 2. Stage C Heat Priority Scoring & API:
 .\.venv\Scripts\python.exe -m pytest backend/tests/test_stage_c_api.py backend/tests/test_stage_c_scoring.py -v
@@ -282,14 +282,14 @@ npm test -- --run
 ```
 *Expected result:*
 - **8 test files passed**, **55 tests passed** in ~1.7 seconds across:
-  1. `src/utils/__tests__/hpiColorScales.test.ts` (9 tests)
-  2. `src/services/__tests__/api.test.ts` (3 tests)
-  3. `src/services/__tests__/scenesApi.test.ts` (4 tests)
-  4. `src/services/__tests__/heatPriorityApi.test.ts` (6 tests)
-  5. `src/services/__tests__/recommendationsApi.test.ts` (4 tests)
-  6. `src/services/__tests__/interventionsApi.test.ts` (13 tests)
-  7. `src/services/__tests__/authApi.test.ts` (12 tests)
-  8. `src/components/map/__tests__/navigation.test.tsx` (4 tests)
+  1. `frontend/src/utils/__tests__/hpiColorScales.test.ts` (9 tests)
+  2. `frontend/src/services/__tests__/api.test.ts` (3 tests)
+  3. `frontend/src/services/__tests__/scenesApi.test.ts` (4 tests)
+  4. `frontend/src/services/__tests__/heatPriorityApi.test.ts` (6 tests)
+  5. `frontend/src/services/__tests__/recommendationsApi.test.ts` (4 tests)
+  6. `frontend/src/services/__tests__/interventionsApi.test.ts` (13 tests)
+  7. `frontend/src/services/__tests__/authApi.test.ts` (12 tests)
+  8. `frontend/src/components/map/__tests__/navigation.test.tsx` (4 tests)
 
 ---
 
@@ -301,10 +301,72 @@ If port 5433 is in use by another local service:
 2. Update `POSTGRES_PORT` in `.env` to an alternate open port (e.g., 5434).
 
 ### Raster Tile 404 / Missing TIF Warning
-Ensure that the Cloud-Optimized GeoTIFFs (`data/cogs/`) are present and readable. The backend automatically handles season-to-file mapping with fallback to baseline tiles.
+Ensure that the Cloud-Optimized GeoTIFFs (`data/processed/seasonal/`) are present and readable. The backend automatically handles season-to-file mapping with fallback to baseline tiles.
 
 ### 403 Forbidden on Optimization Endpoint
 The optimization API (`POST /api/v1/interventions/optimize`) requires `planner` or `admin` role. Authenticate via `/api/v1/auth/login` to obtain an authorized JWT session token.
 
 ### Evidence & Truth Audit
 For complete classification of all scientific, geospatial, statistical, and engineering assertions across the platform into MEASURED, MODELLED, ASSUMPTION, or UNVERIFIED, refer to [`docs/EVIDENCE_REGISTER.md`](file:///e:/FINAL%20YEAR%20PROJECT/heatsense-ai/docs/EVIDENCE_REGISTER.md).
+
+---
+
+## 10. Near-Real-Time (NRT) Landsat Pipeline & Automation
+
+The HEATSENSE AI NRT pipeline automatically discovers, ingests, quality-masks, and evaluates new Landsat 8/9 Level-2 thermal scenes over Surat (WRS-2 Path 148, Row 45) every morning, ensuring operational freshness while strictly preserving frozen science baselines.
+
+### Architectural Guardrails
+1. **Scientific Freeze Protection:** Daily discovery NEVER modifies files in `artifacts/ml_freeze/` or the authoritative 223 chronic hotspots.
+2. **Idempotency:** Scene IDs are uniquely tracked in `stage_c_scene_registry`. Re-running discovery on identical scenes never duplicates database records.
+3. **Quality Gate:** Scenes with less than 40% clear pixels across the 49,747 canonical SMC cells are marked `rejected` with an explicit reason (e.g. `Excessive cloud contamination: 15.1% clear over SMC boundary (< 40.0% threshold)`).
+4. **Provisional Hotspots:** Provisional hotspots are flagged in `stage_c_provisional_hotspots` with label `"Provisional NRT hotspot, single scene"` and are never conflated with multi-year chronic hotspots or composite HPI scores.
+
+### Manual / Test Execution
+```powershell
+# Run discovery in dry-run mode (no database writes)
+.\.venv\Scripts\python.exe scripts/discover_nrt_scenes.py --dry-run
+
+# Run offline mock discovery (simulates synthetic overpass)
+.\.venv\Scripts\python.exe scripts/discover_nrt_scenes.py --mock
+
+# Run live Earth Engine discovery for a specific date window
+.\.venv\Scripts\python.exe scripts/discover_nrt_scenes.py --start-date 2026-10-01 --end-date 2026-10-27
+```
+
+### Automated Scheduling
+
+#### Windows Task Scheduler (PowerShell)
+To register the automated discovery job to execute daily at 06:00 IST:
+```powershell
+$Action = New-ScheduledTaskAction -Execute "E:\FINAL YEAR PROJECT\heatsense-ai\.venv\Scripts\python.exe" `
+    -Argument "scripts\discover_nrt_scenes.py" `
+    -WorkingDirectory "E:\FINAL YEAR PROJECT\heatsense-ai"
+
+$Trigger = New-ScheduledTaskTrigger -Daily -At 6:00AM
+
+$Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+
+Register-ScheduledTask -TaskName "HeatSense_NRT_Discovery" `
+    -Action $Action `
+    -Trigger $Trigger `
+    -Settings $Settings `
+    -Description "HEATSENSE AI Daily Landsat 8/9 NRT Discovery over Surat SMC (WRS 148/45)"
+```
+
+#### Linux Cron Configuration
+On Linux production or container host environments, install the following cron entry (`crontab -e`):
+```bash
+# HeatSense AI Daily Landsat 8/9 NRT Discovery over Surat SMC (06:00 IST / 00:30 UTC)
+30 0 * * * cd /opt/heatsense-ai && /opt/heatsense-ai/.venv/bin/python scripts/discover_nrt_scenes.py >> /var/log/heatsense_nrt.log 2>&1
+```
+
+### Model Retraining & Candidate Workflow
+Model updates are never applied automatically to production or the frozen baseline. To train a candidate model on expanded observations:
+```powershell
+.\.venv\Scripts\python.exe scripts/retrain_candidate.py --data data/processed/sensitivity/policy_d/analysis.parquet
+```
+- Candidate artifacts are isolated in `artifacts/ml_candidates/<YYYYMMDD>/` with their own independent SHA-256 manifests.
+- Evaluated on the 132 dev / 33 test holdout blocks ($Dev \cap Test = \emptyset$).
+- Reports pooled and spatial $R^2$ side-by-side with the frozen baseline (Pooled $R^2$: 0.9006, Spatial $R^2$: 0.6919).
+- Requires explicit user and municipal administrator consent before any freeze promotion.
+

@@ -170,7 +170,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                 Summer Physical: {data.model_evaluations?.spatial_physical_only.mae.toFixed(2) || "1.40"}°C
               </p>
               <p className="text-[10px] text-slate-500">
-                Sub-1.5°C threshold achieved
+                Screening-level holdout MAE
               </p>
             </div>
 

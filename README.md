@@ -155,12 +155,12 @@ cd ..
 ## 6. Scientific Framework & Methodology Summary
 
 ### 1. Multi-Temporal Landsat Thermal Observations
-- Seasonal composites integrate **62 authentic USGS Landsat 8/9 Level-2 overpasses** (WRS-2 Path 148, Row 045) across 19 processing windows (2022–2026).
+- Seasonal composites integrate **62 scenes in the four current seasonal composites (Summer 2026: 22, Winter 2026: 20, Monsoon 2026: 6, Post-Monsoon 2025: 14); the archive has 19 seasonal composites** (WRS-2 Path 148, Row 045).
 - Pixel-wise median aggregation filters transient clouds, smoke, and atmospheric artifacts.
 - Near-Real-Time (NRT) overpass feed (e.g. October 14, 2026) displays single-pass observations for situational awareness, strictly excluded from multi-year baseline indices.
 
 ### 2. Machine Learning Baseline & Dual $R^2$ Reporting
-- **Model:** Gradient Boosted Decision Trees (`xgb_tuned_policy_d.json`) trained on physical indices (`NDVI`, `NDBI`, `NDWI`, observation count, QA score). Coordinates are 100% excluded.
+- **Model:** Gradient Boosted Decision Trees (`artifacts/ml_freeze/xgb_tuned_policy_d.json`) trained on physical indices (`NDVI`, `NDBI`, `NDWI`, observation count, QA score). Coordinates are 100% excluded.
 - **Pooled Random-Split Accuracy:** $R^2 = 0.9006$, $\text{MAE} = 1.2726^\circ\text{C}$, $\text{RMSE} = 1.7524^\circ\text{C}$ on 203,758 holdout rows.
 - **Geographically Blocked Spatial Holdout:** $R^2 = 0.6919$ evaluated across 33 isolated $2\text{km} \times 2\text{km}$ spatial blocks ($\text{Dev} \cap \text{Test} = \emptyset$). Both metrics are disclosed side-by-side to reflect out-of-neighborhood generalization without inflating variance explained.
 - **Conformal Prediction:** Non-parametric split conformal calibration provides $\pm 2.98^\circ\text{C}$ uncertainty bounds (90.15% empirical coverage at nominal 90.0%).

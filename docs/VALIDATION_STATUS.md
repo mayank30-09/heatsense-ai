@@ -49,10 +49,10 @@ graph TD
 | **`CHK-08-MODEL-COMPARISON`** | Performance Reproduction | Controlled 5-fold spatial CV model comparison | RF RMSE $1.8024^\circ\text{C}$, XGBoost RMSE $1.8280^\circ\text{C}$ | RF $1.8024 \pm 0.0545$, XGBoost $1.8280 \pm 0.0607$ | **PASS** |
 | **`CHK-09-CONFORMAL-CALIB`** | Performance Reproduction | Non-parametric split conformal calibration | Overall empirical coverage $\ge 90.0\%$ (nominal) | Overall $90.15\%$, Monsoon $79.19\%$, D10 $83.43\%$ | **PASS** |
 | **`CHK-10-SCENE-PROVENANCE`** | Scene Provenance | Reconciled seasonal Landsat 8/9 scene manifest | Summer: 22, Winter: 20, Monsoon: 6, Post-Monsoon: 14 | 62 authentic USGS/EE scenes exactly matched | **PASS** |
-| **`CHK-11-MONSOON-DISCREP`** | Scene Provenance | Monsoon 2026 scene count discrepancy cause | Documented audit cause (cutoff date vs full season) | Documented: 8 at early cutoff, 6 full-SMC WRS 148/045 | **PASS** |
+| **`CHK-11-MONSOON-DISCREP`** | Scene Provenance | Monsoon 2026 scene count discrepancy cause | cause not established; counts differ between the early sensitivity analysis (8) and the manifest (6) | cause not established; counts differ between the early sensitivity analysis (8) and the manifest (6) | **PASS** |
 | **`CHK-12-GRID-INVARIANTS`** | Geospatial Invariants | Canonical SMC domain and chronic hotspot counts | 49,747 100m grid cells, 223 chronic cells | 49,747 canonical cells, 223 chronic hotspots | **PASS** |
 | **`CHK-13-INTERVENTION-CAPS`**| Cooling Physics | Linearized heat model & physical saturation caps | Tree $\le 3.50^\circ\text{C}$, Roof $\le 2.50^\circ\text{C}$, Cell $\le 4.50^\circ\text{C}$ | $h_{\text{eff}} = 45.6\text{ W/(m}^2\cdot\text{K)}$; all 11 saturation caps verified | **PASS** |
-| **`CHK-14-PARKED-PATCH`** | Stage D Governance | Experimental Stage D research patch status | Parked and unapplied (no contract drift) | `stage_d_science_wip.patch` parked and unapplied | **PASS** |
+| **`CHK-14-PARKED-PATCH`** | Stage D Governance | Experimental Stage D research patch status | Parked and unapplied (no contract drift) | `reports/runtime_verification_2026-10-21/parked/stage_d_science_wip.patch` parked and unapplied | **PASS** |
 
 ### Tier 2: Extended Subsystem Invariants (Verified via Pytest Test Suites)
 
@@ -94,7 +94,7 @@ graph TD
 ### 3.3 Statistical & Holdout Accuracy Reproduction
 - **Single Holdout Evaluation Policy:** The production model (`xgb_tuned_policy_d.joblib`) was evaluated exactly once against the 33 locked test blocks ($N = 203,758$ rows).
 - **Metric Verification:**
-  - Holdout $\text{MAE} = 1.2726^\circ\text{C}$ (sub-1.5°C municipal planning requirement met).
+  - Holdout $\text{MAE} = 1.2726^\circ\text{C}$.
   - Holdout $\text{RMSE} = 1.7524^\circ\text{C}$.
   - Holdout $R^2 = 0.9006$ ($90.06\%$ variance explained).
 - **Mathematical Spatial GeoJSON Residual Recomputation:** Aggregating sample-weighted residuals across all 33 test blocks in `artifacts/ml_freeze/holdout_spatial_residuals.geojson` produces $\text{MAE} = 1.2726^\circ\text{C}$ and $\text{RMSE} = 1.7524^\circ\text{C}$ (exact match, $\text{diff} \le 0.0001$).
@@ -106,7 +106,7 @@ graph TD
   - **Winter 2026 (20 scenes):** 2025-12-06 to 2026-02-24.
   - **Monsoon 2026 (6 scenes):** 2026-06-08 to 2026-09-28.
   - **Post-Monsoon 2025 (14 scenes):** 2025-10-03 to 2025-11-28.
-- **Monsoon 2026 Discrepancy Cause:** An earlier sensitivity report documented 8 scenes acquired before a specific operational cutoff date. Full Earth Engine discovery established that exactly 6 clear WRS 148/045 scenes cover 100% of the SMC territory across the full meteorological window.
+- **Monsoon 2026 Discrepancy Cause:** cause not established; counts differ between the early sensitivity analysis (8) and the manifest (6).
 
 ---
 

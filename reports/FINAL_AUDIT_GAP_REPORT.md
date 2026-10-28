@@ -227,6 +227,6 @@ Without modifying the frozen scientific baseline or altering production API cont
 
 ## 8. Conclusion
 
-The HEATSENSE AI platform on branch `audit-fixes` is **fully verified, self-consistent, and methodologically sound**. All historical draft contradictions, inflated metric claims, unsupported PDE solver assertions, unverified cost claims, and land ownership ambiguities have been systematically eliminated and cataloged. 
+The software invariants listed here are reproducible. The scientific claims are limited by the stated assumptions; independent field validation, health-outcome validation, cadastral and structural verification are not performed. All historical draft contradictions, inflated metric claims, unsupported PDE solver assertions, unverified cost claims, and land ownership ambiguities have been systematically eliminated and cataloged.
 
 The software platform, machine learning models, geospatial grid, and decision-support optimization engine operate with complete cryptographic and mathematical integrity.

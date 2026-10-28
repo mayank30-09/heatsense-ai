@@ -119,3 +119,16 @@ def test_referenced_evidence_paths_exist():
     for rel_path in key_evidence_paths:
         target = REPO_ROOT / rel_path
         assert target.is_file(), f"Referenced evidence artifact missing: {rel_path}"
+
+
+def test_all_documentation_paths_exist():
+    """Verify that every file path referenced in key documentation exists on disk via check_doc_paths."""
+    import sys
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+
+    from scripts.check_doc_paths import check_doc_paths
+
+    doc_found, doc_missing = check_doc_paths()
+    all_missing = {doc: paths for doc, paths in doc_missing.items() if paths}
+    assert not all_missing, f"Missing documentation paths found: {all_missing}"
