@@ -134,7 +134,7 @@ export default function HPILegend({
   };
 
   return (
-    <div className="pointer-events-none absolute bottom-3 sm:bottom-6 left-3 z-[1000] w-[calc(100vw-24px)] max-w-[300px] sm:max-w-xs">
+    <div className="pointer-events-none absolute bottom-3 sm:bottom-6 left-3 z-[1000] w-[calc(100vw-24px)] max-w-[300px] sm:max-w-xs md:max-w-sm">
       <div className="pointer-events-auto rounded-xl border border-slate-200/90 bg-white/95 p-3 shadow-md backdrop-blur">
         {/* Header with Collapse/Expand Toggle */}
         <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/80 mb-2">
@@ -154,7 +154,7 @@ export default function HPILegend({
         </div>
 
         {!isCollapsed && (
-          <div className="max-h-[38vh] sm:max-h-[46vh] overflow-y-auto pr-1 space-y-3">
+          <div className="max-h-[38vh] sm:max-h-[58vh] md:max-h-[66vh] overflow-y-auto pr-1 space-y-3 pb-2 scrollbar-thin">
             {/* Visible Season / Year or Scene LST Statistics Card */}
         {layerMode === "latest_scene" ? (
           <div className="mb-3 rounded-md border border-indigo-200 bg-indigo-50/70 p-2.5 shadow-sm">
@@ -236,26 +236,29 @@ export default function HPILegend({
         ) : (
           <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-2.5 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Active Season & Year
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                City-wide layer statistics
               </span>
               <span className="rounded bg-indigo-100 px-2 py-0.5 font-mono text-[11px] font-bold text-indigo-900 border border-indigo-200">
                 {fallback.label} {displayYear}
               </span>
             </div>
+            <div className="text-[9.5px] text-slate-500">
+              Active Season & Year: {fallback.label} {displayYear} (city-wide SMC extent)
+            </div>
 
             <div className="grid grid-cols-2 gap-2 text-[11px]">
               <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
-                <div className="text-[9px] uppercase tracking-wide text-slate-400">
-                  Observed Mean LST
+                <div className="text-[9px] uppercase tracking-wide text-slate-500">
+                  City-wide Mean LST ({fallback.label} {displayYear})
                 </div>
                 <div className="text-sm font-bold text-blue-700">
                   {meanLst.toFixed(1)}°C
                 </div>
               </div>
               <div className="rounded bg-white p-1.5 border border-slate-100 shadow-2xs">
-                <div className="text-[9px] uppercase tracking-wide text-slate-400">
-                  Observed Max LST
+                <div className="text-[9px] uppercase tracking-wide text-slate-500">
+                  City-wide Max LST ({fallback.label} {displayYear})
                 </div>
                 <div className="text-sm font-bold text-red-700">
                   {maxLst.toFixed(1)}°C
@@ -453,7 +456,7 @@ export default function HPILegend({
               }}
             />
 
-            <div className="mt-1 flex justify-between text-[10px] font-semibold text-slate-600">
+            <div className="mt-1 flex justify-between px-1 text-[10px] font-semibold text-slate-600">
               <span>20°C</span>
               <span>30°C</span>
               <span>40°C</span>
@@ -609,7 +612,7 @@ export default function HPILegend({
               }}
             />
 
-            <div className="mt-1 flex justify-between text-[10px] font-medium text-slate-500">
+            <div className="mt-1 flex justify-between px-1 text-[10px] font-medium text-slate-500">
               <span>20°C</span>
               <span>30°C</span>
               <span>40°C</span>

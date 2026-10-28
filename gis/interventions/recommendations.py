@@ -184,6 +184,15 @@ class PolygonSummary(BaseModel):
     distance_to_water_m: Optional[float] = None
     is_public_ownership: Optional[bool] = None
     has_documented_water_source: bool = Field(default=False, description="Whether a catchment/treated water source is documented")
+    crs: str = Field(default="EPSG:32643 planar", description="Planar coordinate reference system for analysis")
+    area_method: str = Field(default="Geodesic ellipsoidal area (WGS84) / planar projection EPSG:32643", description="Method used to calculate polygon area")
+    pixel_size: str = Field(default="100m × 100m (1 ha)", description="Analytical grid cell spatial resolution")
+    total_intersecting_pixels: int = Field(default=0, description="Total intersecting grid cells / raster pixels")
+    valid_pixels: int = Field(default=0, description="Cloud-free valid observation pixels")
+    nodata_count: int = Field(default=0, description="Missing / cloud-masked / NoData pixel count")
+    coverage_definition: str = Field(default="valid / intersecting pixels", description="Formula defining data coverage fraction")
+    boundary_source: str = Field(default="SMC study-area polygon in PostGIS", description="Source polygon boundary for study area clipping")
+    geometry_warning: Optional[str] = Field(default=None, description="Geometry validity or size warnings (e.g. self-intersection, very small polygon)")
 
 
 class RecommendationsResponse(BaseModel):

@@ -267,3 +267,18 @@ def test_resolve_area_name_deprecation_headers(monkeypatch):
     assert response.status_code == 200
     assert response.headers.get("Deprecation") == "true"
     assert "resolve-area-name-postgis" in response.headers.get("Link", "")
+
+
+def test_zonal_statistics_q3_polygon_scope_fields():
+    """Verify Q3 polygon statistics scope labels and metadata (EPSG:32643, boundary source, coverage definition)."""
+    payload = {"geometry": VALID_LAND_POLYGON}
+    response = client.post("/api/v1/analysis/zonal-stats", json=payload)
+    assert response.status_code == 200, response.text
+    data = response.json()
+
+    assert data["boundary_source"] == "SMC study-area polygon in PostGIS"
+    assert data["coverage_definition"] == "valid / intersecting pixels"
+    assert "nodata_pixel_count" in data
+    assert data["geometry"]["crs"] == "EPSG:32643 planar"
+    assert "EPSG:32643" in data["geometry"]["area_method"]
+    assert "100m" in data["geometry"]["pixel_size"]

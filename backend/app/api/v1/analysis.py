@@ -383,7 +383,17 @@ def get_polygon_recommendations(
         mean_ndwi = None
         conf_tier = "LOW"
 
-    # 6. Assemble PolygonSummary
+    # 6. Assemble PolygonSummary with full scope metadata and geometry diagnostics
+    tot_intersecting = int(zonal_stats.get("total_intersecting_pixel_count", cell_count))
+    val_pixels = int(zonal_stats.get("valid_pixel_count", cell_count))
+    nodata_cnt = int(zonal_stats.get("nodata_pixel_count", max(0, tot_intersecting - val_pixels)))
+
+    geom_warning: str | None = None
+    if zonal_stats.get("geometry_repaired"):
+        geom_warning = "Polygon was self-intersecting or non-simple; boundary was repaired using buffer(0)."
+    elif area_km2 < 0.01:
+        geom_warning = f"Very small polygon ({area_km2:.4f} km²) is smaller than a 100m grid cell (1.0 ha); sub-pixel edge effects increase statistical uncertainty."
+
     summary = PolygonSummary(
         status=status_str,
         area_km2=round(area_km2, 4),
@@ -410,6 +420,15 @@ def get_polygon_recommendations(
         data_coverage_percentage=round(coverage_pct, 2),
         confidence_score=round(mean_conf, 4),
         confidence_tier=conf_tier,
+        crs="EPSG:32643 planar",
+        area_method="Geodesic ellipsoidal area (WGS84) / planar projection EPSG:32643",
+        pixel_size="100m × 100m (1 ha)",
+        total_intersecting_pixels=tot_intersecting,
+        valid_pixels=val_pixels,
+        nodata_count=nodata_cnt,
+        coverage_definition="valid / intersecting pixels",
+        boundary_source="SMC study-area polygon in PostGIS",
+        geometry_warning=geom_warning,
     )
 
     # 7. Generate Recommendations via pure rule engine

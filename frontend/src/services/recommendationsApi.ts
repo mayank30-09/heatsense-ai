@@ -99,6 +99,15 @@ export interface PolygonSummary {
   confidence_tier: string;
   landuse_typology?: string | null;
   needs_site_survey?: boolean;
+  crs?: string;
+  area_method?: string;
+  pixel_size?: string;
+  total_intersecting_pixels?: number;
+  valid_pixels?: number;
+  nodata_count?: number;
+  coverage_definition?: string;
+  boundary_source?: string;
+  geometry_warning?: string | null;
 }
 
 export interface RecommendationsResponse {

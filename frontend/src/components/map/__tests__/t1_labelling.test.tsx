@@ -157,4 +157,24 @@ describe("T1 UI Labelling & Provenance Requirements", () => {
     expect(cellHtml).toContain("Heuristic C_i");
     expect(cellHtml).toContain("Heuristic quality index from QA/observation support, not a probability of correctness");
   });
+
+  it("Q3 verifies Polygon statistics vs City-wide layer statistics and scope labels", () => {
+    const legendHtml = renderToStaticMarkup(
+      <HPILegend layerMode="lst" season="summer" year={2026} />
+    );
+    expect(legendHtml).toContain("City-wide layer statistics");
+    expect(legendHtml).toContain("City-wide Mean LST (Summer 2026)");
+    expect(legendHtml).toContain("City-wide Max LST (Summer 2026)");
+    expect(legendHtml).toContain("43.8°C");
+    expect(legendHtml).toContain("58.6°C");
+
+    const panelHtml = renderToStaticMarkup(
+      <AreaRecommendationsPanel
+        areaId="area_1"
+        areaName="Test Ward"
+        geometry={{ type: "Polygon", coordinates: [] }}
+      />
+    );
+    expect(panelHtml).toContain("Polygon statistics &amp; recommendations");
+  });
 });

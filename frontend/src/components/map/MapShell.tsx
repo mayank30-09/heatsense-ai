@@ -16,7 +16,12 @@ import type {
   GridCellScoreItem,
   SeasonName,
 } from "../../types/heatPriority";
-import { fetchScenes, type SceneItem } from "../../services/scenesApi";
+import {
+  fetchPipelineStatus,
+  fetchScenes,
+  type PipelineStatus,
+  type SceneItem,
+} from "../../services/scenesApi";
 
 import AreaDrawing from "../AreaDrawing";
 import AreaRecommendationsPanel from "./AreaRecommendationsPanel";
@@ -24,7 +29,9 @@ import CellInspector from "./CellInspector";
 import HPILegend from "./HPILegend";
 import HPIViewportGrid from "./HPIViewportGrid";
 import LayerControls from "./LayerControls";
+import LatestSceneSidebar from "./LatestSceneSidebar";
 import { API_BASE_URL } from "../../services/api";
+import { fetchGridCellDetail } from "../../services/heatPriorityApi";
 
 const SURAT_CENTER: [number, number] = [
   21.1702,
@@ -64,28 +71,41 @@ export function MapShell({
   const [scenes, setScenes] = useState<SceneItem[]>([]);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [scenesLoading, setScenesLoading] = useState(false);
+  const [scenesError, setScenesError] = useState<string | null>(null);
+  const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
   const [recentDayThreshold] = useState<number>(30);
 
   useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
     setScenesLoading(true);
+    setScenesError(null);
 
     fetchScenes(controller.signal)
       .then((data) => {
         if (mounted) {
           setScenes(data);
           if (data.length > 0) {
-            setSelectedSceneId((prev) => prev ?? data[0].scene_id);
+            const firstProcessed = data.find((s) => s.status === "PROCESSED" || s.status === "published");
+            setSelectedSceneId((prev) => prev ?? firstProcessed?.scene_id ?? data[0].scene_id);
           }
           setScenesLoading(false);
         }
       })
-      .catch(() => {
+      .catch((err) => {
         if (mounted) {
+          setScenesError(err?.message ?? "Failed to fetch scenes");
           setScenesLoading(false);
         }
       });
+
+    fetchPipelineStatus(controller.signal)
+      .then((status) => {
+        if (mounted) {
+          setPipelineStatus(status);
+        }
+      })
+      .catch(() => {});
 
     return () => {
       mounted = false;
@@ -115,6 +135,49 @@ export function MapShell({
       setLayerMode("lst");
     }
   }, [layerMode]);
+
+  const handleSelectCell = useCallback(
+    (cell: GridCellScoreItem) => {
+      setSelectedCell(cell);
+      fetchGridCellDetail(
+        cell.pixel_id,
+        season,
+        effectiveYear,
+        layerMode === "latest_scene" ? (selectedScene?.scene_id ?? undefined) : undefined
+      )
+        .then((detail) => setSelectedCell(detail))
+        .catch(() => {});
+    },
+    [season, effectiveYear, layerMode, selectedScene?.scene_id]
+  );
+
+  // Synchronize selected cell whenever season, effectiveYear, layerMode, or scene changes
+  useEffect(() => {
+    if (!selectedCell?.pixel_id) return;
+    let mounted = true;
+    const controller = new AbortController();
+
+    fetchGridCellDetail(
+      selectedCell.pixel_id,
+      season,
+      effectiveYear,
+      layerMode === "latest_scene" ? (selectedScene?.scene_id ?? undefined) : undefined,
+      undefined,
+      undefined,
+      controller.signal
+    )
+      .then((updated) => {
+        if (mounted) {
+          setSelectedCell(updated);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, [season, effectiveYear, layerMode, selectedScene?.scene_id]);
 
   const [
     analysisAreas,
@@ -243,10 +306,11 @@ const handleAreaRemoved =
           <HPIViewportGrid
             layerMode={layerMode}
             selectedCell={selectedCell}
-            onSelectCell={(cell) => setSelectedCell(cell)}
+            onSelectCell={handleSelectCell}
             minHpiFilter={minHpiFilter}
             season={season}
             year={effectiveYear}
+            sceneId={selectedScene?.scene_id}
           />
         )}
 
@@ -261,43 +325,26 @@ const handleAreaRemoved =
           />
         )}
 
-        <HPILegend
-          layerMode={isAreaAnalysis ? "lst" : layerMode}
-          season={season}
-          year={effectiveYear}
-          selectedScene={selectedScene}
-          recentDayThreshold={recentDayThreshold}
-          hasRecentScene={hasRecentScene}
-        />
+        {layerMode !== "latest_scene" && (
+          <HPILegend
+            layerMode={isAreaAnalysis ? "lst" : layerMode}
+            season={season}
+            year={effectiveYear}
+            selectedScene={selectedScene}
+            recentDayThreshold={recentDayThreshold}
+            hasRecentScene={hasRecentScene}
+          />
+        )}
       </MapContainer>
 
-      {/* Monsoon Cloud Contamination Banner */}
-      {season === "monsoon" && (
-        <div className="pointer-events-none absolute top-16 left-1/2 z-[1000] -translate-x-1/2">
+      {/* Monsoon Cloud Contamination Banner (non-colliding) */}
+      {season === "monsoon" && layerMode !== "latest_scene" && (
+        <div className="pointer-events-none absolute bottom-12 left-1/2 z-[1000] -translate-x-1/2">
           <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1.5 shadow-md backdrop-blur">
             <span className="text-amber-800 text-xs font-semibold">
               ⚠️ Monsoon Layer: Low reliability due to cloud contamination (QA filtering in progress)
             </span>
           </div>
-        </div>
-      )}
-
-      {/* Latest Scene Notice Banner */}
-      {!isAreaAnalysis && layerMode === "latest_scene" && (
-        <div className="pointer-events-none absolute top-16 left-1/2 z-[1000] -translate-x-1/2">
-          {scenes.length === 0 ? (
-            <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-slate-300 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur">
-              <span className="text-slate-700 text-xs font-semibold">
-                ℹ️ No Landsat scenes have been ingested yet. Showing base map.
-              </span>
-            </div>
-          ) : (
-            <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-indigo-200 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur">
-              <span className="text-indigo-900 text-xs font-medium">
-                ℹ️ <strong>Notice:</strong> NRT scenes use a different QA mask from the frozen seasonal composites and are not comparable.
-              </span>
-            </div>
-          )}
         </div>
       )}
 
@@ -316,13 +363,33 @@ const handleAreaRemoved =
         selectedSceneId={selectedSceneId ?? undefined}
         onSelectScene={setSelectedSceneId}
         recentDayThreshold={recentDayThreshold}
+        pipelineStatus={pipelineStatus}
+        scenesLoading={scenesLoading}
+        scenesError={scenesError}
       />
+
+      {layerMode === "latest_scene" && !isAreaAnalysis && (
+        <LatestSceneSidebar
+          scenes={scenes}
+          selectedSceneId={selectedSceneId ?? undefined}
+          onSelectScene={setSelectedSceneId}
+          showRasterTile={showRasterTile}
+          onToggleRasterTile={() => setShowRasterTile((prev) => !prev)}
+          pipelineStatus={pipelineStatus}
+          scenesLoading={scenesLoading}
+          scenesError={scenesError}
+        />
+      )}
 
       {/* Grid Cell Inspector */}
       {!isAreaAnalysis && selectedCell && (
         <CellInspector
           cell={selectedCell}
           onClose={() => setSelectedCell(null)}
+          activeLayerMode={layerMode}
+          activeSeason={season}
+          activeYear={effectiveYear}
+          selectedScene={selectedScene}
         />
       )}
 
@@ -394,7 +461,7 @@ function AnalysisAreaCard({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-            Analysis area
+            Polygon statistics
           </div>
 
           <div className="mt-0.5 text-sm font-semibold text-slate-900">
@@ -429,6 +496,32 @@ function AnalysisAreaCard({
                 {result.source_file}
               </span>
             )}
+          </div>
+
+          {/* Geometry Validity Warnings */}
+          {result.geometry_repaired && (
+            <div className="mb-2 rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10.5px] leading-snug text-amber-950">
+              ⚠️ <strong>Geometry Repaired:</strong> Self-intersecting or non-simple polygon boundary was automatically normalized using buffer(0).
+            </div>
+          )}
+          {result.area_km2 < 0.01 && (
+            <div className="mb-2 rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10.5px] leading-snug text-amber-950">
+              ⚠️ <strong>Very Small Polygon:</strong> Area ({result.area_km2 < 0.001 ? "<0.001" : result.area_km2.toFixed(4)} km²) is smaller than a single 100m grid cell (1.0 ha / 0.01 km²). Sub-pixel edge effects increase statistical uncertainty.
+            </div>
+          )}
+
+          {/* SMC Boundary Containment & Source */}
+          <div className="mb-2 rounded border border-slate-200 bg-slate-50 p-2 text-[10.5px] space-y-1">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Boundary source:</span>
+              <span className="font-medium text-slate-800">SMC study-area polygon in PostGIS</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Inside-SMC fraction:</span>
+              <span className="font-semibold text-slate-800">
+                {((result.inside_smc_fraction ?? 1.0) * 100).toFixed(1)}%
+              </span>
+            </div>
           </div>
 
           {/* Partially Outside SMC Warning */}
@@ -472,6 +565,20 @@ function AnalysisAreaCard({
                 "N/A"
               }
             />
+
+            <Metric
+              label="NoData count"
+              value={
+                (result.nodata_pixel_count ??
+                  Math.max(0, (result.total_intersecting_pixel_count ?? 0) - result.valid_pixel_count)
+                ).toLocaleString()
+              }
+            />
+
+            <Metric
+              label="Coverage definition"
+              value="valid / intersecting pixels"
+            />
           </div>
 
           {result.statistics && (
@@ -483,32 +590,32 @@ function AnalysisAreaCard({
               <div className="grid grid-cols-2 gap-2">
                 <Metric
                   label="Mean"
-                  value={`${result.statistics.mean_c.toFixed(2)}°C`}
+                  value={`${result.statistics.mean_c.toFixed(1)}°C`}
                 />
 
                 <Metric
                   label="Median"
-                  value={`${result.statistics.median_c.toFixed(2)}°C`}
+                  value={`${result.statistics.median_c.toFixed(1)}°C`}
                 />
 
                 <Metric
                   label="Minimum"
-                  value={`${result.statistics.min_c.toFixed(2)}°C`}
+                  value={`${result.statistics.min_c.toFixed(1)}°C`}
                 />
 
                 <Metric
                   label="Maximum"
-                  value={`${result.statistics.max_c.toFixed(2)}°C`}
+                  value={`${result.statistics.max_c.toFixed(1)}°C`}
                 />
 
                 <Metric
                   label="P90"
-                  value={`${result.statistics.p90_c.toFixed(2)}°C`}
+                  value={`${result.statistics.p90_c.toFixed(1)}°C`}
                 />
 
                 <Metric
                   label="Std. deviation"
-                  value={`${result.statistics.std_c.toFixed(2)}°C`}
+                  value={`${result.statistics.std_c.toFixed(1)}°C`}
                 />
               </div>
             </div>
@@ -538,21 +645,32 @@ function AnalysisAreaCard({
                         className={row.season === result.season ? "bg-amber-50/70 font-semibold" : ""}
                       >
                         <td className="py-1 capitalize">{row.season.replace("_", " ")}</td>
-                        <td className="py-1 text-slate-500">{row.effective_year}</td>
+                        <td className="py-1 text-slate-700">
+                          {row.effective_year}
+                          {row.season === "post_monsoon" && row.effective_year !== 2026 && (
+                            <span className="ml-1 text-[9px] font-bold text-amber-700" title="Mixed-year baseline: Post-Monsoon 2026 unobserved; evaluated on 2025 validated composite">*</span>
+                          )}
+                        </td>
                         <td className="py-1 text-right text-blue-700">
                           {row.mean_c !== null ? `${row.mean_c.toFixed(1)}°C` : "N/A"}
                         </td>
                         <td className="py-1 text-right text-red-700">
                           {row.max_c !== null ? `${row.max_c.toFixed(1)}°C` : "N/A"}
                         </td>
-                        <td className="py-1 text-right text-slate-500">
+                        <td className="py-1 text-right text-slate-600">
                           {row.data_coverage_percentage.toFixed(0)}%
-                          {row.is_partial && <span className="ml-0.5 text-amber-600" title="Partial coverage">⚠️</span>}
+                          {(row.is_partial || row.data_coverage_percentage < 70) && (
+                            <span className="ml-1 text-[10px] text-amber-700 font-bold" title="Low coverage: <70% valid clear pixels">⚠️ Low</span>
+                          )}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+              <div className="mt-1 space-y-0.5 text-[9.5px] text-slate-500">
+                <div>* <strong>Mixed-year baseline:</strong> Post-Monsoon uses 2025 composite because 2026 data was unobserved.</div>
+                <div>⚠️ <strong>Low coverage:</strong> Monsoon observations have high cloud masking (&lt;70% valid clear pixels).</div>
               </div>
             </div>
           )}
@@ -581,7 +699,21 @@ function AnalysisAreaCard({
                 <div className="flex justify-between">
                   <span>CRS</span>
                   <span className="font-medium text-slate-900">
-                    {result.geometry.crs}
+                    EPSG:32643 planar
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Area method</span>
+                  <span className="font-medium text-slate-900">
+                    Geodesic ellipsoidal area (WGS84) / planar EPSG:32643
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Pixel size</span>
+                  <span className="font-medium text-slate-900">
+                    100m × 100m (1 ha)
                   </span>
                 </div>
               </div>
@@ -589,7 +721,7 @@ function AnalysisAreaCard({
           )}
 
           <div className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-500">
-            Landsat radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (about 11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
+            Landsat 30 m radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (about 11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>). Zonal statistics reflect pixel aggregates within the selected perimeter.
           </div>
         </>
       )}

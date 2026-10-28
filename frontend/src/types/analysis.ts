@@ -21,7 +21,12 @@ export type AnalysisResult = {
   inside_smc_fraction?: number;
   valid_pixel_count: number;
   total_intersecting_pixel_count?: number;
+  nodata_pixel_count?: number;
   data_coverage_percentage?: number;
+  coverage_definition?: string;
+  boundary_source?: string;
+  geometry_repaired?: boolean;
+  is_very_small_polygon?: boolean;
   ndwi_water_fraction?: number;
   water_warning?: boolean;
   geojson_geometry?: any;

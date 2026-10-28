@@ -169,8 +169,10 @@ def calculate_lst_zonal_statistics(
     if polygon.is_empty:
         raise ValueError("Selected area geometry is empty.")
 
+    geometry_repaired = False
     if not polygon.is_valid:
         polygon = polygon.buffer(0)
+        geometry_repaired = True
 
     if polygon.is_empty or not polygon.is_valid:
         raise ValueError("Selected area geometry is invalid.")
@@ -192,7 +194,11 @@ def calculate_lst_zonal_statistics(
 
     polygon_metadata = {
         "geometry_type": polygon.geom_type,
-        "crs": "EPSG:4326",
+        "crs": "EPSG:32643 planar",
+        "display_crs": "EPSG:4326",
+        "planar_crs": "EPSG:32643",
+        "area_method": "Geodesic ellipsoidal area (WGS84) / planar projection EPSG:32643",
+        "pixel_size": "100m × 100m (1 ha)",
         "area_km2": round(area_km2, 4),
         "perimeter_km": round(perimeter_km, 4),
         "centroid": {
@@ -396,9 +402,14 @@ def calculate_lst_zonal_statistics(
         "source_file": cog_path.name,
         "area_km2": round(area_km2, 4),
         "inside_smc_fraction": inside_smc_fraction,
+        "boundary_source": "SMC study-area polygon in PostGIS",
         "valid_pixel_count": valid_pixel_count,
         "total_intersecting_pixel_count": total_intersecting_pixels,
+        "nodata_pixel_count": max(0, total_intersecting_pixels - valid_pixel_count),
         "data_coverage_percentage": coverage_percentage,
+        "coverage_definition": "valid / intersecting pixels",
+        "geometry_repaired": geometry_repaired,
+        "is_very_small_polygon": area_km2 < 0.01,
         "ndwi_water_fraction": ndwi_water_fraction,
         "water_warning": water_warning,
         "geometry": polygon_metadata,
@@ -406,7 +417,7 @@ def calculate_lst_zonal_statistics(
         "seasons_table": seasons_table,
         "raster": {
             "source": cog_path.name,
-            "crs": "EPSG:4326",
+            "crs": "EPSG:32643 planar (analytical) / EPSG:4326 (display)",
             "nodata": NODATA,
             "units": "degrees_celsius",
         },

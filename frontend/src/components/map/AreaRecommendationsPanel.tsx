@@ -101,7 +101,7 @@ export default function AreaRecommendationsPanel({
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-900">
-              Intervention Recommendations
+              Polygon statistics & recommendations
             </span>
             <span className="badge-evidence badge-assumption">
               ASSUMPTION-BASED ESTIMATE
@@ -177,6 +177,20 @@ export default function AreaRecommendationsPanel({
       {/* Loaded Content */}
       {data && !loading && (
         <div className="mt-2.5 space-y-3">
+          {/* Geometry Validity Warning */}
+          {(data.polygon_summary.geometry_warning || data.polygon_summary.area_km2 < 0.01) && (
+            <div className="rounded border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-950 space-y-1">
+              <div className="font-bold flex items-center gap-1 text-amber-900">
+                <span>⚠️</span>
+                <span>Geometry Diagnostics</span>
+              </div>
+              <div className="text-[10.5px] leading-snug">
+                {data.polygon_summary.geometry_warning ||
+                  `Very small polygon (${data.polygon_summary.area_km2 < 0.001 ? "<0.001" : data.polygon_summary.area_km2.toFixed(4)} km²) is smaller than a single 100m grid cell (1.0 ha / 0.01 km²); edge effects increase statistical uncertainty.`}
+              </div>
+            </div>
+          )}
+
           {/* Needs Site Survey Warning Banner */}
           {needsSurvey && (
             <div className="rounded border-2 border-amber-400 bg-amber-50 p-2.5 text-xs text-amber-950 space-y-1.5">
@@ -191,17 +205,27 @@ export default function AreaRecommendationsPanel({
           )}
 
           {/* Land Typology & Allowed Interventions Bar */}
-          <div className="rounded border border-indigo-100 bg-indigo-50/50 p-2 text-[10.5px] space-y-1">
+          <div className="rounded border border-indigo-100 bg-indigo-50/50 p-2 text-[10.5px] space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-slate-500 font-medium">Land-Use Typology:</span>
               <span className="font-bold text-indigo-950">{typologyTitle}</span>
             </div>
             <div className="flex items-center justify-between text-[9.5px] text-slate-500 border-t border-indigo-100/60 pt-1">
-              <span>Source: Google Open Buildings V3 & OSM</span>
-              <span>Grid Coverage: {data.polygon_summary.data_coverage_percentage}%</span>
+              <span>Boundary source: SMC study-area polygon in PostGIS</span>
+              <span>Inside SMC: {((data.polygon_summary.inside_smc_fraction ?? 1.0) * 100).toFixed(1)}%</span>
+            </div>
+            <div className="flex items-center justify-between text-[9.5px] text-slate-500">
+              <span>Planar CRS: EPSG:32643 planar</span>
+              <span>Area method: Geodesic ellipsoidal</span>
+            </div>
+            <div className="flex items-center justify-between text-[9.5px] text-slate-500">
+              <span>Pixel size: 100m × 100m (1 ha)</span>
+              <span>
+                Coverage: {data.polygon_summary.data_coverage_percentage}% (valid / intersecting pixels)
+              </span>
             </div>
             {data.recommendations.length > 0 && data.recommendations[0]?.allowed_interventions && (
-              <div className="pt-1">
+              <div className="pt-1 border-t border-indigo-100/60">
                 <span className="text-slate-500 font-medium text-[9.5px] block mb-1">Permitted Typology Interventions:</span>
                 <div className="flex flex-wrap gap-1">
                   {data.recommendations[0].allowed_interventions.map((itype) => (
@@ -245,15 +269,19 @@ export default function AreaRecommendationsPanel({
           {/* Polygon Baseline Context Bar */}
           <div className="grid grid-cols-4 gap-1.5 text-[10px] bg-slate-50 p-2 rounded border border-slate-100">
             <div>
-              <span className="text-slate-400 block" title="Observed (Landsat L2 ST)">Observed LST (Landsat L2 ST)</span>
+              <span className="text-slate-400 block" title="Observed (Landsat L2 ST)">Observed LST</span>
               <strong className="text-slate-700 text-[11px]" title="Observed (Landsat L2 ST)">
-                {data.polygon_summary.mean_lst_c !== null ? `${data.polygon_summary.mean_lst_c}°C` : "N/A"}
+                {data.polygon_summary.mean_lst_c !== null && data.polygon_summary.mean_lst_c !== undefined
+                  ? `${data.polygon_summary.mean_lst_c.toFixed(1)}°C`
+                  : "N/A"}
               </strong>
             </div>
             <div>
               <span className="text-slate-400 block">Mean HPI</span>
               <strong className="text-slate-700 text-[11px]">
-                {data.polygon_summary.mean_hpi !== null ? `${data.polygon_summary.mean_hpi}` : "N/A"}
+                {data.polygon_summary.mean_hpi !== null && data.polygon_summary.mean_hpi !== undefined
+                  ? `${data.polygon_summary.mean_hpi.toFixed(1)}`
+                  : "N/A"}
               </strong>
             </div>
             <div>
