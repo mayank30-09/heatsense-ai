@@ -1,7 +1,7 @@
 """Automated unit and integration tests for scripts/validation_harness.py.
 
 Verifies:
-- End-to-end execution of all 18 validation checks (14 PASS, 4 UNVERIFIED, 0 FAIL).
+- End-to-end execution of all 25 validation checks (17 PASS, 8 UNVERIFIED, 0 FAIL).
 - Correctness of each individual check logic and invariant extraction.
 - Resilient error handling when evidence files are missing.
 - Resilient error handling when evidence files contain malformed/corrupted JSON.
@@ -18,16 +18,16 @@ from scripts.validation_harness import ValidationCheck, ValidationHarness
 
 
 def test_validation_harness_end_to_end_passes():
-    """Verify that the full validation harness passes with 14 PASS, 4 UNVERIFIED, and 0 FAIL."""
+    """Verify that the full validation harness passes with 17 PASS, 8 UNVERIFIED, and 0 FAIL."""
     harness = ValidationHarness()
     results = harness.run_all_checks()
 
     assert results["overall_status"] == "PASS"
-    assert results["total_checks"] == 18
-    assert results["passed_checks"] == 14
+    assert results["total_checks"] == 25
+    assert results["passed_checks"] == 17
     assert results["failed_checks"] == 0
-    assert results["unverified_checks"] == 4
-    assert len(results["checks"]) == 18
+    assert results["unverified_checks"] == 8
+    assert len(results["checks"]) == 25
 
     # Verify each check has required fields
     for c in results["checks"]:
@@ -62,7 +62,8 @@ def test_validation_harness_individual_checks():
     assert len(chk_coords.actual["leaked_coordinates"]) == 0
 
     chk_single = harness.check_single_holdout_evaluation()
-    assert chk_single.status == "PASS"
+    assert chk_single.status == "UNVERIFIED"
+    assert "declared constant" in chk_single.name
     assert chk_single.actual["evaluation_count"] == 1
 
     chk_holdout = harness.check_holdout_metrics()
@@ -77,6 +78,11 @@ def test_validation_harness_individual_checks():
     assert chk_residuals.actual["total_samples"] == 203758
     assert pytest.approx(chk_residuals.actual["recomputed_mae"], abs=0.001) == 1.2726
     assert pytest.approx(chk_residuals.actual["recomputed_rmse"], abs=0.001) == 1.7524
+
+    chk_r2 = harness.check_spatial_r2_provenance()
+    assert chk_r2.status == "PASS"
+    assert len(chk_r2.actual["r2_06919_active_claims"]) == 0
+    assert pytest.approx(chk_r2.actual["summer_partition_r2"], abs=0.001) == 0.7119
 
     chk_mc = harness.check_model_comparison()
     assert chk_mc.status == "PASS"
@@ -114,8 +120,18 @@ def test_validation_harness_individual_checks():
     assert chk_patch.status == "PASS"
     assert chk_patch.actual["status"] == "PARKED_UNAPPLIED"
 
+    chk_paths = harness.check_doc_paths()
+    assert chk_paths.status == "PASS"
+    assert chk_paths.actual["total_missing"] == 0
+
+    chk_counts = harness.check_doc_harness_counts()
+    assert chk_counts.status == "PASS"
+
+    chk_costs = harness.check_doc_costs_consistency()
+    assert chk_costs.status == "PASS"
+
     unverified = harness.get_unverified_limitations()
-    assert len(unverified) == 4
+    assert len(unverified) == 7
     for u in unverified:
         assert u.status == "UNVERIFIED"
 
@@ -205,7 +221,7 @@ def test_validation_harness_report_generation(tmp_path: Path):
     assert "# HEATSENSE AI — Validation Harness Audit Report" in md_content
     assert "CHK-01-FREEZE-MANIFEST" in md_content
     assert "CHK-06-HOLDOUT-METRICS" in md_content
-    assert "CHK-15-UNVERIFIED-ROOF-STRUCTURAL" in md_content
+    assert "CHK-19-UNVERIFIED-ROOF-STRUCTURAL" in md_content
 
     # Test saving both JSON and Markdown
     out_json = tmp_path / "test_report.json"
@@ -219,4 +235,4 @@ def test_validation_harness_report_generation(tmp_path: Path):
     with open(out_json, "r", encoding="utf-8") as f:
         loaded_json = json.load(f)
     assert loaded_json["overall_status"] == "PASS"
-    assert loaded_json["total_checks"] == 18
+    assert loaded_json["total_checks"] == 25

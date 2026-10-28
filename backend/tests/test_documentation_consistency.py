@@ -60,7 +60,7 @@ def test_readme_documents_critical_invariants():
     assert "461.63" in content
     assert "49,747" in content
     assert "0.9006" in content
-    assert "0.6919" in content
+    assert "0.7119" in content
     assert "Linearized" in content
 
     # Key documentation links

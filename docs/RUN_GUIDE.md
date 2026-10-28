@@ -367,6 +367,6 @@ Model updates are never applied automatically to production or the frozen baseli
 ```
 - Candidate artifacts are isolated in `artifacts/ml_candidates/<YYYYMMDD>/` with their own independent SHA-256 manifests.
 - Evaluated on the 132 dev / 33 test holdout blocks ($Dev \cap Test = \emptyset$).
-- Reports pooled and spatial $R^2$ side-by-side with the frozen baseline (Pooled $R^2$: 0.9006, Spatial $R^2$: 0.6919).
+- Reports pooled and seasonal $R^2$ side-by-side with the frozen baseline (Pooled $R^2$: 0.9006, Summer Partition $R^2$: 0.7119).
 - Requires explicit user and municipal administrator consent before any freeze promotion.
 

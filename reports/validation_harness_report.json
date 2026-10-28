@@ -2,10 +2,10 @@
   "harness_version": "1.0.0",
   "mode": "READ_ONLY",
   "overall_status": "PASS",
-  "total_checks": 18,
-  "passed_checks": 14,
+  "total_checks": 25,
+  "passed_checks": 17,
   "failed_checks": 0,
-  "unverified_checks": 4,
+  "unverified_checks": 8,
   "checks": [
     {
       "check_id": "CHK-01-FREEZE-MANIFEST",
@@ -101,7 +101,7 @@
     {
       "check_id": "CHK-05-SINGLE-EVALUATION",
       "category": "spatial_holdout_integrity",
-      "name": "Single Holdout Evaluation Policy (count == 1)",
+      "name": "Single Holdout Evaluation Policy (declared constant, not evidence of single use)",
       "procedure": "Inspect evaluation_count in artifacts/ml_freeze/evaluation_manifest.json",
       "evidence_path": "artifacts/ml_freeze/evaluation_manifest.json",
       "expected": {
@@ -110,9 +110,9 @@
       "actual": {
         "evaluation_count": 1
       },
-      "status": "PASS",
+      "status": "UNVERIFIED",
       "diff": null,
-      "notes": "Documented constant: final model was evaluated once on the locked holdout blocks.",
+      "notes": "Declared constant in evaluation_manifest.json (count == 1); documents declared policy but is not runtime cryptographic or audit log evidence of single evaluation.",
       "error": null
     },
     {
@@ -163,7 +163,27 @@
       "error": null
     },
     {
-      "check_id": "CHK-08-MODEL-COMPARISON",
+      "check_id": "CHK-08-SPATIAL-R2-PROVENANCE",
+      "category": "model_performance_reproduction",
+      "name": "Spatial Holdout R\u00b2 Provenance & 0.6919 Removal",
+      "procedure": "Audit UI/docs for removal of unreproducible 0.6919 figure and verify Summer holdout partition R\u00b2=0.7119 in qc_summary.json",
+      "evidence_path": "artifacts/ml_freeze/qc_summary.json; docs/recommendation_methodology.md",
+      "expected": {
+        "r2_06919_active_claims": [],
+        "summer_partition_r2": 0.7119
+      },
+      "actual": {
+        "r2_06919_active_claims": [],
+        "summer_partition_r2": 0.7119,
+        "qc_summary_verified": true
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Exploratory 0.6919 figure was unreproducible from frozen artifacts and removed from UI/docs; authoritative summer partition (R\u00b2=0.7119) is reproducible from qc_summary.json.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-09-MODEL-COMPARISON",
       "category": "model_performance_reproduction",
       "name": "Controlled 5-Fold Spatial CV Model Comparison",
       "procedure": "Read data/diagnostics/ml/model_comparison_rf_xgb.csv",
@@ -190,7 +210,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-09-CONFORMAL-CALIBRATION",
+      "check_id": "CHK-10-CONFORMAL-CALIBRATION",
       "category": "model_performance_reproduction",
       "name": "Conformal Uncertainty Calibration & Subgroup Coverage",
       "procedure": "Inspect conformal_calibration in artifacts/ml_experiments/ml_experimental_evaluation.json",
@@ -235,7 +255,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-11-MONSOON-DISCREPANCY",
+      "check_id": "CHK-12-MONSOON-DISCREPANCY",
       "category": "scene_provenance",
       "name": "Monsoon 2026 Count Discrepancy Reconciliation",
       "procedure": "Inspect reconciliation notes in docs/provenance/seasonal_scene_manifest.json",
@@ -253,7 +273,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-12-GRID-INVARIANTS",
+      "check_id": "CHK-13-GRID-INVARIANTS",
       "category": "stage_c_grid_invariants",
       "name": "Canonical Grid Cell & Chronic Hotspot Invariants",
       "procedure": "Check canonical_smc_grid_cells and chronic hotspot count invariants",
@@ -273,7 +293,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-13-INTERVENTION-PHYSICS",
+      "check_id": "CHK-14-INTERVENTION-PHYSICS",
       "category": "cooling_interventions_physics",
       "name": "Cooling Intervention Saturation Bounds & Attenuation",
       "procedure": "Inspect cooling saturation constants in gis/interventions/cooling_effects.py",
@@ -295,7 +315,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-14-PARKED-PATCH-STATUS",
+      "check_id": "CHK-15-PARKED-PATCH-STATUS",
       "category": "cooling_interventions_physics",
       "name": "Parked Stage D Science Patch Preservation",
       "procedure": "Verify presence of parked research patch without uncommitted working tree modifications",
@@ -315,7 +335,69 @@
       "error": null
     },
     {
-      "check_id": "CHK-15-UNVERIFIED-ROOF-STRUCTURAL",
+      "check_id": "CHK-16-DOC-PATHS",
+      "category": "documentation_consistency",
+      "name": "Documentation Path Verification (check_doc_paths)",
+      "procedure": "Execute scripts/check_doc_paths.py to audit all path links in docs",
+      "evidence_path": "scripts/check_doc_paths.py; docs/EVIDENCE_REGISTER.md; docs/RUN_GUIDE.md",
+      "expected": {
+        "missing_paths": 0
+      },
+      "actual": {
+        "total_missing": 0,
+        "missing_paths": []
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Guarantees zero dangling or non-existent file references across all registered documentation.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-17-DOC-HARNESS-COUNTS",
+      "category": "documentation_consistency",
+      "name": "Documentation Harness Count Consistency",
+      "procedure": "Compare check counts in README.md and docs/VALIDATION_STATUS.md with validation harness",
+      "evidence_path": "README.md; docs/VALIDATION_STATUS.md",
+      "expected": {
+        "passed_checks": 17,
+        "unverified_checks": 8,
+        "total_checks": 25
+      },
+      "actual": {
+        "readme_counts_verified": true,
+        "status_doc_counts_verified": true,
+        "harness_counts": "17/25 Passed, 8 Unverified"
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Ensures exact alignment between validation harness execution output and public documentation.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-18-DOC-COSTS-CONSISTENCY",
+      "category": "documentation_consistency",
+      "name": "Intervention Unit Cost Consistency (costs.py vs docs)",
+      "procedure": "Verify base rates in docs/recommendation_methodology.md match gis/interventions/costs.py",
+      "evidence_path": "gis/interventions/costs.py; docs/recommendation_methodology.md",
+      "expected": {
+        "tree_match": true,
+        "cool_roof_match": true,
+        "green_roof_match": true,
+        "cool_paver_match": true
+      },
+      "actual": {
+        "tree_canopy_rates_match": true,
+        "cool_roof_rates_match": true,
+        "green_roof_rates_match": true,
+        "cool_paver_rates_match": true
+      },
+      "status": "PASS",
+      "diff": null,
+      "notes": "Guarantees exact parity between code implementation in costs.py and published documentation.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-19-UNVERIFIED-ROOF-STRUCTURAL",
       "category": "unsupported_or_unexecuted_checks",
       "name": "Building Roof Structural Load-Bearing Survey",
       "procedure": "Physical structural civil engineering assessment",
@@ -328,7 +410,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-16-UNVERIFIED-SLUM-POPULATION",
+      "check_id": "CHK-20-UNVERIFIED-SLUM-POPULATION",
       "category": "unsupported_or_unexecuted_checks",
       "name": "Ward/Slum High-Resolution Population Exposure Benefit",
       "procedure": "Micro-census demographic spatial join to 100m grid",
@@ -341,7 +423,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-17-UNVERIFIED-SPECIES-CROWN-GROWTH",
+      "check_id": "CHK-21-UNVERIFIED-SPECIES-CROWN-GROWTH",
       "category": "unsupported_or_unexecuted_checks",
       "name": "Botanical Species Crown Geometry & 10-Year Growth Progression",
       "procedure": "Dynamic allometric tree growth simulation",
@@ -354,7 +436,7 @@
       "error": null
     },
     {
-      "check_id": "CHK-18-UNVERIFIED-1D-ENERGY-BALANCE",
+      "check_id": "CHK-22-UNVERIFIED-1D-ENERGY-BALANCE",
       "category": "unsupported_or_unexecuted_checks",
       "name": "1D Surface Energy Balance Equation Differential Solver",
       "procedure": "Full atmospheric boundary layer 1D heat flux solver (Rn = H + LE + G)",
@@ -364,6 +446,45 @@
       "status": "UNVERIFIED",
       "diff": null,
       "notes": "Empirical microclimate equations are computationally bounded for interactive municipal planning.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-23-UNVERIFIED-LOCAL-SENSOR-VALID",
+      "category": "unsupported_or_unexecuted_checks",
+      "name": "Local In-Situ Microclimatic Sensor Validation in Surat",
+      "procedure": "Physical cooling verification against ground AWS / weather stations",
+      "evidence_path": "docs/EVIDENCE_REGISTER.md (Claim #55)",
+      "expected": "Ground station validation network across urban microclimates in Surat",
+      "actual": "UNVERIFIED \u2014 Modeled literature parameters (Santamouris 2014, Akbari 2001); no municipal in-situ sensor network in repo",
+      "status": "UNVERIFIED",
+      "diff": null,
+      "notes": "Physical cooling effects are modeled from published empirical literature rather than local in-situ sensor calibration.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-24-UNVERIFIED-RAW-SCHEDULE-PDFS",
+      "category": "unsupported_or_unexecuted_checks",
+      "name": "Committed Official Government Schedule PDFs / Tender Contracts",
+      "procedure": "Verification of committed CPWD DSR / SMC schedule PDFs in repository",
+      "evidence_path": "docs/EVIDENCE_REGISTER.md (Claim #56); gis/interventions/costs.py",
+      "expected": "Committed official CPWD / SMC schedule rate PDFs",
+      "actual": "UNVERIFIED \u2014 Base unit rates are indicative planning benchmarks; official tender PDFs not committed in repo",
+      "status": "UNVERIFIED",
+      "diff": null,
+      "notes": "Procurement requires fresh verification against prevailing municipal schedule of rates prior to tender.",
+      "error": null
+    },
+    {
+      "check_id": "CHK-25-UNVERIFIED-CADASTRAL-TITLE",
+      "category": "unsupported_or_unexecuted_checks",
+      "name": "Legal Municipal Land Ownership & Confirmed Cadastral Vacancy",
+      "procedure": "Cadastral survey verification of municipal land title and legal reservation",
+      "evidence_path": "docs/EVIDENCE_REGISTER.md (Claim #57); gis/interventions/config/landuse_interventions.json",
+      "expected": "Verified cadastral deed / municipal reservation for unbuilt open plots",
+      "actual": "UNVERIFIED \u2014 Satellite imagery detects unbuilt spectral footprint, not legal ownership or title",
+      "status": "UNVERIFIED",
+      "diff": null,
+      "notes": "Requires formal SMC Town Planning Scheme (TPS) cadastral title search before municipal planting.",
       "error": null
     }
   ]

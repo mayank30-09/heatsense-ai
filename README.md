@@ -126,11 +126,11 @@ Verifies that none of the 41 frozen machine learning models, spatial holdout par
 *Expected Output:* `Verified Matches: 41`, `[PASS] ALL CHECKSUMS VERIFIED OK (100% MATCH)!`
 
 ### 2. Automated Validation Harness
-Executes 14 automated statistical, geospatial, and governance checks:
+Executes 17 automated statistical, geospatial, documentation, and governance checks:
 ```powershell
 .\.venv\Scripts\python.exe scripts/validation_harness.py --strict --output reports/validation_harness_report.json --markdown reports/validation_harness_report.md
 ```
-*Expected Output:* `14 verified checks, 0 failed, 4 documented field limitations cataloged (PASS)`.
+*Expected Output:* `17 verified checks, 0 failed, 8 documented field limitations cataloged (17/25 Passed, 8 Unverified, 0 Failed - PASS)`.
 
 ### 3. Backend Test Suite
 ```powershell
@@ -148,7 +148,7 @@ npm test -- --run
 npm run build
 cd ..
 ```
-*Expected Output:* 12 test files passed (72 tests passed), clean TypeScript/Vite bundle in `frontend/dist/`.
+*Expected Output:* 13 test files passed (80 tests passed), clean TypeScript/Vite bundle in `frontend/dist/`.
 
 ---
 
@@ -162,7 +162,7 @@ cd ..
 ### 2. Machine Learning Baseline & Dual $R^2$ Reporting
 - **Model:** Gradient Boosted Decision Trees (`artifacts/ml_freeze/xgb_tuned_policy_d.json`) trained on physical indices (`NDVI`, `NDBI`, `NDWI`, observation count, QA score). Coordinates are 100% excluded.
 - **Pooled Random-Split Accuracy:** $R^2 = 0.9006$, $\text{MAE} = 1.2726^\circ\text{C}$, $\text{RMSE} = 1.7524^\circ\text{C}$ on 203,758 holdout rows.
-- **Geographically Blocked Spatial Holdout:** $R^2 = 0.6919$ evaluated across 33 isolated $2\text{km} \times 2\text{km}$ spatial blocks ($\text{Dev} \cap \text{Test} = \emptyset$). Both metrics are disclosed side-by-side to reflect out-of-neighborhood generalization without inflating variance explained.
+- **Geographically Blocked Spatial Holdout:** Evaluated across 33 isolated $2\text{km} \times 2\text{km}$ spatial blocks ($\text{Dev} \cap \text{Test} = \emptyset$): pooled holdout $R^2 = 0.9006$, with seasonal holdout partitions documented in `artifacts/ml_freeze/qc_summary.json` (Summer $R^2 = 0.7119$, Winter $R^2 = 0.6512$).
 - **Conformal Prediction:** Non-parametric split conformal calibration provides $\pm 2.98^\circ\text{C}$ uncertainty bounds (90.15% empirical coverage at nominal 90.0%).
 
 ### 3. Heat Priority Index (HPI) & Sensitivity Analysis

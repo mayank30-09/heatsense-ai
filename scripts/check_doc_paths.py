@@ -46,7 +46,7 @@ KNOWN_TOP_DIRS = (
 
 # Words or ratios that look like paths because they contain slashes, but are not files
 FALSE_POSITIVE_TOKENS = {
-    "8/9", "148/045", "148/45", "14/14", "14/18", "18/18", "41/41", "33/33",
+    "8/9", "148/045", "148/45", "14/14", "14/18", "18/18", "17/25", "16/21", "25/25", "8/25", "17/17", "41/41", "33/33",
     "w/m", "w/m²", "kg/m", "kg/m³", "120/kl", "a/500", "000/m²", "300/m²", "400/m²",
     "usgs/ee", "linux/macos", "design/supervision", "pde/cfd", "pdf/csv", "pdfs/csvs",
     "typescript/vite", "geojson/tiff/json", "mae/rmse", "ward/slum", "comment/blank",

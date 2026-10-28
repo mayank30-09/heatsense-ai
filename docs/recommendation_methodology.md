@@ -120,11 +120,11 @@ To evaluate true predictive power without data leakage, we trained an XGBoost mo
 
 | Model Specification | Features Included | Validation Strategy | $R^2$ Score | RMSE (°C) | MAE (°C) | Scientific Assessment |
 | :--- | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Pooled Multi-Season (Old)** | All + ST_QA + OBS_COUNT | Random 80/20 Split | 0.9006 | 1.84 | 1.34 | Inflated by seasonal proxy leakage |
-| **Pooled Multi-Season (Ablated)**| NDVI, NDBI, NDWI | Spatial Block CV ($\ge 2$ km) | 0.2108 | 3.65 | 2.82 | Moderate (cannot predict macro season without insolation) |
-| **Summer 2026 Operational (Physical)**| **NDVI, NDBI, NDWI** | **Spatial Block CV ($\ge 2$ km)** | **0.6919** | **1.810** | **1.398** | **Authoritative (explains 69.2% of summer spatial variance)** |
+| **Pooled Multi-Season Holdout** | Locked 5 features | 33 Block Spatial Holdout (N=203,758) | 0.9006 | 1.7524 | 1.2726 | Authoritative frozen holdout benchmark |
+| **Summer 2026 Partition (Frozen)**| **Locked 5 features** | **33 Block Spatial Holdout (N=54,930)** | **0.7119** | **1.7944** | **1.3734** | **Authoritative summer holdout partition (`qc_summary.json`)** |
+| *Exploratory Physical-Only (Trial)*| NDVI, NDBI, NDWI | Spatial Block CV ($\ge 2$ km) | *Unreproducible* | — | — | *Exploratory research trial (0.6919); removed in audit as no frozen artifact exists* |
 
-*Result:* During the operational Summer window, physical surface indices alone account for **$69.2\%$ of all microclimatic spatial temperature variance** across Surat's 49,747 cells without any QA leakage!
+*Result:* On the authoritative 33 locked spatial holdout blocks, the frozen model explains **$71.2\%$ of summer thermal variance** ($R^2 = 0.7119$, RMSE = 1.7944°C) without coordinate leakage!
 
 #### Rebuilt SHAP Attribution Table (Physical-Only Summer Model):
 | Feature | Feature Description | Mean Absolute SHAP ($|SHAP|$) | Physical Interpretation & Causal Role |

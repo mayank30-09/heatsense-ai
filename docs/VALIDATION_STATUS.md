@@ -4,7 +4,7 @@
 **Target City:** Surat, Gujarat, India (Surat Municipal Corporation — SMC)  
 **Spec Version:** v2.0 Operational (2026 Summer Baseline)  
 **Validation Suite:** `scripts/validation_harness.py` (CLI Harness) & Backend Pytest Regression Suites  
-**Validation Suite Execution Result:** `PASS` (Validation Harness: 14/18 Passed, 4 Unverified, 0 Failed; Pytest Suites: 33/33 Passed; 7 Documented Field Limitations Cataloged)
+**Validation Suite Execution Result:** `PASS` (Validation Harness: 17/25 Passed, 8 Unverified, 0 Failed; 8 Documented Field Limitations Cataloged)
 
 ---
 
@@ -12,9 +12,9 @@
 
 The HeatSense AI platform implements a multi-tiered verification architecture designed to empirically audit all cryptographic, spatial, statistical, and geospatial claims without mutating frozen models or regenerating protected analytical datasets:
 
-1. **Automated Validation Harness (`scripts/validation_harness.py`):** Runs 18 registered harness checks auditing SHA-256 manifests, spatial holdout partitions, model metric reproduction, scene provenance, grid domains, and parked patch preservation (14 PASS, 4 UNVERIFIED, 0 FAIL).
-2. **Dedicated Pytest Regression Suites:** Execute 33 unit and integration tests verifying HPI policy sensitivity (`backend/tests/test_hpi_sensitivity.py`), intervention realism guardrails (`backend/tests/test_interventions_realism.py`), and documentation consistency (`backend/tests/test_documentation_consistency.py`).
-3. **Master Limitations Register:** Catalogs 7 operational, cadastral, structural, and microclimatic boundary conditions marked strictly as `UNVERIFIED` where remote sensing cannot substitute for on-site municipal engineering.
+1. **Automated Validation Harness (`scripts/validation_harness.py`):** Runs 25 registered harness checks auditing SHA-256 manifests, spatial holdout partitions, model metric reproduction, scene provenance, grid domains, documentation consistency, and parked patch preservation (17 PASS, 8 UNVERIFIED, 0 FAIL).
+2. **Dedicated Pytest Regression Suites:** Execute unit and integration tests verifying HPI policy sensitivity (`backend/tests/test_hpi_sensitivity.py`), intervention realism guardrails (`backend/tests/test_interventions_realism.py`), and documentation consistency (`backend/tests/test_documentation_consistency.py`).
+3. **Master Limitations Register:** Catalogs 8 operational, cadastral, structural, and microclimatic boundary conditions marked strictly as `UNVERIFIED` where remote sensing cannot substitute for on-site municipal engineering.
 
 Every quantitative claim and algorithmic threshold is cataloged under strict evidentiary statuses:
 - **PASS (Verified Invariant):** Statistically, mathematically, or cryptographically reproduced from authentic stored artifacts and active runtime code.
@@ -35,45 +35,35 @@ graph TD
 
 ## 2. Master Validation Matrix
 
-### Tier 1: Core Automated Harness Invariants (`scripts/validation_harness.py`)
+### Core Automated Harness Invariants (`scripts/validation_harness.py`)
 
 | Check ID | Category | Description | Target Invariant | Actual Result | Status |
 | :--- | :--- | :--- | :--- | :--- | :---: |
-| **`CHK-01-FREEZE-MANIFEST`** | Cryptographic Freeze | SHA-256 digest verification across all frozen artifacts | 41 valid entries, 41 verified matches | 41/41 matches exact (0 mismatches, 0 missing) | **PASS** |
-| **`CHK-02-SPATIAL-SPLIT`** | Spatial Holdout | 2km grid spatial holdout block disjointness | 132 dev blocks $\cap$ 33 test blocks $= \emptyset$ | 132 dev, 33 test, 0 overlapping blocks | **PASS** |
-| **`CHK-03-ROW-PARTITION`** | Spatial Holdout | Multi-year dataset row accounting | $720,973 \text{ dev} + 203,758 \text{ test} = 924,731$ | 924,731 total, 203,758 test, 720,973 dev | **PASS** |
-| **`CHK-04-COORDINATE-EXCLUSION`**| Spatial Holdout | Coordinate exclusion from ML features | `lat`, `lon`, `row`, `col`, `block_id` excluded | 0 leaked spatial coordinates (5 physical features) | **PASS** |
-| **`CHK-05-SINGLE-EVALUATION`** | Spatial Holdout | Single test set evaluation policy | Evaluation count $= 1$ (immutable constant) | `evaluation_count == 1` verified | **PASS** |
-| **`CHK-06-HOLDOUT-METRICS`** | Performance Reproduction | Authoritative holdout performance metrics | $\text{MAE} = 1.2726$, $\text{RMSE} = 1.7524$, $R^2 = 0.9006$ | $\text{MAE} = 1.2726$, $\text{RMSE} = 1.7524$, $R^2 = 0.9006$ | **PASS** |
-| **`CHK-07-SPATIAL-RESIDUALS`**| Performance Reproduction | GeoJSON spatial residuals recomputation | Sample-weighted MAE/RMSE across 33 test blocks | $\text{MAE} = 1.2726$, $\text{RMSE} = 1.7524$ ($\text{diff} \le 0.0001$) | **PASS** |
-| **`CHK-08-MODEL-COMPARISON`** | Performance Reproduction | Controlled 5-fold spatial CV model comparison | RF RMSE $1.8024^\circ\text{C}$, XGBoost RMSE $1.8280^\circ\text{C}$ | RF $1.8024 \pm 0.0545$, XGBoost $1.8280 \pm 0.0607$ | **PASS** |
-| **`CHK-09-CONFORMAL-CALIB`** | Performance Reproduction | Non-parametric split conformal calibration | Overall empirical coverage $\ge 90.0\%$ (nominal) | Overall $90.15\%$, Monsoon $79.19\%$, D10 $83.43\%$ | **PASS** |
-| **`CHK-10-SCENE-PROVENANCE`** | Scene Provenance | Reconciled seasonal Landsat 8/9 scene manifest | Summer: 22, Winter: 20, Monsoon: 6, Post-Monsoon: 14 | 62 authentic USGS/EE scenes exactly matched | **PASS** |
-| **`CHK-11-MONSOON-DISCREP`** | Scene Provenance | Monsoon 2026 scene count discrepancy cause | cause not established; counts differ between the early sensitivity analysis (8) and the manifest (6) | cause not established; counts differ between the early sensitivity analysis (8) and the manifest (6) | **PASS** |
-| **`CHK-12-GRID-INVARIANTS`** | Geospatial Invariants | Canonical SMC domain and chronic hotspot counts | 49,747 100m grid cells, 223 chronic cells | 49,747 canonical cells, 223 chronic hotspots | **PASS** |
-| **`CHK-13-INTERVENTION-CAPS`**| Cooling Physics | Linearized heat model & physical saturation caps | Tree $\le 3.50^\circ\text{C}$, Roof $\le 2.50^\circ\text{C}$, Cell $\le 4.50^\circ\text{C}$ | $h_{\text{eff}} = 45.6\text{ W/(m}^2\cdot\text{K)}$; all 11 saturation caps verified | **PASS** |
-| **`CHK-14-PARKED-PATCH`** | Stage D Governance | Experimental Stage D research patch status | Parked and unapplied (no contract drift) | `reports/runtime_verification_2026-10-21/parked/stage_d_science_wip.patch` parked and unapplied | **PASS** |
-
-### Tier 2: Extended Subsystem Invariants (Verified via Pytest Test Suites)
-
-| Check ID | Category | Description | Target Invariant | Actual Result | Status |
-| :--- | :--- | :--- | :--- | :--- | :---: |
-| **`CHK-15-HPI-SENSITIVITY`** | Decision Robustness | Controlled 4-scenario HPI sensitivity analysis | Re-ranking across 49,747 cells; Spearman $\rho \ge 0.90$ | Spearman $\rho \in [0.9660, 0.9917]$ across 4 policy scenarios | **PASS** |
-| **`CHK-16-COST-REALISM`** | Cost Provenance | Itemized markups & schedule alignment disclaimer | 18% GST, 12% contingency, setup scaling | All 11 types itemized; `schedule_alignment: UNVERIFIED_IN_REPO` | **PASS** |
-| **`CHK-17-LANDUSE-DISCLAIMER`**| Land Tenure | Unbuilt open land ownership disclaimer | Typology titles use spectral candidate heuristics | Legal disclaimer present; no claim of legal municipal title | **PASS** |
-| **`CHK-18-NEWER-INTERVENTIONS`**| Guardrails | Newer interventions & Miyawaki unverified tags | `local_field_validated: False` across 7 newer types | Miyawaki tagged `UNVERIFIED IN SURAT`; caps enforced | **PASS** |
-
-### Tier 3: Documented Empirical & Operational Field Limitations
-
-| Check ID | Category | Description | Target Invariant | Actual Result | Status |
-| :--- | :--- | :--- | :--- | :--- | :---: |
-| **`CHK-19-ROOF-STRUCTURAL`** | Field Limitation | Roof civil load-bearing capacity | Satellite-based structural verification | `UNVERIFIED` — Requires on-site civil structural survey | `UNVERIFIED` |
-| **`CHK-20-SLUM-POPULATION`** | Field Limitation | Ward/slum micro-demographic census linking | 100m grid-level population exposure weighting | `UNVERIFIED` — Returns `POPULATION_DATA_UNAVAILABLE` | `UNVERIFIED` |
-| **`CHK-21-SPECIES-GROWTH`** | Field Limitation | Botanical species 10-year growth curves | Dynamic allometric growth curves in active runtime | `UNVERIFIED` — Retained in parked Stage D patch | `UNVERIFIED` |
-| **`CHK-22-1D-ENERGY-BALANCE`**| Field Limitation | Numerical CFD / PDE continuum solvers | 3D coupled turbulent boundary layer solver | `UNVERIFIED` — Active code uses linearized heat dissipation | `UNVERIFIED` |
-| **`CHK-23-LOCAL-SENSOR-VALID`**| Field Limitation | Local in-situ microclimatic sensor validation in Surat | Physical cooling verification against ground stations | `UNVERIFIED` — Modeled literature parameters | `UNVERIFIED` |
-| **`CHK-24-RAW-SCHEDULE-PDFS`** | Field Limitation | Raw CPWD / SMC schedule documents in repository | Committed official government tender rate PDFs | `UNVERIFIED` — Base unit rates are indicative assumptions | `UNVERIFIED` |
-| **`CHK-25-CADASTRAL-TITLE`** | Field Limitation | Legal municipal ownership and confirmed vacancy | Proof of municipal reservation or legal vacancy | `UNVERIFIED` — Requires SMC TPS cadastral survey | `UNVERIFIED` |
+| **`CHK-01-FREEZE-MANIFEST`** | cryptographic_freeze | Cryptographic Freeze Manifest (41 Files) | {'total_entries': 41, 'verified_matches': 41, 'missing': ... | {'total_entries': 41, 'verified_matches': 41, 'missing_fi... | **PASS** |
+| **`CHK-02-SPATIAL-SPLIT`** | spatial_holdout_integrity | Spatial Block Disjointness (132 Dev / 33 Test) | {'dev_blocks_count': 132, 'test_blocks_count': 33, 'overl... | {'dev_blocks_count': 132, 'test_blocks_count': 33, 'total... | **PASS** |
+| **`CHK-03-ROW-PARTITION`** | spatial_holdout_integrity | Dataset Row Partitioning (720,973 Dev / 203,758 Test) | {'total_rows': 924731, 'test_rows': 203758, 'dev_rows': 7... | {'total_rows': 924731, 'test_rows': 203758, 'dev_rows': 7... | **PASS** |
+| **`CHK-04-COORDINATE-EXCLUSION`** | spatial_holdout_integrity | Spatial Coordinate Exclusion from Features | {'leaked_coordinates': []} | {'feature_count': 5, 'feature_names': ['NDVI', 'NDBI', 'N... | **PASS** |
+| **`CHK-05-SINGLE-EVALUATION`** | spatial_holdout_integrity | Single Holdout Evaluation Policy (declared constant, not evidence of single use) | {'evaluation_count': 1} | {'evaluation_count': 1} | `UNVERIFIED` |
+| **`CHK-06-HOLDOUT-METRICS`** | model_performance_reproduction | Authoritative Holdout Performance Metrics | {'mae': 1.2726, 'rmse': 1.7524, 'r2': 0.9006} | {'mae': 1.2726, 'rmse': 1.7524, 'r2': 0.9006} | **PASS** |
+| **`CHK-07-SPATIAL-RESIDUALS-RECOMPUTE`** | model_performance_reproduction | Spatial Residual GeoJSON Recomputation | {'total_blocks': 33, 'total_samples': 203758, 'recomputed... | {'total_blocks': 33, 'total_samples': 203758, 'recomputed... | **PASS** |
+| **`CHK-08-SPATIAL-R2-PROVENANCE`** | model_performance_reproduction | Spatial Holdout R² Provenance & 0.6919 Removal | {'r2_06919_active_claims': [], 'summer_partition_r2': 0.7... | {'r2_06919_active_claims': [], 'summer_partition_r2': 0.7... | **PASS** |
+| **`CHK-09-MODEL-COMPARISON`** | model_performance_reproduction | Controlled 5-Fold Spatial CV Model Comparison | {'RandomForest_rmse': 1.8024, 'XGBoost_rmse': 1.828} | {'RandomForest': {'mean_mae': 1.29272, 'mean_rmse': 1.802... | **PASS** |
+| **`CHK-10-CONFORMAL-CALIBRATION`** | model_performance_reproduction | Conformal Uncertainty Calibration & Subgroup Coverage | {'overall_empirical_coverage': 0.9015, 'monsoon_coverage'... | {'nominal_coverage': 0.9, 'overall_empirical_coverage': 0... | **PASS** |
+| **`CHK-10-SCENE-PROVENANCE`** | scene_provenance | Seasonal Scene Manifest Provenance | {'summer_2026': 22, 'winter_2026': 20, 'monsoon_2026': 6,... | {'summer_2026': 22, 'winter_2026': 20, 'monsoon_2026': 6,... | **PASS** |
+| **`CHK-12-MONSOON-DISCREPANCY`** | scene_provenance | Monsoon 2026 Count Discrepancy Reconciliation | {'reconciliation_documented': True} | {'reconciliation_documented': True, 'excerpt': 'In Monsoo... | **PASS** |
+| **`CHK-13-GRID-INVARIANTS`** | stage_c_grid_invariants | Canonical Grid Cell & Chronic Hotspot Invariants | {'canonical_cells': 49747, 'chronic_hotspots_count': 223} | {'canonical_cells': 49747, 'chronic_definitions_present':... | **PASS** |
+| **`CHK-14-INTERVENTION-PHYSICS`** | cooling_interventions_physics | Cooling Intervention Saturation Bounds & Attenuation | {'tree_cap': 3.5, 'cool_roof_cap': 2.5, 'cell_max_cap': 4.5} | {'tree_saturation_cap_verified': True, 'cool_roof_saturat... | **PASS** |
+| **`CHK-15-PARKED-PATCH-STATUS`** | cooling_interventions_physics | Parked Stage D Science Patch Preservation | {'patch_exists': True, 'status': 'PARKED_UNAPPLIED'} | {'patch_exists': True, 'size_bytes': 10128, 'status': 'PA... | **PASS** |
+| **`CHK-16-DOC-PATHS`** | documentation_consistency | Documentation Path Verification (check_doc_paths) | {'missing_paths': 0} | {'total_missing': 0, 'missing_paths': []} | **PASS** |
+| **`CHK-17-DOC-HARNESS-COUNTS`** | documentation_consistency | Documentation Harness Count Consistency | {'passed_checks': 17, 'unverified_checks': 8, 'total_chec... | {'readme_counts_verified': True, 'status_doc_counts_verif... | **PASS** |
+| **`CHK-18-DOC-COSTS-CONSISTENCY`** | documentation_consistency | Intervention Unit Cost Consistency (costs.py vs docs) | {'tree_match': True, 'cool_roof_match': True, 'green_roof... | {'tree_canopy_rates_match': True, 'cool_roof_rates_match'... | **PASS** |
+| **`CHK-19-UNVERIFIED-ROOF-STRUCTURAL`** | unsupported_or_unexecuted_checks | Building Roof Structural Load-Bearing Survey | Physical on-site inspection of roof structural load capac... | UNVERIFIED — Satellite imagery and GIS cannot determine s... | `UNVERIFIED` |
+| **`CHK-20-UNVERIFIED-SLUM-POPULATION`** | unsupported_or_unexecuted_checks | Ward/Slum High-Resolution Population Exposure Benefit | Grid-cell population exposure density weighting | UNVERIFIED — Field returns POPULATION_DATA_UNAVAILABLE; s... | `UNVERIFIED` |
+| **`CHK-21-UNVERIFIED-SPECIES-CROWN-GROWTH`** | unsupported_or_unexecuted_checks | Botanical Species Crown Geometry & 10-Year Growth Progression | Species-specific (Neem, Peepal, Gulmohar) temporal growth... | UNVERIFIED — Active runtime uses mature canopy equilibriu... | `UNVERIFIED` |
+| **`CHK-22-UNVERIFIED-1D-ENERGY-BALANCE`** | unsupported_or_unexecuted_checks | 1D Surface Energy Balance Equation Differential Solver | Iterative numerical solver for net radiation and latent h... | UNVERIFIED — Platform implements empirical microclimate f... | `UNVERIFIED` |
+| **`CHK-23-UNVERIFIED-LOCAL-SENSOR-VALID`** | unsupported_or_unexecuted_checks | Local In-Situ Microclimatic Sensor Validation in Surat | Ground station validation network across urban microclima... | UNVERIFIED — Modeled literature parameters (Santamouris 2... | `UNVERIFIED` |
+| **`CHK-24-UNVERIFIED-RAW-SCHEDULE-PDFS`** | unsupported_or_unexecuted_checks | Committed Official Government Schedule PDFs / Tender Contracts | Committed official CPWD / SMC schedule rate PDFs | UNVERIFIED — Base unit rates are indicative planning benc... | `UNVERIFIED` |
+| **`CHK-25-UNVERIFIED-CADASTRAL-TITLE`** | unsupported_or_unexecuted_checks | Legal Municipal Land Ownership & Confirmed Cadastral Vacancy | Verified cadastral deed / municipal reservation for unbui... | UNVERIFIED — Satellite imagery detects unbuilt spectral f... | `UNVERIFIED` |
 
 ---
 
@@ -92,11 +82,12 @@ graph TD
 - **Zero Coordinate Leakage:** Features are restricted to physical radiometry and surface indices (`NDVI`, `NDBI`, `NDWI`, `LST_OBS_COUNT`, `LST_QA_MEDIAN_K`). Spatial coordinates (`lat`, `lon`, `row`, `col`, `block_id`) are 100% excluded.
 
 ### 3.3 Statistical & Holdout Accuracy Reproduction
-- **Single Holdout Evaluation Policy:** The production model (`xgb_tuned_policy_d.joblib`) was evaluated exactly once against the 33 locked test blocks ($N = 203,758$ rows).
+- **Single Holdout Evaluation Policy:** The production model (`xgb_tuned_policy_d.joblib`) was evaluated against the 33 locked test blocks ($N = 203,758$ rows); cataloged as declared constant in `artifacts/ml_freeze/evaluation_manifest.json` (`CHK-05-SINGLE-EVALUATION`).
 - **Metric Verification:**
   - Holdout $\text{MAE} = 1.2726^\circ\text{C}$.
   - Holdout $\text{RMSE} = 1.7524^\circ\text{C}$.
   - Holdout $R^2 = 0.9006$ ($90.06\%$ variance explained).
+- **Spatial Holdout R² Provenance:** Exploratory 0.6919 figure was unreproducible from frozen artifacts and was removed from UI/docs; authoritative Summer partition $R^2 = 0.7119$ is verified from `artifacts/ml_freeze/qc_summary.json` (`CHK-08-SPATIAL-R2-PROVENANCE`).
 - **Mathematical Spatial GeoJSON Residual Recomputation:** Aggregating sample-weighted residuals across all 33 test blocks in `artifacts/ml_freeze/holdout_spatial_residuals.geojson` produces $\text{MAE} = 1.2726^\circ\text{C}$ and $\text{RMSE} = 1.7524^\circ\text{C}$ (exact match, $\text{diff} \le 0.0001$).
 - **Controlled Model Comparison:** In `data/diagnostics/ml/model_comparison_rf_xgb.csv`, under identical 5-fold spatial cross-validation, Random Forest achieves an RMSE of $1.8024 \pm 0.0545^\circ\text{C}$ and XGBoost achieves $1.8280 \pm 0.0607^\circ\text{C}$. XGBoost was selected for production serving due to inference latency and compact model size.
 
@@ -112,20 +103,28 @@ graph TD
 
 ## 4. Documented Scientific Limitations & Unresolved Gaps (UNVERIFIED)
 
-The following four items represent deliberate scope boundaries and physical limitations that cannot be resolved solely through satellite observation:
+The following items represent deliberate scope boundaries and physical limitations that cannot be resolved solely through satellite observation:
 
-1. **Roof Structural Load-Bearing Feasibility (`CHK-15-UNVERIFIED-ROOF-STRUCTURAL`):**
+1. **Single Holdout Evaluation Policy (`CHK-05-SINGLE-EVALUATION`):**
+   - *Limitation:* `evaluation_count == 1` is recorded as a declared policy constant in `artifacts/ml_freeze/evaluation_manifest.json`; not runtime cryptographic or audit log evidence.
+2. **Roof Structural Load-Bearing Feasibility (`CHK-19-UNVERIFIED-ROOF-STRUCTURAL`):**
    - *Limitation:* Satellite imagery cannot evaluate whether lightweight or tin roofs can support extensive green roof loads ($120\text{–}150\text{ kg/m}^2$) or high-albedo coatings without degradation.
    - *Requirement:* A certified on-site structural engineering survey is mandatory prior to physical cooling deployment.
-2. **Ward/Slum High-Resolution Population Exposure Benefit (`CHK-16-UNVERIFIED-SLUM-POPULATION`):**
+3. **Ward/Slum High-Resolution Population Exposure Benefit (`CHK-20-UNVERIFIED-SLUM-POPULATION`):**
    - *Limitation:* High-resolution census micro-data is not linked to the 100m Cartesian grid; the API returns `POPULATION_DATA_UNAVAILABLE`.
    - *Resolution:* Platform prioritization is currently bounded by physical thermal severity, persistence, and built-up density components.
-3. **Botanical Species Crown Geometry & 10-Year Growth Progression (`CHK-17-UNVERIFIED-SPECIES-GROWTH`):**
+4. **Botanical Species Crown Geometry & 10-Year Growth Progression (`CHK-21-UNVERIFIED-SPECIES-CROWN-GROWTH`):**
    - *Limitation:* Species-specific tree allometry (Neem vs. Peepal vs. Gulmohar) and multi-year canopy growth curves are mathematically modeled in the parked research patch (`reports/runtime_verification_2026-10-21/parked/stage_d_science_wip.patch`), but are parked to preserve runtime API stability.
    - *Resolution:* Active runtime uses mature canopy equilibrium cooling estimates.
-4. **1D Surface Energy Balance Equation Solver (`CHK-18-UNVERIFIED-1D-ENERGY-BALANCE`):**
+5. **1D Surface Energy Balance Equation Solver (`CHK-22-UNVERIFIED-1D-ENERGY-BALANCE`):**
    - *Limitation:* The platform utilizes calibrated empirical microclimate formulations (Bowler et al. 2010, Santamouris et al. 2017) rather than continuous 1D differential energy balance solvers ($R_n = H + LE + G$).
    - *Resolution:* Empirical formulas are computationally bounded, facilitating sub-second Pareto optimization.
+6. **Local In-Situ Microclimatic Sensor Validation in Surat (`CHK-23-UNVERIFIED-LOCAL-SENSOR-VALID`):**
+   - *Limitation:* Physical cooling effects are derived from peer-reviewed empirical literature rather than local ground meteorological stations in Surat.
+7. **Raw CPWD / SMC Rate Schedule PDFs (`CHK-24-UNVERIFIED-RAW-SCHEDULE-PDFS`):**
+   - *Limitation:* Base unit costs are indicative planning assumptions; raw government schedule PDFs are not committed in the repository.
+8. **Legal Municipal Land Ownership & Cadastral Title (`CHK-25-UNVERIFIED-CADASTRAL-TITLE`):**
+   - *Limitation:* Satellite imagery detects unbuilt ground but cannot establish cadastral ownership or municipal reservation.
 
 ---
 
