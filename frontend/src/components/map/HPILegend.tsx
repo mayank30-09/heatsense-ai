@@ -119,9 +119,9 @@ export default function HPILegend({
   const getLegendTitle = () => {
     switch (layerMode) {
       case "hpi":
-        return "Heat Priority Index";
+        return "Heat Priority Index (derived, 0-100)";
       case "lst":
-        return `Observed LST (${fallback.label} ${displayYear})`;
+        return `Observed LST (Landsat Level-2 ST) (${fallback.label} ${displayYear})`;
       case "confidence":
         return "Confidence & Quality";
       case "chronic":
@@ -383,7 +383,7 @@ export default function HPILegend({
 
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                Heat Priority Index (HPI)
+                Heat Priority Index (derived, 0-100)
               </span>
               <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-800">
                 0 – 100
@@ -427,9 +427,9 @@ export default function HPILegend({
                         "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
                     }}
                   />
-                  <span>Missing Data (no valid observation)</span>
+                  <span>NoData / cloud-masked (no valid observation)</span>
                 </span>
-                <span className="font-medium text-slate-500">SQL NULL</span>
+                <span className="font-medium text-slate-500">Transparent / Hatched</span>
               </div>
             </div>
           </div>
@@ -440,7 +440,7 @@ export default function HPILegend({
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                Observed {fallback.label} LST
+                Observed LST (Landsat Level-2 ST)
               </span>
               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
                 Observed (Landsat L2 ST)
@@ -464,6 +464,10 @@ export default function HPILegend({
               <span>60°C</span>
             </div>
 
+            <div className="mt-1 text-[9.5px] text-slate-500 text-center">
+              Fixed 20–60°C rendering range with out-of-range clipping (&lt;20°C clipped to 20°C, &gt;60°C clipped to 60°C).
+            </div>
+
             <div className="mt-2.5 space-y-1 border-t border-slate-100 pt-2 text-[10px] text-slate-600">
               <div className="flex justify-between">
                 <span>Observed Range:</span>
@@ -484,14 +488,14 @@ export default function HPILegend({
                         "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
                     }}
                   />
-                  <span>Missing Data (no valid observation)</span>
+                  <span>NoData / cloud-masked (no valid observation)</span>
                 </span>
-                <span className="font-medium text-slate-500">Transparent</span>
+                <span className="font-medium text-slate-500">Transparent / Hatched</span>
               </div>
             </div>
 
             <div className="mt-2 rounded bg-amber-50/90 p-2 border border-amber-200/70 text-[9.5px] leading-snug text-amber-900">
-              <span className="font-bold">Physical Note:</span> Landsat-derived Land Surface Temperature (LST) measures radiant skin temperature (T<sub>skin</sub>) at the satellite overpass (~10:30 local solar time, about 11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
+              <span className="font-bold">Physical Distinction:</span> Land Surface Temperature (LST) is surface temperature (skin), not air temperature. Measured by Landsat TIRS at satellite overpass (~10:30 local solar time, ~11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>).
             </div>
           </div>
         )}
@@ -542,7 +546,7 @@ export default function HPILegend({
                       "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
                   }}
                 />
-                <span className="font-medium text-slate-600">Missing Data (no valid observation)</span>
+                <span className="font-medium text-slate-600">NoData / cloud-masked (no valid observation)</span>
               </div>
             </div>
 
@@ -583,7 +587,7 @@ export default function HPILegend({
                     "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
                 }}
               />
-              <span className="font-medium text-slate-600">Missing Data (no valid observation)</span>
+              <span className="font-medium text-slate-600">NoData / cloud-masked (no valid observation)</span>
             </div>
 
             <p className="mt-2 text-[10px] leading-tight text-slate-500">
@@ -597,7 +601,7 @@ export default function HPILegend({
           <div>
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                Observed Single Scene LST
+                Observed LST (Landsat Level-2 ST) - Single Scene
               </span>
               <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-800">
                 Observed (Landsat L2 ST)
@@ -618,6 +622,10 @@ export default function HPILegend({
               <span>40°C</span>
               <span>50°C</span>
               <span>60°C</span>
+            </div>
+
+            <div className="mt-1 text-[9.5px] text-slate-500 text-center">
+              Fixed 20–60°C rendering range with out-of-range clipping (&lt;20°C clipped to 20°C, &gt;60°C clipped to 60°C).
             </div>
 
             {/* T1(g) Latest Scene panel */}
@@ -671,11 +679,11 @@ export default function HPILegend({
                     "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
                 }}
               />
-              <span className="font-medium text-slate-600">Missing Data (no valid observation)</span>
+              <span className="font-medium text-slate-600">NoData / cloud-masked (no valid observation)</span>
             </div>
 
             <div className="mt-2.5 border-t border-slate-100 pt-2 text-[10px] font-medium text-slate-700 leading-4">
-              Skin temperature at ~10:30 local solar time (about 11:00 IST), single scene, not a seasonal composite.
+              Land Surface Temperature (LST) is surface temperature (skin), not air temperature. Single overpass (~10:30 local solar time, about 11:00 IST), not a seasonal composite.
             </div>
 
             <div className="mt-1 text-[9px] font-medium text-amber-700 bg-amber-50 rounded p-1 border border-amber-200">

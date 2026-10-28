@@ -25,8 +25,8 @@ describe("LayerControls Navigation & Mode Isolation", () => {
     expect(html).toContain("🌧️ Monsoon");
 
     // Mode tablist and minHpi filter must be omitted in Area Analysis
-    expect(html).not.toContain("HPI Priority");
-    expect(html).not.toContain("Observed LST");
+    expect(html).not.toContain("Heat Priority Index (derived, 0-100)");
+    expect(html).not.toContain("Observed LST (Landsat Level-2 ST)");
     expect(html).not.toContain("Confidence / Quality");
     expect(html).not.toContain("Chronic (223)");
     expect(html).not.toContain("Filter: HPI ≥ 50");
@@ -48,8 +48,8 @@ describe("LayerControls Navigation & Mode Isolation", () => {
         onSeasonChange={() => {}}
       />
     );
-    expect(html).toContain("HPI Priority");
-    expect(html).toContain("Observed LST");
+    expect(html).toContain("Heat Priority Index (derived, 0-100)");
+    expect(html).toContain("Observed LST (Landsat Level-2 ST)");
     expect(html).toContain("Thermal Raster");
     expect(html).toContain("Filter: HPI ≥ 50");
     expect(html).not.toContain("Draw Polygon");
@@ -72,6 +72,6 @@ describe("HPILegend Responsive & Collapsible Structure", () => {
     const html = renderToStaticMarkup(
       <HPILegend layerMode="lst" season="winter" year={2026} />
     );
-    expect(html).toContain("Observed LST (Winter 2026)");
+    expect(html).toContain("Observed LST (Landsat Level-2 ST) (Winter 2026)");
   });
 });

@@ -177,4 +177,21 @@ describe("T1 UI Labelling & Provenance Requirements", () => {
     );
     expect(panelHtml).toContain("Polygon statistics &amp; recommendations");
   });
+
+  it("Q5 verifies map symbology, layer names, 20-60 C clipping, and skin temperature distinction", () => {
+    // 1. Layer names and distinct legends
+    const lstHtml = renderToStaticMarkup(
+      <HPILegend layerMode="lst" season="summer" year={2026} />
+    );
+    expect(lstHtml).toContain("Observed LST (Landsat Level-2 ST)");
+    expect(lstHtml).toContain("Fixed 20–60°C rendering range with out-of-range clipping (&lt;20°C clipped to 20°C, &gt;60°C clipped to 60°C)");
+    expect(lstHtml).toContain("Land Surface Temperature (LST) is surface temperature (skin), not air temperature.");
+    expect(lstHtml).toContain("NoData / cloud-masked (no valid observation)");
+
+    const hpiHtml = renderToStaticMarkup(
+      <HPILegend layerMode="hpi" season="summer" year={2026} />
+    );
+    expect(hpiHtml).toContain("Heat Priority Index (derived, 0-100)");
+    expect(hpiHtml).toContain("NoData / cloud-masked (no valid observation)");
+  });
 });

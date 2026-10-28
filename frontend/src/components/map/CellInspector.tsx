@@ -582,7 +582,7 @@ export default function CellInspector({
           <strong>Grid & Resolution:</strong> 100 m analytical grid (10,000 m² / 1 ha). Source thermal data acquired by Landsat 8/9 TIRS at ~100 m native resolution (USGS resampled to 30 m).
         </div>
         <div>
-          <strong>Temperature Distinction:</strong> LST is radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (~11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>), indoor temperature, and HPI scores (0–100 composite index).
+          <strong>Temperature Distinction:</strong> Land Surface Temperature (LST) is surface temperature (skin), not air temperature. LST is radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (~11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>), indoor temperature, and HPI scores (0–100 composite index).
         </div>
       </div>
     </aside>
