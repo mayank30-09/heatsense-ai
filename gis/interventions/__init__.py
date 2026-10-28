@@ -82,6 +82,21 @@ class InterventionCandidate:
     water_need_description: str = ""
     maintenance_burden: str = ""
     construction_time: str = ""
+    screening_status: str = "MODEL_ELIGIBLE"
+    screening_reason_code: str = "NONE"
+    site_suitability: str = "UNKNOWN - survey required"
+    ownership_legal: str = "UNVERIFIED"
+    engineering_clearance: str = "NOT ASSESSED"
+    procurement_status: str = "NOT STARTED"
+    benefit_evidence: str = "MODELLED"
+    data_confidence: str = "MEDIUM"
+    cooling_metric: str = "modelled surface (skin) temperature reduction on treated area"
+    cell_scope_note: str = "Treated area within 100m grid cell footprint; skin surface temperature reduction, not air temperature."
+    price_date_note: str = "indicative, not a tender price"
+    schedule_alignment_note: str = "rates not verified against CPWD/SMC schedule"
+    unit_rate: float = 0.0
+    unit_rate_unit: str = ""
+    markups_description: str = "Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -100,6 +115,21 @@ class InterventionCandidate:
             "administrative_zone": self.administrative_zone,
             "feasibility_status": self.feasibility_status.value,
             "rejection_reason": self.rejection_reason.value,
+            "screening_status": self.screening_status,
+            "screening_reason_code": self.screening_reason_code,
+            "site_suitability": self.site_suitability,
+            "ownership_legal": self.ownership_legal,
+            "engineering_clearance": self.engineering_clearance,
+            "procurement_status": self.procurement_status,
+            "benefit_evidence": self.benefit_evidence,
+            "data_confidence": self.data_confidence,
+            "cooling_metric": self.cooling_metric,
+            "cell_scope_note": self.cell_scope_note,
+            "price_date_note": self.price_date_note,
+            "schedule_alignment_note": self.schedule_alignment_note,
+            "unit_rate": round(self.unit_rate, 2),
+            "unit_rate_unit": self.unit_rate_unit,
+            "markups_description": self.markups_description,
             "cost_inr": round(self.cost_inr, 2),
             "cost_inr_range": [round(self.cost_inr_min, 2), round(self.cost_inr_max, 2)],
             "expected_cooling_c": round(self.expected_cooling_c, 2),

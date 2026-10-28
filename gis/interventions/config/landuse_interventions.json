@@ -198,17 +198,20 @@
       "description": "High-density slum settlement dwellings with lightweight, fragile roofing (tin sheets, plastic, recycled tiles, timber rafters; load capacity < 15 kg/m²).",
       "needs_site_survey": false,
       "allowed_interventions": [
-        "cool_roof",
-        "tree_canopy"
+        "cool_roof"
       ],
       "prohibited_interventions": [
         "green_roof",
+        "tree_canopy",
+        "cool_pavement",
         "shaded_parking_structure",
         "rainwater_fed_pond",
         "dense_miyawaki_plantation"
       ],
       "prohibition_reasons": {
         "green_roof": "STRUCTURAL COLLAPSE RISK: Informal timber/bamboo rafters cannot support saturated soil media or drainage trays.",
+        "tree_canopy": "Deep taproot trees cannot be planted on elevated rooftop dwellings.",
+        "cool_pavement": "Pavements apply strictly to ground surfaces, not informal rooftops.",
         "shaded_parking_structure": "Dense informal settlements lack dedicated vehicular parking courts.",
         "rainwater_fed_pond": "High flood vulnerability and lack of protected catchment in informal settlements.",
         "dense_miyawaki_plantation": "High population density leaves no contiguous plots for multi-layer dense forest."

@@ -299,3 +299,156 @@ def test_api_recommendations_rate_limiting(client):
 
     # Reset after test
     recommendations_rate_limiter.reset()
+
+
+def test_compatibility_matrix_and_status_coherence():
+    """Verify Q2 compatibility matrix across all typologies and candidates:
+    - No ground-only intervention on rooftop typology and vice versa.
+    - Rejected/not-applicable items never have positive 'justifies' language.
+    - Every rationale mentions its own status.
+    - screening_status never implies approval.
+    """
+    from gis.interventions import InterventionType
+    from gis.interventions.candidates import generate_candidate_for_cell
+
+    typologies = [
+        "residential_rcc_roof",
+        "industrial_shed_roof",
+        "informal_settlement_roof",
+        "vacant_public_open_land",
+        "vacant_private_land",
+        "park_garden",
+        "road_corridor",
+        "parking_paved_yard",
+        "institutional_campus",
+        "water_adjacent",
+    ]
+
+    roof_typologies = {"residential_rcc_roof", "industrial_shed_roof", "informal_settlement_roof"}
+    ground_only_types = {
+        "TREE_CANOPY",
+        "COOL_PAVEMENT",
+        "PUBLIC_PARK_NATIVE_TREES",
+        "DENSE_MIYAWAKI_PLANTATION",
+        "BIOSWALE_RAIN_GARDEN",
+        "RAINWATER_FED_POND",
+        "SHADED_PARKING_STRUCTURE",
+        "PERMEABLE_GROUND_COVER",
+    }
+    roof_only_types = {"COOL_ROOF", "GREEN_ROOF", "GREEN_WALL"}
+
+    pure_ground_typologies = {
+        "vacant_public_open_land",
+        "vacant_private_land",
+        "park_garden",
+        "road_corridor",
+        "parking_paved_yard",
+        "water_adjacent",
+    }
+
+    forbidden_approval_terms = ["APPROVED", "READY", "COMMISSIONED", "PERMITTED"]
+
+    for typo in typologies:
+        summary = PolygonSummary(
+            status="ok",
+            area_km2=0.10,
+            inside_smc_fraction=1.0,
+            season="summer",
+            effective_year=2026,
+            mean_lst_c=44.0,
+            max_lst_c=48.0,
+            min_lst_c=39.0,
+            p90_lst_c=46.0,
+            mean_hpi=60.0,
+            max_hpi=75.0,
+            vegetation_deficit_component=0.60,
+            built_density_component=0.60,
+            mean_ndvi=0.15,
+            mean_ndbi=0.20 if typo in roof_typologies else -0.05,
+            mean_ndwi=-0.20,
+            water_fraction=0.0,
+            cell_count=3,
+            chronic_cell_count=2,
+            chronic_cell_share=0.67,
+            frequent_cell_share=0.67,
+            data_coverage_percentage=100.0,
+            confidence_score=0.90,
+            confidence_tier="HIGH",
+            landuse_typology=typo,
+        )
+
+        resp = generate_polygon_recommendations(summary)
+
+        for rec in resp.recommendations:
+            # 1. Status taxonomy validity
+            assert rec.screening_status in ("MODEL_ELIGIBLE", "NOT_APPLICABLE", "EXCLUDED")
+            for term in forbidden_approval_terms:
+                assert term not in rec.screening_status, f"screening_status must never imply approval: {rec.screening_status}"
+
+            # 2. Every rationale mentions its own status
+            assert "Screening status:" in rec.rationale, f"Rationale must mention its status: {rec.rationale}"
+
+            # 3. Rejected/not-applicable items NEVER have positive 'justifies' language
+            if rec.screening_status in ("NOT_APPLICABLE", "EXCLUDED") or rec.feasibility_status == "REJECTED":
+                assert "justifies" not in rec.rationale.lower(), f"Non-eligible item has positive 'justifies' language: {rec.rationale}"
+
+            # 4. Rooftop compatibility: no ground-only intervention is MODEL_ELIGIBLE
+            if typo in roof_typologies:
+                if rec.type in ground_only_types:
+                    assert rec.screening_status != "MODEL_ELIGIBLE", f"Ground-only {rec.type} eligible on roof {typo}"
+                    assert rec.feasibility_status == "REJECTED"
+                if rec.type == "TREE_CANOPY":
+                    assert "not applicable to a rooftop" in rec.rationale
+                if rec.type == "COOL_PAVEMENT":
+                    assert "not applicable to a rooftop" in rec.rationale
+                    assert "ground-level" in rec.rationale
+
+            # 5. Non-roof compatibility: no roof-only intervention is MODEL_ELIGIBLE on pure ground
+            if typo in pure_ground_typologies:
+                if rec.type in roof_only_types:
+                    assert rec.screening_status != "MODEL_ELIGIBLE", f"Roof-only {rec.type} eligible on ground {typo}"
+                    assert rec.feasibility_status == "REJECTED"
+
+            # 6. Check required pre-implementation checks on eligible items
+            if rec.screening_status == "MODEL_ELIGIBLE":
+                if rec.type == "COOL_ROOF":
+                    for check in ["roof area verification", "structure", "ownership/permission", "condition", "drainage", "access"]:
+                        assert check in rec.rationale, f"Missing {check} in cool roof rationale"
+                elif rec.type in ("TREE_CANOPY", "PUBLIC_PARK_NATIVE_TREES"):
+                    for check in ["soil/verge", "utilities", "species/site suitability", "water", "survival plan", "maintenance"]:
+                        assert check in rec.rationale, f"Missing {check} in tree rationale"
+                elif rec.type in ("COOL_PAVEMENT", "PERMEABLE_GROUND_COVER", "BIOSWALE_RAIN_GARDEN"):
+                    for check in ["traffic loading", "drainage", "subgrade", "utilities"]:
+                        assert check in rec.rationale, f"Missing {check} in pavement/swale rationale"
+
+            # 7. Check cooling and cost metadata
+            assert rec.cooling_metric == "modelled surface (skin) temperature reduction on treated area"
+            assert "skin" in rec.cell_scope_note.lower() and "not" in rec.cell_scope_note.lower() and "air" in rec.cell_scope_note.lower()
+            assert rec.price_date_note == "indicative, not a tender price"
+            assert rec.schedule_alignment_note == "rates not verified against CPWD/SMC schedule"
+            assert rec.unit_rate > 0
+            assert rec.unit_rate_unit != ""
+
+    # Test candidate generation compatibility
+    cand_tree = generate_candidate_for_cell(
+        row=50, col=50, cell_id="R050_C050",
+        intervention_type=InterventionType.TREE_CANOPY,
+        baseline_hpi=60.0, baseline_lst_c=44.0, is_chronic_hotspot=True,
+        administrative_zone="Central Zone",
+        landuse_typology="residential_rcc_roof",
+    )
+    assert cand_tree.screening_status == "NOT_APPLICABLE"
+    assert cand_tree.feasibility_status.value == "REJECTED"
+    assert "justifies" not in cand_tree.selection_rationale.lower()
+    assert "Screening status:" in cand_tree.selection_rationale
+
+    cand_roof = generate_candidate_for_cell(
+        row=50, col=50, cell_id="R050_C050",
+        intervention_type=InterventionType.COOL_ROOF,
+        baseline_hpi=60.0, baseline_lst_c=44.0, is_chronic_hotspot=True,
+        administrative_zone="Central Zone",
+        landuse_typology="residential_rcc_roof",
+    )
+    assert cand_roof.screening_status == "MODEL_ELIGIBLE"
+    assert cand_roof.feasibility_status.value == "FEASIBLE"
+    assert "Screening status: Model-eligible (survey required)" in cand_roof.selection_rationale

@@ -29,6 +29,35 @@ from gis.interventions.landuse import LanduseClassifier
 from gis.spatial.grid import get_cell_centroid, get_cell_polygon
 
 
+BASE_UNIT_RATES: dict[InterventionType, float] = {
+    InterventionType.TREE_CANOPY: 2000.0,
+    InterventionType.COOL_ROOF: 300.0,
+    InterventionType.GREEN_ROOF: 3000.0,
+    InterventionType.COOL_PAVEMENT: 400.0,
+    InterventionType.PUBLIC_PARK_NATIVE_TREES: 650.0,
+    InterventionType.DENSE_MIYAWAKI_PLANTATION: 1200.0,
+    InterventionType.BIOSWALE_RAIN_GARDEN: 850.0,
+    InterventionType.RAINWATER_FED_POND: 1100.0,
+    InterventionType.SHADED_PARKING_STRUCTURE: 1500.0,
+    InterventionType.GREEN_WALL: 2500.0,
+    InterventionType.PERMEABLE_GROUND_COVER: 250.0,
+}
+
+BASE_UNIT_STRS: dict[InterventionType, str] = {
+    InterventionType.TREE_CANOPY: "INR per tree",
+    InterventionType.COOL_ROOF: "INR per m²",
+    InterventionType.GREEN_ROOF: "INR per m²",
+    InterventionType.COOL_PAVEMENT: "INR per m²",
+    InterventionType.PUBLIC_PARK_NATIVE_TREES: "INR per m²",
+    InterventionType.DENSE_MIYAWAKI_PLANTATION: "INR per m²",
+    InterventionType.BIOSWALE_RAIN_GARDEN: "INR per m²",
+    InterventionType.RAINWATER_FED_POND: "INR per m²",
+    InterventionType.SHADED_PARKING_STRUCTURE: "INR per m²",
+    InterventionType.GREEN_WALL: "INR per m²",
+    InterventionType.PERMEABLE_GROUND_COVER: "INR per m²",
+}
+
+
 def generate_candidate_for_cell(
     row: int,
     col: int,
@@ -168,6 +197,40 @@ def generate_candidate_for_cell(
     )
     candidate.feasibility_status = status
     candidate.rejection_reason = reason
+
+    if status == FeasibilityStatus.FEASIBLE:
+        candidate.screening_status = "MODEL_ELIGIBLE"
+        candidate.screening_reason_code = "ELIGIBLE"
+    elif reason in (
+        RejectionReason.INCOMPATIBLE_LANDUSE_TYPOLOGY,
+        RejectionReason.NO_ROOF_STRUCTURE_ON_OPEN_LAND,
+        RejectionReason.LOW_BUILT_DENSITY_FOR_ROOF,
+    ):
+        candidate.screening_status = "NOT_APPLICABLE"
+        candidate.screening_reason_code = reason.value
+    else:
+        candidate.screening_status = "EXCLUDED"
+        candidate.screening_reason_code = reason.value
+
+    candidate.site_suitability = "UNKNOWN - survey required"
+    candidate.ownership_legal = "UNVERIFIED"
+    candidate.engineering_clearance = "NOT ASSESSED"
+    candidate.procurement_status = "NOT STARTED"
+    candidate.benefit_evidence = "MODELLED"
+    candidate.data_confidence = "HIGH" if baseline_hpi is not None and baseline_hpi >= 0.50 else "MEDIUM"
+    candidate.cooling_metric = "modelled surface (skin) temperature reduction on treated area"
+    candidate.cell_scope_note = "Treated area within 100m grid cell footprint; skin surface temperature reduction, not air temperature."
+    candidate.price_date_note = "indicative, not a tender price"
+    candidate.schedule_alignment_note = "rates not verified against CPWD/SMC schedule"
+    candidate.unit_rate = BASE_UNIT_RATES.get(intervention_type, 0.0)
+    candidate.unit_rate_unit = BASE_UNIT_STRS.get(intervention_type, "INR per unit")
+
+    if candidate.screening_status == "MODEL_ELIGIBLE":
+        candidate.selection_rationale = selection_rationale or f"Screening status: Model-eligible (survey required). Modeled for cell {cell_id} on {resolved_typology}."
+    elif candidate.screening_status == "NOT_APPLICABLE":
+        candidate.selection_rationale = f"Screening status: Not applicable here ({reason.value}). Incompatible with landuse {resolved_typology}."
+    else:
+        candidate.selection_rationale = f"Screening status: Excluded ({reason.value})."
 
     return candidate
 

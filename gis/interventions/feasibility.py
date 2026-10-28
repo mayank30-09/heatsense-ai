@@ -79,13 +79,23 @@ def evaluate_candidate_feasibility(
     # 5. Land-cover suitability & structural typology checks
     typology = getattr(candidate, "landuse_typology", "unclassified")
 
-    # Constraint A: Open vacant public/private land NEVER gets cool roof or green roof
-    if typology in ("vacant_public_open_land", "vacant_private_land"):
-        if candidate.intervention_type in (InterventionType.COOL_ROOF, InterventionType.GREEN_ROOF):
+    # Compatibility Matrix Enforcement:
+    # 1. Rooftop typologies cannot receive ground-only interventions
+    if "roof" in typology:
+        if candidate.intervention_type not in (InterventionType.COOL_ROOF, InterventionType.GREEN_ROOF, InterventionType.GREEN_WALL):
+            return (
+                FeasibilityStatus.REJECTED,
+                RejectionReason.INCOMPATIBLE_LANDUSE_TYPOLOGY,
+                f"Ground-level intervention {candidate.intervention_type.value} cannot be implemented on rooftop typology {typology}.",
+            )
+
+    # 2. Non-rooftop ground typologies cannot receive roof-only interventions
+    if "roof" not in typology and typology not in ("institutional_campus", "unclassified"):
+        if candidate.intervention_type in (InterventionType.COOL_ROOF, InterventionType.GREEN_ROOF, InterventionType.GREEN_WALL):
             return (
                 FeasibilityStatus.REJECTED,
                 RejectionReason.NO_ROOF_STRUCTURE_ON_OPEN_LAND,
-                f"Open plot ({typology}) contains no building rooftop structure for {candidate.intervention_type.value}.",
+                f"Rooftop intervention {candidate.intervention_type.value} cannot be implemented on ground typology {typology}.",
             )
 
     # Constraint B: Industrial corrugated tin shed NEVER gets green roof (dead load collapse hazard)

@@ -85,6 +85,21 @@ class CandidateResponse(BaseModel):
     water_need_description: str = ""
     maintenance_burden: str = ""
     construction_time: str = ""
+    screening_status: str = "MODEL_ELIGIBLE"
+    screening_reason_code: str = "NONE"
+    site_suitability: str = "UNKNOWN - survey required"
+    ownership_legal: str = "UNVERIFIED"
+    engineering_clearance: str = "NOT ASSESSED"
+    procurement_status: str = "NOT STARTED"
+    benefit_evidence: str = "MODELLED"
+    data_confidence: str = "MEDIUM"
+    cooling_metric: str = "modelled surface (skin) temperature reduction on treated area"
+    cell_scope_note: str = "Treated area within 100m grid cell footprint; skin surface temperature reduction, not air temperature."
+    price_date_note: str = "indicative, not a tender price"
+    schedule_alignment_note: str = "rates not verified against CPWD/SMC schedule"
+    unit_rate: float = 0.0
+    unit_rate_unit: str = ""
+    markups_description: str = "Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup"
 
 
 class CandidateListResponse(BaseModel):

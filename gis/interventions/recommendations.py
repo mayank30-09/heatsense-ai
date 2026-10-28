@@ -131,6 +131,24 @@ class RecommendationItem(BaseModel):
     whole_life_cost_per_c_m2: float = Field(default=0.0, description="Whole-life cost per degree-cell-area in INR / (°C·m²)")
     air_cooling_c: float = Field(default=0.0, description="Estimated ambient air temperature reduction in °C")
     needs_site_survey: bool = Field(default=False, description="Whether this parcel requires an on-site survey")
+    screening_status: str = Field(default="MODEL_ELIGIBLE", description="MODEL_ELIGIBLE, NOT_APPLICABLE, or EXCLUDED")
+    screening_reason_code: str = Field(default="NONE", description="Reason code for non-eligibility")
+    site_suitability: str = Field(default="UNKNOWN - survey required", description="Site suitability assessment status")
+    ownership_legal: str = Field(default="UNVERIFIED", description="Cadastral ownership and legal clearance status")
+    engineering_clearance: str = Field(default="NOT ASSESSED", description="Engineering structural clearance status")
+    procurement_status: str = Field(default="NOT STARTED", description="Municipal procurement workflow status")
+    benefit_evidence: str = Field(default="MODELLED", description="Evidence basis: MODELLED or ASSUMPTION")
+    data_confidence: str = Field(default="MEDIUM", description="Data confidence tier (HIGH, MEDIUM, LOW)")
+    cooling_metric: str = Field(default="modelled surface (skin) temperature reduction on treated area", description="Cooling metric definition")
+    cell_scope_note: str = Field(default="Modelled surface skin temperature reduction on treated area, not ambient air temperature.", description="Scope clarification note")
+    price_date_note: str = Field(default="indicative, not a tender price", description="Price baseline disclaimer")
+    schedule_alignment_note: str = Field(default="rates not verified against CPWD/SMC schedule", description="Schedule alignment disclaimer")
+    unit_rate: float = Field(default=0.0, description="Base direct unit rate in INR")
+    unit_rate_unit: str = Field(default="", description="Unit of measurement for unit rate")
+    markups_description: str = Field(
+        default="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
+        description="Cost markup items included in total cost"
+    )
 
 
 class PolygonSummary(BaseModel):
@@ -315,16 +333,24 @@ def generate_polygon_recommendations(
     # =========================================================================
     tree_rejections: List[str] = []
     tree_feasibility = FeasibilityStatus.FEASIBLE.value
+    tree_screening_status = "MODEL_ELIGIBLE"
+    tree_reason_code = "ELIGIBLE"
 
     if "tree_canopy" not in allowed_set:
         tree_feasibility = FeasibilityStatus.REJECTED.value
+        tree_screening_status = "NOT_APPLICABLE"
+        tree_reason_code = "INCOMPATIBLE_LANDUSE_TYPOLOGY"
         tree_rejections.append(prohibited_dict.get("tree_canopy", f"Incompatible with landuse: {clf_res.title}."))
     elif water_fraction >= ASSUMPTION_WATER_HARD_REJECT_FRACTION:
         tree_rejections.append(f"Water body conflict: polygon is {water_fraction * 100:.1f}% open water (>= {ASSUMPTION_WATER_HARD_REJECT_FRACTION * 100:.0f}%).")
         tree_feasibility = FeasibilityStatus.REJECTED.value
+        tree_screening_status = "EXCLUDED"
+        tree_reason_code = "WATER_BODY_CONFLICT"
     elif mean_ndvi >= ASSUMPTION_CANOPY_SATURATION_NDVI:
         tree_rejections.append(f"Canopy saturation: site mean NDVI ({mean_ndvi:.3f}) exceeds canopy ceiling ({ASSUMPTION_CANOPY_SATURATION_NDVI}).")
         tree_feasibility = FeasibilityStatus.REJECTED.value
+        tree_screening_status = "EXCLUDED"
+        tree_reason_code = "CANOPY_SATURATION"
 
     if tree_feasibility == FeasibilityStatus.REJECTED.value:
         tree_priority = "NOT_RECOMMENDED"
@@ -348,11 +374,31 @@ def generate_polygon_recommendations(
         baseline_lst_c=mean_lst,
     )
 
-    tree_rationale = (
-        f"Observed mean LST of {mean_lst:.1f}°C with vegetation deficit component of {veg_deficit:.2f} "
-        f"and mean NDVI of {mean_ndvi:.2f} across {summary.area_km2:.2f} km² ({clf_res.title}). "
-        f"{'Elevated heat priority (mean HPI ' + f'{mean_hpi:.1f}' + ') justifies prioritized greening.' if is_high_thermal else 'Moderate canopy addition provides microclimate buffering.'}"
-    )
+    if tree_screening_status == "NOT_APPLICABLE":
+        if "roof" in clf_res.typology:
+            tree_rationale = (
+                "Tree canopy is not applicable to a rooftop; consider ground-level planting on adjacent "
+                "unbuilt ground if a survey confirms availability. "
+                "Screening status: Not applicable here (typology incompatible)."
+            )
+        else:
+            tree_rationale = (
+                f"Tree canopy is not applicable to {clf_res.title}; consider ground-level planting on adjacent "
+                "unbuilt ground if a survey confirms availability. "
+                "Screening status: Not applicable here (typology incompatible)."
+            )
+    elif tree_screening_status == "EXCLUDED":
+        tree_rationale = (
+            f"Tree canopy is excluded due to local site constraint ({'; '.join(tree_rejections)}). "
+            f"Screening status: Excluded ({tree_reason_code})."
+        )
+    else:
+        tree_rationale = (
+            f"Screening status: Model-eligible (survey required). Observed mean LST of {mean_lst:.1f}°C with vegetation "
+            f"deficit component of {veg_deficit:.2f} and mean NDVI of {mean_ndvi:.2f} across {summary.area_km2:.2f} km² "
+            f"({clf_res.title}). Native canopy addition provides surface microclimate shading. "
+            f"Required pre-implementation checks: soil/verge, utilities, species/site suitability, water, survival plan, maintenance."
+        )
 
     recommendations.append(
         RecommendationItem(
@@ -395,7 +441,7 @@ def generate_polygon_recommendations(
             ],
             landuse_typology=clf_res.typology,
             allowed_interventions=clf_res.allowed_interventions,
-            selection_rationale=f"Selected for {clf_res.title} to address thermal deficit ({veg_deficit:.2f}).",
+            selection_rationale=tree_rationale,
             rejected_alternatives=rejected_alts,
             water_need_description=tree_cool_meta.get("water_need", "Moderate (40 L/tree/week for first 3 years)"),
             maintenance_burden=tree_cool_meta.get("maintenance_burden", "Moderate (pruning, irrigation, guard check)"),
@@ -404,6 +450,21 @@ def generate_polygon_recommendations(
             whole_life_cost_per_c_m2=tree_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
             air_cooling_c=tree_cool_meta.get("air_cooling_c", 0.94),
             needs_site_survey=False,
+            screening_status=tree_screening_status,
+            screening_reason_code=tree_reason_code,
+            site_suitability="UNKNOWN - survey required",
+            ownership_legal="UNVERIFIED",
+            engineering_clearance="NOT ASSESSED",
+            procurement_status="NOT STARTED",
+            benefit_evidence="MODELLED",
+            data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+            cooling_metric="modelled surface (skin) temperature reduction on treated area",
+            cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+            price_date_note="indicative, not a tender price",
+            schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+            unit_rate=2000.0,
+            unit_rate_unit="INR per tree",
+            markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
         )
     )
 
@@ -412,16 +473,24 @@ def generate_polygon_recommendations(
     # =========================================================================
     roof_rejections: List[str] = []
     roof_feasibility = FeasibilityStatus.FEASIBLE.value
+    roof_screening_status = "MODEL_ELIGIBLE"
+    roof_reason_code = "ELIGIBLE"
 
     if "cool_roof" not in allowed_set:
         roof_feasibility = FeasibilityStatus.REJECTED.value
+        roof_screening_status = "NOT_APPLICABLE"
+        roof_reason_code = "INCOMPATIBLE_LANDUSE_TYPOLOGY"
         roof_rejections.append(prohibited_dict.get("cool_roof", f"Incompatible with landuse: {clf_res.title}."))
     elif water_fraction >= ASSUMPTION_WATER_HARD_REJECT_FRACTION:
         roof_rejections.append(f"Water body conflict: polygon is {water_fraction * 100:.1f}% open water.")
         roof_feasibility = FeasibilityStatus.REJECTED.value
+        roof_screening_status = "EXCLUDED"
+        roof_reason_code = "WATER_BODY_CONFLICT"
     elif mean_ndbi < ASSUMPTION_MIN_BUILT_NDBI:
         roof_rejections.append(f"Insufficient built structures: mean NDBI ({mean_ndbi:.3f}) is below rooftop suitability threshold ({ASSUMPTION_MIN_BUILT_NDBI}).")
         roof_feasibility = FeasibilityStatus.REJECTED.value
+        roof_screening_status = "EXCLUDED"
+        roof_reason_code = "LOW_BUILT_DENSITY"
 
     if roof_feasibility == FeasibilityStatus.REJECTED.value:
         roof_priority = "NOT_RECOMMENDED"
@@ -443,11 +512,23 @@ def generate_polygon_recommendations(
         baseline_lst_c=mean_lst,
     )
 
-    roof_rationale = (
-        f"Built density component of {built_density:.2f} and mean NDBI of {mean_ndbi:.2f} with peak LST "
-        f"reaching {max_lst:.1f}°C in {clf_res.title}. High-albedo elastomeric "
-        f"coating (SRI >= 104) reflects solar radiation and prevents thermal mass heat absorption."
-    )
+    if roof_screening_status == "NOT_APPLICABLE":
+        roof_rationale = (
+            f"Cool roof coatings are not applicable to {clf_res.title} without permanent roof structures. "
+            "Screening status: Not applicable here (typology incompatible)."
+        )
+    elif roof_screening_status == "EXCLUDED":
+        roof_rationale = (
+            f"Cool roof coating is excluded due to local site constraint ({'; '.join(roof_rejections)}). "
+            f"Screening status: Excluded ({roof_reason_code})."
+        )
+    else:
+        roof_rationale = (
+            f"Screening status: Model-eligible (survey required). Built density component of {built_density:.2f} and "
+            f"mean NDBI of {mean_ndbi:.2f} with peak LST reaching {max_lst:.1f}°C in {clf_res.title}. "
+            f"High-albedo elastomeric coating (SRI >= 104) reflects solar radiation and prevents thermal mass heat absorption. "
+            f"Required pre-implementation checks: roof area verification, structure, ownership/permission, condition, drainage, access."
+        )
 
     recommendations.append(
         RecommendationItem(
@@ -490,7 +571,7 @@ def generate_polygon_recommendations(
             ],
             landuse_typology=clf_res.typology,
             allowed_interventions=clf_res.allowed_interventions,
-            selection_rationale=f"Selected for {clf_res.title} due to high solar reflectance capability (SRI >= 104).",
+            selection_rationale=roof_rationale,
             rejected_alternatives=rejected_alts,
             water_need_description=roof_cool_meta.get("water_need", "None (zero water)"),
             maintenance_burden=roof_cool_meta.get("maintenance_burden", "Low (bi-annual surface washing before summer peak)"),
@@ -499,6 +580,21 @@ def generate_polygon_recommendations(
             whole_life_cost_per_c_m2=roof_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
             air_cooling_c=roof_cool_meta.get("air_cooling_c", 0.50),
             needs_site_survey=False,
+            screening_status=roof_screening_status,
+            screening_reason_code=roof_reason_code,
+            site_suitability="UNKNOWN - survey required",
+            ownership_legal="UNVERIFIED",
+            engineering_clearance="NOT ASSESSED",
+            procurement_status="NOT STARTED",
+            benefit_evidence="MODELLED",
+            data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+            cooling_metric="modelled surface (skin) temperature reduction on treated area",
+            cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+            price_date_note="indicative, not a tender price",
+            schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+            unit_rate=300.0,
+            unit_rate_unit="INR per m²",
+            markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
         )
     )
 
@@ -507,13 +603,19 @@ def generate_polygon_recommendations(
     # =========================================================================
     pave_rejections: List[str] = []
     pave_feasibility = FeasibilityStatus.FEASIBLE.value
+    pave_screening_status = "MODEL_ELIGIBLE"
+    pave_reason_code = "ELIGIBLE"
 
     if "cool_pavement" not in allowed_set:
         pave_feasibility = FeasibilityStatus.REJECTED.value
+        pave_screening_status = "NOT_APPLICABLE"
+        pave_reason_code = "INCOMPATIBLE_LANDUSE_TYPOLOGY"
         pave_rejections.append(prohibited_dict.get("cool_pavement", f"Incompatible with landuse: {clf_res.title}."))
     elif water_fraction >= ASSUMPTION_WATER_HARD_REJECT_FRACTION:
         pave_rejections.append("Water body conflict: open water surface.")
         pave_feasibility = FeasibilityStatus.REJECTED.value
+        pave_screening_status = "EXCLUDED"
+        pave_reason_code = "WATER_BODY_CONFLICT"
 
     if pave_feasibility == FeasibilityStatus.REJECTED.value:
         pave_priority = "NOT_RECOMMENDED"
@@ -535,11 +637,29 @@ def generate_polygon_recommendations(
         baseline_lst_c=mean_lst,
     )
 
-    pave_rationale = (
-        f"Surface temperature moderation for walkways and parking lots in {clf_res.title}. "
-        f"Mean LST is {mean_lst:.1f}°C in built context (NDBI = {mean_ndbi:.2f}). "
-        f"High-reflectance permeable pavers facilitate stormwater infiltration and diminish sensible heat storage."
-    )
+    if pave_screening_status == "NOT_APPLICABLE":
+        if "roof" in clf_res.typology:
+            pave_rationale = (
+                "Cool pavement is not applicable to a rooftop; it is restricted to ground-level surfaces (walkways, plazas, parking courts). "
+                "Screening status: Not applicable here (typology incompatible)."
+            )
+        else:
+            pave_rationale = (
+                f"Cool pavement is not applicable to {clf_res.title}; it requires ground-level pedestrian walkways or paved surfaces. "
+                "Screening status: Not applicable here (typology incompatible)."
+            )
+    elif pave_screening_status == "EXCLUDED":
+        pave_rationale = (
+            f"Cool pavement is excluded due to local site constraint ({'; '.join(pave_rejections)}). "
+            f"Screening status: Excluded ({pave_reason_code})."
+        )
+    else:
+        pave_rationale = (
+            f"Screening status: Model-eligible (survey required). Ground-surface temperature moderation for walkways, "
+            f"plazas, or parking lots in {clf_res.title}. Mean LST is {mean_lst:.1f}°C in built context (NDBI = {mean_ndbi:.2f}). "
+            f"High-reflectance permeable pavers facilitate stormwater infiltration and diminish sensible heat storage. "
+            f"Required pre-implementation checks: traffic loading, drainage, subgrade, utilities."
+        )
 
     recommendations.append(
         RecommendationItem(
@@ -582,7 +702,7 @@ def generate_polygon_recommendations(
             ],
             landuse_typology=clf_res.typology,
             allowed_interventions=clf_res.allowed_interventions,
-            selection_rationale=f"Selected for {clf_res.title} ground permeability enhancement.",
+            selection_rationale=pave_rationale,
             rejected_alternatives=rejected_alts,
             water_need_description=pave_cool_meta.get("water_need", "None (zero water)"),
             maintenance_burden=pave_cool_meta.get("maintenance_burden", "Moderate (bi-annual vacuum sweeping of silt)"),
@@ -591,6 +711,21 @@ def generate_polygon_recommendations(
             whole_life_cost_per_c_m2=pave_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
             air_cooling_c=pave_cool_meta.get("air_cooling_c", 0.40),
             needs_site_survey=False,
+            screening_status=pave_screening_status,
+            screening_reason_code=pave_reason_code,
+            site_suitability="UNKNOWN - survey required",
+            ownership_legal="UNVERIFIED",
+            engineering_clearance="NOT ASSESSED",
+            procurement_status="NOT STARTED",
+            benefit_evidence="MODELLED",
+            data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+            cooling_metric="modelled surface (skin) temperature reduction on treated area",
+            cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+            price_date_note="indicative, not a tender price",
+            schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+            unit_rate=400.0,
+            unit_rate_unit="INR per m²",
+            markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
         )
     )
 
@@ -611,7 +746,10 @@ def generate_polygon_recommendations(
                 type="PUBLIC_PARK_NATIVE_TREES",
                 title="Public Park & Garden with Native Trees",
                 priority="HIGH" if is_high_thermal else "MEDIUM",
-                rationale=f"Multi-tier public park greening for {clf_res.title} across {summary.area_km2:.2f} km².",
+                rationale=(
+                    f"Screening status: Model-eligible (survey required). Multi-tier public park greening for {clf_res.title} across {summary.area_km2:.2f} km². "
+                    "Required pre-implementation checks: soil/verge, utilities, species/site suitability, water, survival plan, maintenance."
+                ),
                 quantity_basis=QuantityBasis(
                     estimated_quantity=pk_m2,
                     unit="m² park area",
@@ -645,6 +783,21 @@ def generate_polygon_recommendations(
                 whole_life_cost_per_c_m2=pk_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
                 air_cooling_c=pk_cool_meta.get("air_cooling_c", 1.10),
                 needs_site_survey=False,
+                screening_status="MODEL_ELIGIBLE",
+                screening_reason_code="ELIGIBLE",
+                site_suitability="UNKNOWN - survey required",
+                ownership_legal="UNVERIFIED",
+                engineering_clearance="NOT ASSESSED",
+                procurement_status="NOT STARTED",
+                benefit_evidence="MODELLED",
+                data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+                cooling_metric="modelled surface (skin) temperature reduction on treated area",
+                cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+                price_date_note="indicative, not a tender price",
+                schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+                unit_rate=650.0,
+                unit_rate_unit="INR per m²",
+                markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
             )
         )
 
@@ -661,7 +814,10 @@ def generate_polygon_recommendations(
                 type="DENSE_MIYAWAKI_PLANTATION",
                 title="Dense Native Miyawaki Urban Forest",
                 priority="HIGH" if is_high_thermal and veg_deficit >= 0.50 else "MEDIUM",
-                rationale=f"High-density native forest cluster (3-4 saplings/m²) providing rapid microclimatic cooling.",
+                rationale=(
+                    f"Screening status: Model-eligible (survey required). High-density native forest cluster (3-4 saplings/m²) providing rapid microclimatic cooling on ground plots. "
+                    "Required pre-implementation checks: soil/verge, utilities, species/site suitability, water, survival plan, maintenance."
+                ),
                 quantity_basis=QuantityBasis(
                     estimated_quantity=miya_m2,
                     unit="m² dense forest",
@@ -695,6 +851,21 @@ def generate_polygon_recommendations(
                 whole_life_cost_per_c_m2=miya_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
                 air_cooling_c=miya_cool_meta.get("air_cooling_c", 1.40),
                 needs_site_survey=False,
+                screening_status="MODEL_ELIGIBLE",
+                screening_reason_code="ELIGIBLE",
+                site_suitability="UNKNOWN - survey required",
+                ownership_legal="UNVERIFIED",
+                engineering_clearance="NOT ASSESSED",
+                procurement_status="NOT STARTED",
+                benefit_evidence="MODELLED",
+                data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+                cooling_metric="modelled surface (skin) temperature reduction on treated area",
+                cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+                price_date_note="indicative, not a tender price",
+                schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+                unit_rate=1200.0,
+                unit_rate_unit="INR per m²",
+                markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
             )
         )
 
@@ -711,7 +882,10 @@ def generate_polygon_recommendations(
                 type="BIOSWALE_RAIN_GARDEN",
                 title="Bioswale & Rain Garden Filter",
                 priority="MEDIUM" if is_high_thermal else "LOW",
-                rationale="Stormwater retention and evaporative vegetative swale mitigating localized heat.",
+                rationale=(
+                    f"Screening status: Model-eligible (survey required). Stormwater retention and evaporative vegetative swale mitigating localized heat. "
+                    "Required pre-implementation checks: traffic loading, drainage, subgrade, utilities."
+                ),
                 quantity_basis=QuantityBasis(
                     estimated_quantity=bio_m2,
                     unit="m² bioretention swale",
@@ -745,6 +919,21 @@ def generate_polygon_recommendations(
                 whole_life_cost_per_c_m2=bio_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
                 air_cooling_c=bio_cool_meta.get("air_cooling_c", 0.45),
                 needs_site_survey=False,
+                screening_status="MODEL_ELIGIBLE",
+                screening_reason_code="ELIGIBLE",
+                site_suitability="UNKNOWN - survey required",
+                ownership_legal="UNVERIFIED",
+                engineering_clearance="NOT ASSESSED",
+                procurement_status="NOT STARTED",
+                benefit_evidence="MODELLED",
+                data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+                cooling_metric="modelled surface (skin) temperature reduction on treated area",
+                cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+                price_date_note="indicative, not a tender price",
+                schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+                unit_rate=850.0,
+                unit_rate_unit="INR per m²",
+                markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
             )
         )
 
@@ -760,16 +949,29 @@ def generate_polygon_recommendations(
         has_water_src = summary.has_documented_water_source
         pond_feas = "FEASIBLE" if has_water_src else "REJECTED"
         pond_prio = "MEDIUM" if has_water_src else "NOT_RECOMMENDED"
+        pond_scr_stat = "MODEL_ELIGIBLE" if has_water_src else "EXCLUDED"
+        pond_scr_code = "ELIGIBLE" if has_water_src else "UNVERIFIED_WATER_SOURCE"
         pond_rej = [] if has_water_src else [
             "UNVERIFIED_WATER_SOURCE: Rainwater-fed retention ponds require a documented stormwater catchment (>= 5x pond area) or treated municipal effluent source to prevent drying and mosquito vector breeding."
         ]
+        if has_water_src:
+            pond_rationale = (
+                f"Screening status: Model-eligible (survey required). Microclimatic evaporative cooling water body producing downwind cooling breezes. "
+                "Required pre-implementation checks: verified catchment basin (>= 5x pond area) or treated STP feed, soil percolation, and vector control protocol."
+            )
+        else:
+            pond_rationale = (
+                "Retention pond is excluded pending catchment hydrology verification: requires a documented stormwater catchment (>= 5x pond area) "
+                "or treated municipal effluent source to prevent drying and mosquito vector breeding. "
+                "Screening status: Excluded (unverified water source)."
+            )
 
         recommendations.append(
             RecommendationItem(
                 type="RAINWATER_FED_POND",
                 title="Rainwater-Fed Retention Pond",
                 priority=pond_prio,
-                rationale="Microclimatic evaporative cooling water body producing downwind cooling breezes.",
+                rationale=pond_rationale,
                 quantity_basis=QuantityBasis(
                     estimated_quantity=pond_m2,
                     unit="m² water surface",
@@ -803,6 +1005,21 @@ def generate_polygon_recommendations(
                 whole_life_cost_per_c_m2=pond_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
                 air_cooling_c=pond_cool_meta.get("air_cooling_c", 0.80),
                 needs_site_survey=False,
+                screening_status=pond_scr_stat,
+                screening_reason_code=pond_scr_code,
+                site_suitability="UNKNOWN - survey required",
+                ownership_legal="UNVERIFIED",
+                engineering_clearance="NOT ASSESSED",
+                procurement_status="NOT STARTED",
+                benefit_evidence="MODELLED",
+                data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+                cooling_metric="modelled surface (skin) temperature reduction on treated area",
+                cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+                price_date_note="indicative, not a tender price",
+                schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+                unit_rate=1100.0,
+                unit_rate_unit="INR per m²",
+                markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
             )
         )
 
@@ -819,7 +1036,10 @@ def generate_polygon_recommendations(
                 type="SHADED_PARKING_STRUCTURE",
                 title="High-SRI Shaded Parking Canopy",
                 priority="HIGH" if is_high_thermal else "MEDIUM",
-                rationale="High-reflectance tensile or solar shade canopy over dark asphalt parking courts.",
+                rationale=(
+                    f"Screening status: Model-eligible (survey required). High-reflectance tensile or solar shade canopy over dark asphalt parking courts. "
+                    "Required pre-implementation checks: traffic loading, subgrade footings, structure wind resistance, utilities."
+                ),
                 quantity_basis=QuantityBasis(
                     estimated_quantity=shade_m2,
                     unit="m² shade canopy",
@@ -853,6 +1073,21 @@ def generate_polygon_recommendations(
                 whole_life_cost_per_c_m2=shade_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
                 air_cooling_c=shade_cool_meta.get("air_cooling_c", 0.60),
                 needs_site_survey=False,
+                screening_status="MODEL_ELIGIBLE",
+                screening_reason_code="ELIGIBLE",
+                site_suitability="UNKNOWN - survey required",
+                ownership_legal="UNVERIFIED",
+                engineering_clearance="NOT ASSESSED",
+                procurement_status="NOT STARTED",
+                benefit_evidence="MODELLED",
+                data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+                cooling_metric="modelled surface (skin) temperature reduction on treated area",
+                cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+                price_date_note="indicative, not a tender price",
+                schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+                unit_rate=1500.0,
+                unit_rate_unit="INR per m²",
+                markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
             )
         )
 
@@ -869,7 +1104,10 @@ def generate_polygon_recommendations(
                 type="PERMEABLE_GROUND_COVER",
                 title="Permeable Crushed Aggregate Ground Cover",
                 priority="LOW" if not is_high_thermal else "MEDIUM",
-                rationale="Eliminates impervious bare soil and low-albedo unpaved dust heat traps.",
+                rationale=(
+                    f"Screening status: Model-eligible (survey required). Eliminates impervious bare soil and low-albedo unpaved dust heat traps. "
+                    "Required pre-implementation checks: traffic loading, drainage, subgrade, utilities."
+                ),
                 quantity_basis=QuantityBasis(
                     estimated_quantity=perm_m2,
                     unit="m² ground area",
@@ -903,6 +1141,21 @@ def generate_polygon_recommendations(
                 whole_life_cost_per_c_m2=perm_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
                 air_cooling_c=perm_cool_meta.get("air_cooling_c", 0.35),
                 needs_site_survey=False,
+                screening_status="MODEL_ELIGIBLE",
+                screening_reason_code="ELIGIBLE",
+                site_suitability="UNKNOWN - survey required",
+                ownership_legal="UNVERIFIED",
+                engineering_clearance="NOT ASSESSED",
+                procurement_status="NOT STARTED",
+                benefit_evidence="MODELLED",
+                data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
+                cooling_metric="modelled surface (skin) temperature reduction on treated area",
+                cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
+                price_date_note="indicative, not a tender price",
+                schedule_alignment_note="rates not verified against CPWD/SMC schedule",
+                unit_rate=250.0,
+                unit_rate_unit="INR per m²",
+                markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
             )
         )
 
@@ -911,6 +1164,12 @@ def generate_polygon_recommendations(
         for rec in recommendations:
             rec.feasibility_status = FeasibilityStatus.REJECTED.value
             rec.priority = "NOT_RECOMMENDED"
+            rec.screening_status = "EXCLUDED"
+            rec.screening_reason_code = "WATER_BODY_CONFLICT"
+            rec.rationale = (
+                f"{rec.title} is excluded due to environmental constraint: polygon is {water_fraction * 100:.1f}% open water "
+                f"(>= {ASSUMPTION_WATER_HARD_REJECT_FRACTION * 100:.0f}%). Screening status: Excluded (water body conflict)."
+            )
             if not any("Water body conflict" in r for r in rec.rejection_reasons):
                 rec.rejection_reasons.append(
                     f"Water body conflict: polygon is {water_fraction * 100:.1f}% open water (>= {ASSUMPTION_WATER_HARD_REJECT_FRACTION * 100:.0f}%)."
