@@ -41,10 +41,24 @@ export default function LSTLegend() {
             <span>60°C</span>
           </div>
 
+          <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-2 text-[10px] text-slate-600">
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-3.5 w-3.5 rounded-xs border border-slate-400 bg-slate-300"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(45deg, #cbd5e1 0, #cbd5e1 2px, transparent 0, transparent 4px)",
+                }}
+              />
+              <span>NoData / cloud-masked</span>
+            </span>
+            <span className="font-medium text-slate-400">Transparent</span>
+          </div>
+
           <div className="mt-2 border-t border-slate-100 pt-2 text-[10px] leading-4 text-slate-500">
-            Landsat radiant skin temperature (T<sub>skin</sub>).
+            Fixed 20–60°C rendering range with out-of-range clipping.
             <br />
-            Standardized thermal scale: 20–60°C.
+            <strong>Physical Distinction:</strong> Land Surface Temperature (LST) is radiometric surface (skin) temperature, not 2 m ambient air temperature.
           </div>
         </div>
       </div>
