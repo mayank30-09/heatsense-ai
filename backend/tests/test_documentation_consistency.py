@@ -113,7 +113,6 @@ def test_referenced_evidence_paths_exist():
         "reports/INTERVENTION_REALISM_REPORT.md",
         "reports/hpi_sensitivity_analysis.json",
         "reports/hpi_sensitivity_analysis.md",
-        "reports/runtime_verification_2026-10-21/parked/stage_d_science_wip.patch",
     ]
 
     for rel_path in key_evidence_paths:

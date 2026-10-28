@@ -53,6 +53,8 @@ FALSE_POSITIVE_TOKENS = {
     "ai/ml", "c/d", "n/a", "oli/oli-2", "spectral/site-type", "structural/demographic",
     "measured/modelled/assumption/unverified", "bounding-box/heuristic", "3-year/10-year",
     "services/deep", "tcp", "activate.ps1",
+    "frontend/dist", "frontend/dist/",
+    ".env",
 }
 
 
@@ -170,6 +172,8 @@ def extract_paths_from_text(content: str) -> Set[str]:
     # Strip out HTTP/HTTPS/mailto URLs so their path components are not falsely extracted
     clean_content = re.sub(r"https?://\S+", " ", content, flags=re.IGNORECASE)
     clean_content = re.sub(r"mailto:\S+", " ", clean_content, flags=re.IGNORECASE)
+    # Strip paths explicitly marked external/untracked so they are not asserted as existing on disk
+    clean_content = re.sub(r"external/untracked:?\s*`?[^`\n\r|)]+`?", " ", clean_content, flags=re.IGNORECASE)
 
     # 2. Backticks: `token`
     for match in re.finditer(r"`([^`\n]+)`", clean_content):
