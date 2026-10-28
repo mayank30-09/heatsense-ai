@@ -133,7 +133,18 @@ export default function AreaDrawing({
       const geometry = geojson.geometry;
 
       if (!geometry || geometry.type !== "Polygon") {
-        onAnalysisError("Please select a polygon area.");
+        onAnalysisError("Please select a valid polygon area.");
+        return null;
+      }
+
+      if (
+        !geometry.coordinates ||
+        !Array.isArray(geometry.coordinates) ||
+        geometry.coordinates.length === 0 ||
+        !Array.isArray(geometry.coordinates[0]) ||
+        geometry.coordinates[0].length < 4
+      ) {
+        onAnalysisError("Incomplete or empty polygon geometry. Please enclose a valid area.");
         return null;
       }
 
@@ -278,6 +289,9 @@ export default function AreaDrawing({
 
       const result = await calculateStatistics(layer);
       if (!result) {
+        if (typeof (map as any).removeLayer === "function") {
+          map.removeLayer(layer);
+        }
         return;
       }
       if (typeof (layer as any).toGeoJSON === "function") {
@@ -355,7 +369,14 @@ export default function AreaDrawing({
         handleRemove
       );
 
-      map.pm.removeControls();
+      if (map.pm) {
+        if (typeof (map.pm as any).disableDraw === "function") {
+          (map.pm as any).disableDraw();
+        }
+        if (typeof map.pm.removeControls === "function") {
+          map.pm.removeControls();
+        }
+      }
 
       initialized.current = false;
     };

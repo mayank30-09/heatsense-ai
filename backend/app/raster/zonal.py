@@ -369,25 +369,55 @@ def calculate_lst_zonal_statistics(
     seasons_table: list[dict[str, Any]] = []
     available_catalog = discover_seasonal_cogs()
 
-    for s_enum, y_val in CANONICAL_SEASONS:
+    # Years where all four seasons exist on disk/DB: 2022, 2023, 2024, 2025
+    if year in (2022, 2023, 2024, 2025):
+        target_seasons = [
+            (Season.summer, year),
+            (Season.winter, year),
+            (Season.post_monsoon, year),
+            (Season.monsoon, year),
+        ]
+        is_same_year = True
+    else:
+        target_seasons = CANONICAL_SEASONS
+        is_same_year = False
+
+    extracted_entries: list[tuple[str, int, dict[str, Any] | None]] = []
+    summer_mean_c: float | None = None
+
+    for s_enum, y_val in target_seasons:
         s_key = s_enum.value
         c_path = available_catalog.get((s_key, y_val))
         if c_path is not None:
             l_stats = _extract_layer_stats(c_path, intersection)
-            if l_stats is not None:
-                seasons_table.append(
-                    {
-                        "season": s_key,
-                        "year": y_val,
-                        "effective_year": y_val,
-                        "mean_c": l_stats["mean_c"],
-                        "min_c": l_stats["min_c"],
-                        "max_c": l_stats["max_c"],
-                        "valid_pixel_count": l_stats["valid_pixel_count"],
-                        "data_coverage_percentage": l_stats["data_coverage_percentage"],
-                        "is_partial": l_stats["is_partial"],
-                    }
-                )
+        else:
+            l_stats = None
+        extracted_entries.append((s_key, y_val, l_stats))
+        if s_key == "summer" and l_stats is not None and l_stats.get("mean_c") is not None:
+            summer_mean_c = l_stats["mean_c"]
+
+    for s_key, y_val, l_stats in extracted_entries:
+        if l_stats is not None:
+            # Paired difference only where both seasons have valid observations
+            if l_stats.get("mean_c") is not None and summer_mean_c is not None:
+                delta_to_summer_c = round(float(l_stats["mean_c"] - summer_mean_c), 2)
+            else:
+                delta_to_summer_c = None
+
+            seasons_table.append(
+                {
+                    "season": s_key,
+                    "year": y_val,
+                    "effective_year": y_val,
+                    "mean_c": l_stats["mean_c"],
+                    "min_c": l_stats["min_c"],
+                    "max_c": l_stats["max_c"],
+                    "valid_pixel_count": l_stats["valid_pixel_count"],
+                    "data_coverage_percentage": l_stats["data_coverage_percentage"],
+                    "is_partial": l_stats["is_partial"],
+                    "delta_to_summer_c": delta_to_summer_c,
+                }
+            )
 
     # 8. Status Categorization
     if inside_smc_fraction < 0.99:
@@ -399,6 +429,12 @@ def calculate_lst_zonal_statistics(
         "status": status_label,
         "season": season_str,
         "effective_year": effective_year,
+        "same_year_comparison": is_same_year,
+        "season_note": (
+            f"Same-year comparison ({year})"
+            if is_same_year
+            else "latest available composite per season (mixed years: Post-Monsoon 2025)"
+        ),
         "source_file": cog_path.name,
         "area_km2": round(area_km2, 4),
         "inside_smc_fraction": inside_smc_fraction,

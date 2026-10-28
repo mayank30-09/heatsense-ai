@@ -282,3 +282,29 @@ def test_zonal_statistics_q3_polygon_scope_fields():
     assert data["geometry"]["crs"] == "EPSG:32643 planar"
     assert "EPSG:32643" in data["geometry"]["area_method"]
     assert "100m" in data["geometry"]["pixel_size"]
+
+
+def test_zonal_statistics_q4_same_year_comparison():
+    """Verify Q4 same-year comparison and paired differences across seasons."""
+    # 1. Default mixed-year baseline
+    payload_mixed = {"geometry": VALID_LAND_POLYGON, "season": "summer"}
+    resp_mixed = client.post("/api/v1/analysis/zonal-stats", json=payload_mixed)
+    assert resp_mixed.status_code == 200
+    data_mixed = resp_mixed.json()
+    assert "mixed years: Post-Monsoon 2025" in data_mixed["season_note"]
+    assert data_mixed["same_year_comparison"] is False
+    assert len(data_mixed["seasons_table"]) == 4
+
+    # 2. Same-year comparison for 2025 (where all 4 seasons exist)
+    payload_2025 = {"geometry": VALID_LAND_POLYGON, "season": "summer", "year": 2025}
+    resp_2025 = client.post("/api/v1/analysis/zonal-stats", json=payload_2025)
+    assert resp_2025.status_code == 200
+    data_2025 = resp_2025.json()
+    assert data_2025["same_year_comparison"] is True
+    assert "Same-year comparison (2025)" in data_2025["season_note"]
+    assert len(data_2025["seasons_table"]) == 4
+    for row in data_2025["seasons_table"]:
+        assert row["year"] == 2025
+        assert "delta_to_summer_c" in row
+        if row["season"] == "summer":
+            assert row["delta_to_summer_c"] == 0.0

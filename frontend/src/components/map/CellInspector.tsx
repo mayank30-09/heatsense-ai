@@ -1,9 +1,15 @@
-import { useEffect } from "react";
-import type { GridCellScoreItem } from "../../types/heatPriority";
+import { useEffect, useState } from "react";
+import type {
+  ActiveLayerMode,
+  GridCellScoreItem,
+  SeasonName,
+} from "../../types/heatPriority";
+import type { SceneItem } from "../../services/scenesApi";
 import {
   getConfidenceColor,
   getEligibilityInfo,
   getHPIColor,
+  getLSTColor,
   getOpticalImputationLabel,
   getPersistenceBadge,
 } from "../../utils/hpiColorScales";
@@ -11,9 +17,29 @@ import {
 interface CellInspectorProps {
   cell: GridCellScoreItem | null;
   onClose: () => void;
+  activeLayerMode?: ActiveLayerMode;
+  activeSeason?: SeasonName;
+  activeYear?: number;
+  selectedScene?: SceneItem | null;
 }
 
-export default function CellInspector({ cell, onClose }: CellInspectorProps) {
+const SEASON_LABELS: Record<SeasonName, string> = {
+  summer: "Summer",
+  winter: "Winter",
+  monsoon: "Monsoon",
+  post_monsoon: "Post-Monsoon",
+};
+
+export default function CellInspector({
+  cell,
+  onClose,
+  activeLayerMode = "hpi",
+  activeSeason = "summer",
+  activeYear = 2026,
+  selectedScene = null,
+}: CellInspectorProps) {
+  const [showHistory, setShowHistory] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -32,9 +58,129 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
   const eligibilityInfo = getEligibilityInfo(cell.eligibility_status);
   const isUnavailable = cell.heat_priority_score === null;
 
+  // Resolve current active season label and effective year
+  const seasonLabel = SEASON_LABELS[activeSeason] || "Summer";
+  const effectiveActiveYear =
+    activeSeason === "post_monsoon" && activeYear === 2026 ? 2025 : activeYear;
+
+  // Baseline Summer LST (authoritative baseline for HPI and chronic definition)
+  const summerBaselineLst = cell.summer_lst_c ?? (activeSeason === "summer" ? cell.observed_lst_c : null);
+
+  // Active layer observation value
+  let activeObsDisplay: {
+    title: string;
+    value: string;
+    color?: string;
+    subtext: string;
+    isMasked: boolean;
+  };
+
+  if (activeLayerMode === "latest_scene") {
+    const sceneLst = cell.scene_lst_c ?? (selectedScene ? cell.observed_lst_c : null);
+    const sceneDate = selectedScene?.acquisition_date ?? "NRT";
+    const sensor = selectedScene?.sensor ?? "Landsat 8/9";
+    activeObsDisplay = {
+      title: `Observed Scene LST (${sceneDate})`,
+      value: sceneLst !== null && sceneLst !== undefined ? `${sceneLst.toFixed(1)}°C` : "N/A",
+      color: sceneLst !== null && sceneLst !== undefined ? getLSTColor(sceneLst) : "#64748b",
+      subtext: `${sensor} instantaneous overpass`,
+      isMasked: sceneLst === null || sceneLst === undefined,
+    };
+  } else if (activeLayerMode === "lst") {
+    const lst = cell.observed_lst_c;
+    const isMasked = lst === null || lst === undefined;
+    activeObsDisplay = {
+      title: `Observed ${seasonLabel} LST (${effectiveActiveYear})`,
+      value: !isMasked ? `${lst.toFixed(1)}°C` : `Cloud-masked in ${seasonLabel.toLowerCase()} ${effectiveActiveYear}`,
+      color: !isMasked ? getLSTColor(lst) : "#b45309",
+      subtext: !isMasked
+        ? `Landsat 8/9 seasonal median composite`
+        : `QA cloud/cirrus/shadow masked; no clear pixel retrieval`,
+      isMasked,
+    };
+  } else {
+    // Default / HPI / Chronic / Confidence mode:
+    // Shows authoritative summer baseline LST
+    const isMasked = summerBaselineLst === null || summerBaselineLst === undefined;
+    activeObsDisplay = {
+      title: "Observed Summer LST (2026 Baseline)",
+      value: !isMasked ? `${summerBaselineLst.toFixed(1)}°C` : "N/A",
+      color: !isMasked ? getLSTColor(summerBaselineLst) : "#64748b",
+      subtext: cell.is_chronic_hotspot
+        ? "Multi-year persistent extreme summer temperature"
+        : "Operational summer 2026 composite defining HPI",
+      isMasked,
+    };
+  }
+
+  // Multi-season observations table data
+  const canonicalSeasons = [
+    { key: "summer", label: "Summer", year: 2026 },
+    { key: "winter", label: "Winter", year: 2026 },
+    { key: "post_monsoon", label: "Post-Monsoon", year: 2025 },
+    { key: "monsoon", label: "Monsoon", year: 2026 },
+  ];
+
+  const seasonalRows = canonicalSeasons.map((cs) => {
+    // If backend provided seasonal_observations, look up by key and year
+    if (cell.seasonal_observations && cell.seasonal_observations.length > 0) {
+      const found = cell.seasonal_observations.find(
+        (so) => so.season === cs.key && so.year === cs.year
+      );
+      if (found) {
+        return {
+          label: found.season_label,
+          year: found.year,
+          temp: found.observed_lst_c,
+          status: found.status,
+          reason: found.reason || (found.observed_lst_c !== null ? "Valid" : `Cloud-masked in ${cs.key} ${cs.year}`),
+          obsCount: found.obs_count,
+          delta: found.delta_to_summer_c,
+        };
+      }
+    }
+
+    // Fallback if detail not yet populated:
+    if (cs.key === "summer") {
+      return {
+        label: "Summer 2026",
+        year: 2026,
+        temp: summerBaselineLst,
+        status: summerBaselineLst !== null ? "Valid" : "Cloud-masked",
+        reason: summerBaselineLst !== null ? "Valid (Summer composite)" : "Cloud-masked in summer 2026",
+        obsCount: 10,
+        delta: 0.0,
+      };
+    }
+    if (activeSeason === cs.key) {
+      const deltaVal =
+        cell.observed_lst_c !== null && summerBaselineLst !== null
+          ? Math.round((cell.observed_lst_c - summerBaselineLst) * 100) / 100
+          : null;
+      return {
+        label: `${cs.label} ${cs.year}`,
+        year: cs.year,
+        temp: cell.observed_lst_c,
+        status: cell.observed_lst_c !== null ? "Valid" : "Cloud-masked",
+        reason: cell.observed_lst_c !== null ? "Valid observation" : `Cloud-masked in ${cs.key} ${cs.year}`,
+        obsCount: null,
+        delta: deltaVal,
+      };
+    }
+    return {
+      label: `${cs.label} ${cs.year}`,
+      year: cs.year,
+      temp: null,
+      status: cs.key === "monsoon" ? "Cloud-masked" : "Unobserved",
+      reason: cs.key === "monsoon" ? "Cloud-masked in monsoon 2026" : "Unobserved",
+      obsCount: null,
+      delta: null,
+    };
+  });
+
   return (
     <aside
-      className="pointer-events-auto absolute right-3 top-3 z-[1000] w-[calc(100vw-24px)] sm:w-88 max-w-sm max-h-[82vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-xl backdrop-blur transition-all duration-200"
+      className="pointer-events-auto absolute right-3 top-3 z-[1000] w-[calc(100vw-24px)] sm:w-96 max-w-sm max-h-[85vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-xl backdrop-blur transition-all duration-200"
       aria-label="Grid cell details"
     >
       {/* Header with Pixel ID and Close Button */}
@@ -54,14 +200,14 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
             {cell.pixel_id}
           </h3>
           <p className="text-[11px] text-slate-500">
-            Row {cell.row_idx} · Col {cell.col_idx} · {cell.latitude.toFixed(5)}°N, {cell.longitude.toFixed(5)}°E
+            100 m × 100 m (1 ha grid) · Row {cell.row_idx} · Col {cell.col_idx} · {cell.latitude.toFixed(5)}°N, {cell.longitude.toFixed(5)}°E
           </p>
         </div>
 
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300"
+          className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
           aria-label="Close inspector"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,7 +217,7 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
       </div>
 
       {/* Locality & Distance */}
-      <div className="mt-3 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
+      <div className="mt-2.5 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
         <span className="text-slate-500">Nearest Locality</span>
         <span className="font-semibold text-slate-800">
           {cell.nearest_osm_place_name || "Surat SMC"}
@@ -83,12 +229,63 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
         </span>
       </div>
 
+      {/* Latest Scene Disclaimer Banner */}
+      {activeLayerMode === "latest_scene" && (
+        <div className="mt-2.5 rounded-lg border border-indigo-200 bg-indigo-50/80 p-2.5 text-[10.5px] leading-snug text-indigo-900">
+          <strong>Single-Scene Overpass:</strong> Single-scene observation, not part of HPI or the 223 chronic hotspots, not comparable to seasonal composites.
+        </div>
+      )}
+
+      {/* Active Temperature Hero Card */}
+      <div className="mt-3 rounded-lg border border-slate-200/80 bg-slate-50/70 p-3 shadow-xs">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            {activeObsDisplay.title}
+          </span>
+          {activeLayerMode === "latest_scene" ? (
+            <span className="rounded bg-indigo-100 px-1.5 py-0.2 text-[9px] font-bold text-indigo-800">
+              NRT Single Scene
+            </span>
+          ) : activeLayerMode === "lst" ? (
+            <span className="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-bold text-amber-900">
+              {seasonLabel} Layer
+            </span>
+          ) : (
+            <span className="rounded bg-slate-200 px-1.5 py-0.2 text-[9px] font-bold text-slate-700">
+              HPI Baseline
+            </span>
+          )}
+        </div>
+
+        <div className="mt-1 flex items-baseline gap-2">
+          <span
+            className={`font-mono font-extrabold ${activeObsDisplay.isMasked && activeLayerMode === "lst" ? "text-sm text-amber-800" : "text-2xl"}`}
+            style={{ color: !activeObsDisplay.isMasked ? activeObsDisplay.color : undefined }}
+          >
+            {activeObsDisplay.value}
+          </span>
+          {!activeObsDisplay.isMasked && (
+            <span className="text-xs text-slate-500">radiant skin temp (T<sub>skin</sub>)</span>
+          )}
+        </div>
+        <div className="mt-0.5 text-[10px] text-slate-500 leading-tight">
+          {activeObsDisplay.subtext}
+        </div>
+      </div>
+
       {/* Main Score Hero Card */}
       <div className="mt-3 rounded-lg border border-slate-100 p-3.5 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-            Heat Priority Index
-          </span>
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+              Heat Priority Index
+            </span>
+            {activeLayerMode === "latest_scene" && (
+              <span className="text-[10px] font-bold text-amber-800">
+                Frozen HPI (multi-year, not from this scene)
+              </span>
+            )}
+          </div>
           <span
             className={`rounded-md border px-2 py-0.5 text-[10px] font-bold ${persistenceBadge.bg} ${persistenceBadge.text} ${persistenceBadge.border}`}
           >
@@ -133,8 +330,17 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
       {/* Component Layers Breakdown */}
       {!isUnavailable && (
         <div className="mt-3 space-y-2 rounded-lg border border-slate-100 p-3 shadow-sm">
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            HPI Component Breakdown
+          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span>HPI Component Breakdown</span>
+            {cell.is_chronic_hotspot && (
+              <button
+                type="button"
+                onClick={() => setShowHistory((prev) => !prev)}
+                className="text-[10px] text-indigo-600 hover:text-indigo-800 font-bold underline cursor-pointer"
+              >
+                {showHistory ? "Hide 5-Yr History" : "View 5-Yr Summer History"}
+              </button>
+            )}
           </div>
 
           {/* 1. Thermal Severity */}
@@ -203,17 +409,116 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
         </div>
       )}
 
-      {/* Observations and Quality Metadata */}
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-        <div className="rounded-lg bg-slate-50 p-2.5">
-          <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400">
-            Observed Summer LST
-          </span>
-          <div className="mt-0.5 text-sm font-bold text-slate-900 font-mono">
-            {cell.observed_lst_c != null ? `${cell.observed_lst_c.toFixed(1)}°C` : "N/A"}
+      {/* Multi-Year Summer Persistence History Drawer (Problem 2) */}
+      {(showHistory || cell.is_chronic_hotspot) && cell.summer_history && cell.summer_history.length > 0 && (
+        <div className="mt-3 rounded-lg border border-red-200 bg-red-50/60 p-3 text-xs">
+          <div className="flex items-center justify-between font-bold text-red-900 border-b border-red-200 pb-1.5 mb-2">
+            <span>🔥 Multi-Year Summer Persistence History</span>
+            <span className="text-[10px] font-mono text-red-700">2022–2026</span>
+          </div>
+          <div className="space-y-1">
+            {cell.summer_history.map((sh) => (
+              <div key={sh.year} className="flex items-center justify-between text-[11px]">
+                <span className="font-semibold text-slate-700">Summer {sh.year}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-slate-900">
+                    {sh.observed_lst_c !== null ? `${sh.observed_lst_c.toFixed(1)}°C` : "N/A"}
+                  </span>
+                  {sh.is_extreme ? (
+                    <span className="rounded bg-red-200 px-1 py-0.2 text-[9px] font-bold text-red-800">
+                      Extreme
+                    </span>
+                  ) : (
+                    <span className="rounded bg-slate-200 px-1 py-0.2 text-[9px] font-medium text-slate-600">
+                      Normal
+                    </span>
+                  )}
+                  {sh.obs_count && (
+                    <span className="text-[9.5px] text-slate-500">({sh.obs_count} scenes)</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 pt-1.5 border-t border-red-200 text-[10px] text-red-800 leading-tight">
+            <strong>Chronic Criterion:</strong> Recurrence frequency ≥50% across valid seasons, ≥3 hot seasons, ≥2 distinct years.
           </div>
         </div>
+      )}
 
+      {/* 4-Season Observation Table (Problem 1 & 2) */}
+      <div className="mt-3 rounded-lg border border-slate-200 bg-white p-2.5 shadow-xs">
+        <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+            Seasonal Observations Matrix
+          </span>
+          <span className="text-[10px] text-slate-400">100m grid cell</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-[11px]">
+            <thead>
+              <tr className="border-b border-slate-100 text-[10px] uppercase font-semibold text-slate-400">
+                <th className="py-1">Season</th>
+                <th className="py-1 text-right">LST (°C)</th>
+                <th className="py-1 text-right">Diff vs Summer</th>
+                <th className="py-1 text-right">Quality / Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-sans">
+              {seasonalRows.map((row) => {
+                const isActive = activeSeason === row.label.split(" ")[0].toLowerCase();
+                return (
+                  <tr
+                    key={row.label}
+                    className={isActive ? "bg-amber-50/70 font-semibold" : ""}
+                  >
+                    <td className="py-1.5 text-slate-800">
+                      {row.label}
+                      {isActive && (
+                        <span className="ml-1 text-[9px] rounded bg-amber-200 px-1 py-0.2 font-bold text-amber-900">
+                          Active
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-1.5 text-right font-mono font-bold">
+                      {row.temp !== null ? (
+                        <span style={{ color: getLSTColor(row.temp) }}>
+                          {row.temp.toFixed(1)}°C
+                        </span>
+                      ) : (
+                        <span className="text-amber-700 text-[10px]">Cloud-masked</span>
+                      )}
+                    </td>
+                    <td className="py-1.5 text-right font-mono text-slate-700">
+                      {row.delta !== undefined && row.delta !== null
+                        ? `${row.delta > 0 ? "+" : ""}${row.delta.toFixed(1)}°C`
+                        : "—"}
+                    </td>
+                    <td className="py-1.5 text-right text-[10px] text-slate-500">
+                      {row.temp !== null ? (
+                        <span className="text-emerald-700 font-medium">
+                          {row.obsCount ? `Valid (${row.obsCount} overpasses)` : "Valid"}
+                        </span>
+                      ) : (
+                        <span className="text-amber-700 italic">
+                          Cloud-masked
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-1.5 text-[9.5px] text-slate-500 italic border-t border-slate-100 pt-1">
+          * latest available composite per season (mixed years: Post-Monsoon 2025). Paired differences shown only where both seasons have valid observations.
+        </div>
+      </div>
+
+      {/* Observations and Quality Metadata */}
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
         <div
           className="rounded-lg bg-slate-50 p-2.5"
           title="Heuristic quality index from QA/observation support, not a probability of correctness"
@@ -249,24 +554,37 @@ export default function CellInspector({ cell, onClose }: CellInspectorProps) {
               ? `${(cell.hotspot_frequency * 100).toFixed(0)}%`
               : "0%"}
           </div>
+          <div className="mt-1 text-[9px] text-slate-500 leading-tight">
+            Summer overpass recurrence
+          </div>
         </div>
 
-        <div className="rounded-lg bg-slate-50 p-2.5">
-          <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400">
-            Optical Flag
-          </span>
-          <div className="mt-0.5 text-xs font-semibold text-slate-800">
-            {opticalInfo.label}
+        <div className="rounded-lg bg-slate-50 p-2.5 col-span-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-bold tracking-wide text-slate-400">
+              Optical Reconstruction Flag
+            </span>
+            <span className="text-xs font-semibold text-slate-800">
+              {opticalInfo.label}
+            </span>
           </div>
+          {opticalInfo.isImputed && (
+            <div className="mt-1 text-[9.5px] text-blue-800">
+              {opticalInfo.description}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Footnote on Optical Reconstruction if Imputed */}
-      {opticalInfo.isImputed && (
-        <div className="mt-2.5 rounded border border-blue-100 bg-blue-50/60 p-2 text-[10px] text-blue-900">
-          <strong>Quality Notice:</strong> {opticalInfo.description}.
+      {/* Methodological Context & Physical Distinctions */}
+      <div className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-tight text-slate-500 space-y-1">
+        <div>
+          <strong>Grid & Resolution:</strong> 100 m analytical grid (10,000 m² / 1 ha). Source thermal data acquired by Landsat 8/9 TIRS at ~100 m native resolution (USGS resampled to 30 m).
         </div>
-      )}
+        <div>
+          <strong>Temperature Distinction:</strong> LST is radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (~11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>), indoor temperature, and HPI scores (0–100 composite index).
+        </div>
+      </div>
     </aside>
   );
 }

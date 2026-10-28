@@ -588,12 +588,20 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                           : season === "monsoon"
                           ? "🌧️"
                           : "🍂";
+                      const year =
+                        season === "summer"
+                          ? "2026"
+                          : season === "winter"
+                          ? "2026"
+                          : season === "monsoon"
+                          ? "2026"
+                          : "2025";
 
                       return (
                         <tr key={season}>
                           <td className="font-sans font-bold capitalize flex items-center gap-1.5">
                             <span>{icon}</span>
-                            <span>{season.replace("_", " ")}</span>
+                            <span>{season.replace("_", " ")} ({year})</span>
                           </td>
                           <td className="text-slate-700">
                             {metrics.n.toLocaleString()}
@@ -620,6 +628,9 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                     })}
                   </tbody>
                 </table>
+              </div>
+              <div className="mt-1.5 text-[11px] text-slate-500 italic">
+                * latest available composite per season (mixed years: Post-Monsoon 2025).
               </div>
             </div>
           )}
@@ -725,31 +736,34 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
                       </thead>
                       <tbody className="font-mono tabular-nums text-[11px]">
                         <tr>
-                          <td className="font-sans font-medium">Summer</td>
+                          <td className="font-sans font-medium">Summer (2026)</td>
                           <td className="text-slate-600">454</td>
                           <td className="font-bold text-slate-900">90.53%</td>
                           <td className="font-sans text-[10px] text-emerald-700 font-bold">Nominal Met (+0.53%)</td>
                         </tr>
                         <tr>
-                          <td className="font-sans font-medium">Winter</td>
+                          <td className="font-sans font-medium">Winter (2026)</td>
                           <td className="text-slate-600">440</td>
                           <td className="font-bold text-slate-900">95.68%</td>
                           <td className="font-sans text-[10px] text-indigo-700 font-bold">Conservative (+5.68%)</td>
                         </tr>
                         <tr>
-                          <td className="font-sans font-medium">Post-Monsoon</td>
+                          <td className="font-sans font-medium">Post-Monsoon (2025)</td>
                           <td className="text-slate-600">405</td>
                           <td className="font-bold text-slate-900">95.80%</td>
                           <td className="font-sans text-[10px] text-indigo-700 font-bold">Conservative (+5.80%)</td>
                         </tr>
                         <tr className="bg-rose-50/40">
-                          <td className="font-sans font-bold text-rose-900">Monsoon</td>
+                          <td className="font-sans font-bold text-rose-900">Monsoon (2026)</td>
                           <td className="text-slate-600">447</td>
                           <td className="font-bold text-rose-700">79.19%</td>
                           <td className="font-sans text-[10px] text-rose-700 font-bold">Undercoverage (-10.81%; possibly related to cloud contamination; not tested)</td>
                         </tr>
                       </tbody>
                     </table>
+                    <div className="p-2 text-[10px] text-slate-500 italic border-t border-slate-100">
+                      * latest available composite per season (mixed years: Post-Monsoon 2025).
+                    </div>
                   </div>
 
                   {/* Decile Subgroups */}

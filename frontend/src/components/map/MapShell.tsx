@@ -433,6 +433,7 @@ const handleAreaRemoved =
                     area={area}
                     season={season}
                     year={effectiveYear}
+                    onUpdateArea={(areaId, updated) => handleAreaUpdated(areaId, updated, area.name)}
                   />
                 )
               )}
@@ -448,10 +449,12 @@ function AnalysisAreaCard({
   area,
   season,
   year,
+  onUpdateArea,
 }: {
   area: AnalysisArea;
   season?: string;
   year?: number;
+  onUpdateArea?: (areaId: string, result: AnalysisResult) => void;
 }) {
   const result = area.result;
   const [showRecommendations, setShowRecommendations] = useState(true);
@@ -624,16 +627,58 @@ function AnalysisAreaCard({
           {/* Multi-Season Comparison Table */}
           {result.seasons_table && result.seasons_table.length > 0 && (
             <div className="mt-3 border-t border-slate-100 pt-3">
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-                Multi-Season Comparison
+              <div className="mb-2 flex items-center justify-between">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                  Multi-Season Comparison
+                </div>
+                {result.geojson_geometry && onUpdateArea && (
+                  <div className="flex items-center gap-1.5">
+                    <label htmlFor={`comp-select-${area.id}`} className="text-[10px] text-slate-500 font-medium">
+                      Baseline:
+                    </label>
+                    <select
+                      id={`comp-select-${area.id}`}
+                      className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      value={result.same_year_comparison ? (result.effective_year ?? 2025) : "mixed"}
+                      onChange={async (e) => {
+                        const val = e.target.value;
+                        const targetYear = val === "mixed" ? undefined : parseInt(val, 10);
+                        try {
+                          const resp = await fetch("/api/v1/analysis/zonal-stats", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              geometry: result.geojson_geometry,
+                              season: result.season || "summer",
+                              year: targetYear,
+                            }),
+                          });
+                          if (resp.ok) {
+                            const updated = await resp.json();
+                            updated.geojson_geometry = result.geojson_geometry;
+                            onUpdateArea(area.id, updated);
+                          }
+                        } catch (err) {
+                          console.error("Failed to update comparison baseline", err);
+                        }
+                      }}
+                    >
+                      <option value="mixed">Mixed-year (Latest: 2026 / 2025 PM)</option>
+                      <option value="2025">Same-year 2025 (All 4 seasons)</option>
+                      <option value="2024">Same-year 2024 (All 4 seasons)</option>
+                      <option value="2023">Same-year 2023 (All 4 seasons)</option>
+                      <option value="2022">Same-year 2022 (All 4 seasons)</option>
+                    </select>
+                  </div>
+                )}
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[11px]">
                   <thead>
                     <tr className="border-b border-slate-200 text-slate-500">
                       <th className="pb-1 font-medium">Season</th>
-                      <th className="pb-1 font-medium">Year</th>
                       <th className="pb-1 text-right font-medium">Mean</th>
+                      <th className="pb-1 text-right font-medium">Diff vs Summer</th>
                       <th className="pb-1 text-right font-medium">Max</th>
                       <th className="pb-1 text-right font-medium">Cover</th>
                     </tr>
@@ -644,17 +689,21 @@ function AnalysisAreaCard({
                         key={`${row.season}-${row.year}`}
                         className={row.season === result.season ? "bg-amber-50/70 font-semibold" : ""}
                       >
-                        <td className="py-1 capitalize">{row.season.replace("_", " ")}</td>
-                        <td className="py-1 text-slate-700">
-                          {row.effective_year}
-                          {row.season === "post_monsoon" && row.effective_year !== 2026 && (
-                            <span className="ml-1 text-[9px] font-bold text-amber-700" title="Mixed-year baseline: Post-Monsoon 2026 unobserved; evaluated on 2025 validated composite">*</span>
+                        <td className="py-1 capitalize">
+                          {row.season.replace("_", " ")} ({row.effective_year})
+                          {row.season === "post_monsoon" && row.effective_year !== 2026 && !result.same_year_comparison && (
+                            <span className="ml-0.5 text-[9px] font-bold text-amber-700" title="Mixed-year baseline: Post-Monsoon 2026 unobserved; evaluated on 2025 validated composite">*</span>
                           )}
                         </td>
-                        <td className="py-1 text-right text-blue-700">
+                        <td className="py-1 text-right font-mono text-blue-700">
                           {row.mean_c !== null ? `${row.mean_c.toFixed(1)}°C` : "N/A"}
                         </td>
-                        <td className="py-1 text-right text-red-700">
+                        <td className="py-1 text-right font-mono text-slate-700">
+                          {row.delta_to_summer_c !== undefined && row.delta_to_summer_c !== null
+                            ? `${row.delta_to_summer_c > 0 ? "+" : ""}${row.delta_to_summer_c.toFixed(1)}°C`
+                            : "—"}
+                        </td>
+                        <td className="py-1 text-right font-mono text-red-700">
                           {row.max_c !== null ? `${row.max_c.toFixed(1)}°C` : "N/A"}
                         </td>
                         <td className="py-1 text-right text-slate-600">
@@ -669,8 +718,12 @@ function AnalysisAreaCard({
                 </table>
               </div>
               <div className="mt-1 space-y-0.5 text-[9.5px] text-slate-500">
-                <div>* <strong>Mixed-year baseline:</strong> Post-Monsoon uses 2025 composite because 2026 data was unobserved.</div>
-                <div>⚠️ <strong>Low coverage:</strong> Monsoon observations have high cloud masking (&lt;70% valid clear pixels).</div>
+                <div>
+                  * <em>{result.season_note || "latest available composite per season (mixed years: Post-Monsoon 2025)"}</em>. Paired differences shown only where both seasons have valid observations.
+                </div>
+                {result.seasons_table.some((r) => r.is_partial || r.data_coverage_percentage < 70) && (
+                  <div>⚠️ <strong>Low coverage:</strong> Monsoon observations have high cloud masking (&lt;70% valid clear pixels).</div>
+                )}
               </div>
             </div>
           )}

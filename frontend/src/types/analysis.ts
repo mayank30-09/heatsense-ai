@@ -8,6 +8,7 @@ export interface SeasonSummary {
   valid_pixel_count: number;
   data_coverage_percentage: number;
   is_partial: boolean;
+  delta_to_summer_c?: number | null;
 }
 
 export type AnalysisResult = {
@@ -15,6 +16,8 @@ export type AnalysisResult = {
 
   season?: string;
   effective_year?: number;
+  same_year_comparison?: boolean;
+  season_note?: string;
   source_file?: string;
 
   area_km2: number;
