@@ -360,13 +360,14 @@ On Linux production or container host environments, install the following cron e
 30 0 * * * cd /opt/heatsense-ai && /opt/heatsense-ai/.venv/bin/python scripts/discover_nrt_scenes.py >> /var/log/heatsense_nrt.log 2>&1
 ```
 
-### Model Retraining & Candidate Workflow
-Model updates are never applied automatically to production or the frozen baseline. To train a candidate model on expanded observations:
+### Experimental Candidate Model Retraining Workflow
+Candidate retraining is strictly experimental research and never modifies production or frozen baseline models.
 ```powershell
-.\.venv\Scripts\python.exe scripts/retrain_candidate.py --data data/processed/sensitivity/policy_d/analysis.parquet
+.\.venv\Scripts\python.exe scripts/experimental/retrain_candidate.py --output-dir tmp/candidate_eval
 ```
-- Candidate artifacts are isolated in `artifacts/ml_candidates/<YYYYMMDD>/` with their own independent SHA-256 manifests.
-- Evaluated on the 132 dev / 33 test holdout blocks ($Dev \cap Test = \emptyset$).
-- Reports pooled and seasonal $R^2$ side-by-side with the frozen baseline (Pooled $R^2$: 0.9006, Summer Partition $R^2$: 0.7119).
-- Requires explicit user and municipal administrator consent before any freeze promotion.
+- **EXPERIMENTAL Notice:** Prints `"EXPERIMENTAL - does not modify frozen artifacts"`.
+- **Mandatory Output Directory:** Strictly requires an explicit `--output-dir` argument located outside `artifacts/ml_freeze/` and `data/`.
+- **Holdout Contamination Guard:** Strictly asserts that the 33 locked test blocks are never loaded into candidate training data.
+- **Evidence Boundary:** Candidate model outputs are isolated research artifacts and are never cited as platform verification evidence.
+- **Freeze Promotion Policy:** Model updates are never auto-promoted; freeze updates require explicit municipal lead authorization and independent cryptographic manifest regeneration.
 
