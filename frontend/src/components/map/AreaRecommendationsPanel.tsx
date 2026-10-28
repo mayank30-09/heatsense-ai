@@ -351,16 +351,27 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
     }
   };
 
-  const getFeasibilityBadge = (status: string) => {
-    switch (status) {
-      case "FEASIBLE":
-        return <span className="text-emerald-700 font-semibold">✓ Feasible</span>;
-      case "CONDITIONALLY_FEASIBLE":
-        return <span className="text-amber-700 font-semibold">⚠️ Conditional</span>;
-      case "REJECTED":
-        return <span className="text-rose-700 font-semibold">✕ Rejected</span>;
-      default:
-        return <span>{status}</span>;
+  const getScreeningStatusBadge = () => {
+    const status = item.screening_status || (item.feasibility_status === "REJECTED" ? "NOT_APPLICABLE" : "MODEL_ELIGIBLE");
+    const reason = item.screening_reason_code || (item.rejection_reasons[0] ? item.rejection_reasons[0].slice(0, 32) : "");
+    if (status === "MODEL_ELIGIBLE") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-semibold text-indigo-900">
+          <span>●</span> Model-eligible (survey required)
+        </span>
+      );
+    } else if (status === "NOT_APPLICABLE") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded bg-slate-100 border border-slate-300 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+          <span>✕</span> Not applicable here {reason ? `(${reason.replace(/_/g, " ").toLowerCase()})` : ""}
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center gap-1 rounded bg-rose-50 border border-rose-200 px-2 py-0.5 text-[10px] font-semibold text-rose-800">
+          <span>✕</span> Excluded {reason ? `(${reason.replace(/_/g, " ").toLowerCase()})` : ""}
+        </span>
+      );
     }
   };
 
@@ -371,16 +382,35 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
         <div>
           <div className="text-xs font-bold text-slate-900">{item.title}</div>
           <div className="text-[10px] text-slate-500 mt-0.5">
-            Quantity: <strong>{item.quantity_basis.estimated_quantity.toLocaleString()} {item.quantity_basis.unit}</strong> ({item.quantity_basis.basis_description})
+            Quantity: <strong>{Number(item.quantity_basis.estimated_quantity).toFixed(1)} {item.quantity_basis.unit}</strong> ({item.quantity_basis.basis_description})
           </div>
         </div>
 
-        <span
-          className={`rounded border px-2 py-0.5 text-[10px] font-bold shrink-0 ${getPriorityBadgeClass(
-            item.priority
-          )}`}
-        >
-          {item.priority}
+        <div className="flex flex-col items-end gap-1">
+          <span
+            className={`rounded border px-2 py-0.5 text-[10px] font-bold shrink-0 ${getPriorityBadgeClass(
+              item.priority
+            )}`}
+          >
+            {item.priority}
+          </span>
+          {getScreeningStatusBadge()}
+        </div>
+      </div>
+
+      {/* Engineering Clearance & Tenure Status Pills */}
+      <div className="flex flex-wrap gap-1 text-[9px] text-slate-500 pt-0.5">
+        <span className="rounded bg-slate-100 px-1.5 py-0.5 border border-slate-200">
+          Site: <strong>{item.site_suitability || "UNKNOWN - survey required"}</strong>
+        </span>
+        <span className="rounded bg-slate-100 px-1.5 py-0.5 border border-slate-200">
+          Tenure: <strong>{item.ownership_legal || "UNVERIFIED"}</strong>
+        </span>
+        <span className="rounded bg-slate-100 px-1.5 py-0.5 border border-slate-200">
+          Clearance: <strong>{item.engineering_clearance || "NOT ASSESSED"}</strong>
+        </span>
+        <span className="rounded bg-slate-100 px-1.5 py-0.5 border border-slate-200">
+          Procurement: <strong>{item.procurement_status || "NOT STARTED"}</strong>
         </span>
       </div>
 
@@ -389,7 +419,7 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
         {item.rationale}
       </div>
 
-      {item.selection_rationale && (
+      {item.selection_rationale && item.selection_rationale !== item.rationale && (
         <div className="text-[10px] text-indigo-900 bg-indigo-50/60 p-1.5 rounded border border-indigo-100 leading-tight">
           <strong>Why Chosen:</strong> {item.selection_rationale}
         </div>
@@ -398,23 +428,40 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
       {/* Dual Cooling & Cost Metrics Grid */}
       <div className="grid grid-cols-3 gap-1.5 bg-slate-50 p-2 rounded border border-slate-100 text-[10px]">
         <div>
-          <span className="text-slate-400 block font-medium">Surface Skin Cooling</span>
-          <div className="font-bold text-indigo-700 text-[10.5px] mt-0.5">
+          <span className="text-slate-500 block font-semibold text-[9.5px] leading-tight">
+            Modelled surface temperature reduction (skin), not air temperature
+          </span>
+          <div className="font-bold text-indigo-700 text-[10.5px] mt-1">
             {item.cooling_range_c.formatted}
           </div>
+          <span className="text-[8.5px] text-slate-400 block mt-0.5 italic">
+            {item.cell_scope_note || "Modelled surface skin temperature reduction on treated area, not ambient air temperature."}
+          </span>
         </div>
 
         <div>
-          <span className="text-slate-400 block font-medium">Ambient Air (2m AGL)</span>
-          <div className="font-bold text-teal-700 text-[10.5px] mt-0.5">
-            {item.air_cooling_c ? `-${item.air_cooling_c.toFixed(2)}°C` : "-0.50°C"}
+          <span className="text-slate-500 block font-semibold text-[9.5px] leading-tight">
+            Modelled ambient air temperature reduction (2m AGL)
+          </span>
+          <div className="font-bold text-teal-700 text-[10.5px] mt-1">
+            {item.air_cooling_c ? `-${item.air_cooling_c.toFixed(1)}°C` : "-0.5°C"}
           </div>
+          <span className="text-[8.5px] text-slate-400 block mt-0.5 italic">
+            Macro-canopy air cooling estimate
+          </span>
         </div>
 
         <div>
-          <span className="text-slate-400 block font-medium">Cost Range (INR)</span>
-          <div className="font-bold text-slate-800 text-[10.5px] mt-0.5">
+          <span className="text-slate-500 block font-semibold text-[9.5px] leading-tight">
+            Cost Range (INR)
+          </span>
+          <div className="font-bold text-slate-800 text-[10.5px] mt-1">
             {item.cost_range_inr.formatted}
+          </div>
+          <div className="text-[8.5px] text-slate-500 mt-0.5 space-y-0.5">
+            <div>Unit Rate: <strong>₹{item.unit_rate !== undefined ? item.unit_rate.toFixed(1) : (item.type === 'TREE_CANOPY' ? '2000.0' : (item.type === 'COOL_ROOF' ? '300.0' : '400.0'))} / {item.unit_rate_unit || item.quantity_basis.unit}</strong></div>
+            <div className="text-amber-800 italic">{item.schedule_alignment_note || "rates not verified against CPWD/SMC schedule"}</div>
+            <div className="text-slate-400">{item.price_date_note || "indicative, not a tender price"}</div>
           </div>
         </div>
       </div>
@@ -461,6 +508,11 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
 
         {expanded && (
           <div className="mt-2 space-y-2 text-[10px] text-slate-600 border-t border-slate-100 pt-2">
+            <div>
+              <strong className="text-slate-700">Cost Schedule & Markups:</strong>{" "}
+              {item.markups_description || "Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup"}.{" "}
+              <span className="text-amber-800 italic">({item.schedule_alignment_note || "rates not verified against CPWD/SMC schedule"}; {item.price_date_note || "indicative, not a tender price"})</span>
+            </div>
             <div>
               <strong className="text-slate-700">Maintenance Burden & Schedule:</strong> {item.maintenance_note}
             </div>

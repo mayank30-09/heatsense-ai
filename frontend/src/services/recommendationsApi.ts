@@ -54,6 +54,21 @@ export interface RecommendationItem {
   whole_life_cost_per_c_m2?: number;
   air_cooling_c?: number;
   needs_site_survey?: boolean;
+  screening_status?: "MODEL_ELIGIBLE" | "NOT_APPLICABLE" | "EXCLUDED" | string;
+  screening_reason_code?: string;
+  site_suitability?: string;
+  ownership_legal?: string;
+  engineering_clearance?: string;
+  procurement_status?: string;
+  benefit_evidence?: string;
+  data_confidence?: string;
+  cooling_metric?: string;
+  cell_scope_note?: string;
+  price_date_note?: string;
+  schedule_alignment_note?: string;
+  unit_rate?: number;
+  unit_rate_unit?: string;
+  markups_description?: string;
 }
 
 export interface PolygonSummary {
@@ -147,15 +162,28 @@ export function exportRecommendationsToCsv(data: RecommendationsResponse, filena
     "Type",
     "Title",
     "Priority",
+    "Screening Status",
+    "Screening Reason Code",
+    "Site Suitability",
+    "Ownership Legal",
+    "Engineering Clearance",
+    "Procurement Status",
     "Feasibility Status",
     "Quantity Basis",
     "Unit",
+    "Unit Rate (INR)",
+    "Unit Rate Basis",
+    "Markups Description",
+    "Price Date Note",
+    "Schedule Alignment Note",
     "Cost Base (INR)",
     "Cost Min (INR)",
     "Cost Max (INR)",
-    "Expected Cooling (°C)",
-    "Cooling Min (°C)",
-    "Cooling Max (°C)",
+    "Cooling Metric",
+    "Modelled surface temperature reduction (skin), not air temperature - Expected (°C)",
+    "Modelled surface temperature reduction (skin), not air temperature - Min (°C)",
+    "Modelled surface temperature reduction (skin), not air temperature - Max (°C)",
+    "Scope Note",
     "Rationale",
     "Maintenance Note",
     "Evidence Label",
@@ -167,15 +195,28 @@ export function exportRecommendationsToCsv(data: RecommendationsResponse, filena
     `"${r.type}"`,
     `"${r.title.replace(/"/g, '""')}"`,
     `"${r.priority}"`,
+    `"${r.screening_status || (r.feasibility_status === 'REJECTED' ? 'NOT_APPLICABLE' : 'MODEL_ELIGIBLE')}"`,
+    `"${r.screening_reason_code || (r.feasibility_status === 'REJECTED' ? 'INCOMPATIBLE_LANDUSE_TYPOLOGY' : 'ELIGIBLE')}"`,
+    `"${r.site_suitability || 'UNKNOWN - survey required'}"`,
+    `"${r.ownership_legal || 'UNVERIFIED'}"`,
+    `"${r.engineering_clearance || 'NOT ASSESSED'}"`,
+    `"${r.procurement_status || 'NOT STARTED'}"`,
     `"${r.feasibility_status}"`,
     r.quantity_basis.estimated_quantity,
     `"${r.quantity_basis.unit}"`,
+    r.unit_rate ?? "",
+    `"${(r.unit_rate_unit || r.quantity_basis.unit).replace(/"/g, '""')}"`,
+    `"${(r.markups_description || '').replace(/"/g, '""')}"`,
+    `"${(r.price_date_note || 'indicative, not a tender price').replace(/"/g, '""')}"`,
+    `"${(r.schedule_alignment_note || 'rates not verified against CPWD/SMC schedule').replace(/"/g, '""')}"`,
     r.cost_range_inr.base,
     r.cost_range_inr.min,
     r.cost_range_inr.max,
+    `"${(r.cooling_metric || 'modelled surface (skin) temperature reduction on treated area').replace(/"/g, '""')}"`,
     r.cooling_range_c.expected,
     r.cooling_range_c.min,
     r.cooling_range_c.max,
+    `"${(r.cell_scope_note || 'Modelled surface skin temperature reduction on treated area, not ambient air temperature.').replace(/"/g, '""')}"`,
     `"${r.rationale.replace(/"/g, '""')}"`,
     `"${r.maintenance_note.replace(/"/g, '""')}"`,
     `"${r.evidence_label}"`,
