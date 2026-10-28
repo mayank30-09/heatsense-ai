@@ -442,7 +442,7 @@ export default function InterventionExplorer({
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Feasible Only
+              Model-eligible (survey required)
             </button>
             <button
               type="button"
@@ -453,7 +453,7 @@ export default function InterventionExplorer({
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Rejected
+              Not applicable here
             </button>
           </div>
 
@@ -623,10 +623,10 @@ export default function InterventionExplorer({
                   <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
                     <span className="text-[11px] text-slate-400 font-mono">
                       {cand.feasibility_status === "FEASIBLE" ? (
-                        <span className="text-emerald-600 font-semibold">✓ Feasible</span>
+                        <span className="text-emerald-600 font-semibold">✓ Model-eligible (survey required)</span>
                       ) : (
                         <span className="text-red-500 font-semibold">
-                          ✗ {cand.rejection_reason}
+                          ✗ {cand.rejection_reason || "Not applicable here"}
                         </span>
                       )}
                     </span>
@@ -786,7 +786,7 @@ export default function InterventionExplorer({
 
                         <div className="mt-3 border-t border-slate-200 pt-2 flex items-center justify-between">
                           <span className="text-[10px] text-slate-400 font-mono">
-                            {cand.feasibility_status === "FEASIBLE" ? "✓ Feasible" : "✗ Rejected"}
+                            {cand.feasibility_status === "FEASIBLE" ? "✓ Model-eligible (survey required)" : "✗ Not applicable here"}
                           </span>
                           <button
                             type="button"

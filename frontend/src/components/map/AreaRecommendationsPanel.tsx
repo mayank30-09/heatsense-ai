@@ -531,7 +531,7 @@ function RecommendationCard({ item }: { item: RecommendationItem }) {
           onClick={() => setExpanded(!expanded)}
           className="text-[10px] font-semibold text-indigo-700 hover:text-indigo-900 cursor-pointer flex items-center gap-1"
         >
-          <span>{expanded ? "Hide Engineering Details ▲" : "View Rejected Alternatives & Engineering Details ▼"}</span>
+          <span>{expanded ? "Hide Engineering Details ▲" : "View Disqualified Alternatives & Engineering Details ▼"}</span>
         </button>
 
         {expanded && (
