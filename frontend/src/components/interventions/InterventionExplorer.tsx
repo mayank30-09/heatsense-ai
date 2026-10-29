@@ -638,7 +638,7 @@ export default function InterventionExplorer({
             </span>
             <span className="text-teal-400">•</span>
             <span className="text-teal-800">
-              {areaSummary?.unassigned_insufficient_surface_count ?? 0} cells excluded (all cells are 10,000 m² interior tiles with treatable area 4,916–9,097 m²; 150 m² guardrail active for edge slivers)
+              {areaSummary?.unassigned_insufficient_surface_count ?? 0} cells excluded (interior tiles ~9,282 m² with treatable area 4,916–9,097 m²; 150 m² guardrail active for edge slivers)
             </span>
             <span className="text-teal-400">•</span>
             <span className="text-teal-700 font-medium">

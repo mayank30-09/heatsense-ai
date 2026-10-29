@@ -491,7 +491,7 @@ const handleAreaRemoved =
                     DEDICATED SPATIAL REPORT
                   </span>
                   <span className="text-[11px] font-mono text-slate-500">
-                    Planar EPSG:32643 · True Cell Area: 9,273 m² (0.93 ha)
+                    Planar EPSG:32643 · True Cell Area: ~9,282 m² (0.928 ha)
                   </span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">

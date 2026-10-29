@@ -749,7 +749,7 @@ export default function CellInspector({
       {/* Methodological Context & Physical Distinctions */}
       <div className="border-t border-slate-100 pt-2 text-[10px] leading-tight text-slate-500 space-y-1.5">
         <div>
-          <strong>Grid &amp; Resolution:</strong> Nominal 100 m regular grid (0.000898° ≈ 93.2 m × 99.5 m, true planar projected area: 9,273 m² / 0.927 ha in UTM 43N).
+          <strong>Grid &amp; Resolution:</strong> Nominal 100 m regular grid (0.000898° ≈ 93.2 m × 99.5 m, true planar projected area: mean 9,282 m² / 0.928 ha, range 9,273–9,291 m² in UTM 43N).
         </div>
         <div>
           <strong>Temperature Distinction:</strong> Land Surface Temperature (LST) is radiant surface skin temperature (T<sub>skin</sub>) at ~10:30 local solar time, distinct from ambient 2 m air temperature (T<sub>air</sub>) and indoor temperature. Ambient 2m air cooling is unmodeled.

@@ -23,6 +23,9 @@
 | **DEF-010** | **Medium (P2)** | R6 | `frontend/src/components/interventions/Optimization.tsx` | UI shows bare "0 packages" without explaining what a package is or diagnosing why zero packages qualify. | **VERIFIED_PASS** |
 | **DEF-011** | **High (P1)** | C2 | `gis/interventions/rules.py` | `rules.py` hardcoded $-2.05^\circ\text{C}\dots-2.5^\circ\text{C}$ skin cooling, diverging from `cooling_effects.py` ($8.59^\circ\text{C}$). | **VERIFIED_PASS** |
 | **DEF-012** | **High (P1)** | R13 | `gis/interventions/recommendations.py` | Polygon recommendations headline presents full ₹43.61 Cr build-out instead of phased municipal Phase 1 plan. | **VERIFIED_PASS** |
+| **DEF-013** | **Medium (P2)** | V6 | `gis/interventions/recommendations.py` | Phase 1 pilot recommendation used flat 10% fraction regardless of budget; updated to benefit-to-cost knapsack pilot selector. | **VERIFIED_PASS** |
+| **DEF-014** | **Low (P3)** | V9 | `frontend/src/` | Inconsistent nominal cell area phrasing (10,000 m² vs 9,273 m²); harmonized to UTM 43N mean 9,282.4 m² (range 9,273–9,291 m²). | **VERIFIED_PASS** |
+| **DEF-015** | **Low (P3)** | V1 | `backend/tests/` | Lack of automated verification for itemized public-works markup chain arithmetic; added `test_final_qa_invariants.py`. | **VERIFIED_PASS** |
 
 ---
 
@@ -93,4 +96,22 @@
 - **Root Cause:** Polygon recommendation headline presented total unphased build-out cost across 100% of the polygon footprint.
 - **Resolution:** Updated `gis/interventions/recommendations.py` to structure `cost_rollup` with `phase1_headline` (10% pilot plan) as the primary municipal recommendation alongside `full_potential_upper_bound` (100% theoretical envelope).
 - **Verification:** Reconciled response structure tested; backwards compatibility preserved.
+- **Status:** **VERIFIED_PASS**
+
+### DEF-013: Budget-Driven Phase 1 Pilot Selection (V6)
+- **Root Cause:** Phase 1 headline recommendation applied a flat `phase1_fraction = 0.10` regardless of polygon budget or intervention cost-effectiveness.
+- **Resolution:** Updated `gis/interventions/recommendations.py` to implement a greedy benefit-to-cost knapsack pilot selector under an authoritative ₹2.5 Cr ceiling (or 50% of capex if total < ₹2.5 Cr), prioritizing interventions by extensive cooling per Rupee.
+- **Verification:** Live polygon queries return itemized `selected_options_count` and `selected_typologies`; unit tests pass.
+- **Status:** **VERIFIED_PASS**
+
+### DEF-014: Planar Projected Grid Area Harmonization (V9)
+- **Root Cause:** Discrepancies between nominal "10,000 m² (1.0 ha)" text and UTM 43N projected planar cell dimensions.
+- **Resolution:** Projected all 49,747 regular $0.0008983^\circ$ grid cells to UTM 43N (EPSG:32643). Established true dimensions ($93.18\text{–}93.36\text{ m} \times 99.48\text{ m}$), area range $9,272.71\text{–}9,291.37\text{ m}^2$, mean $9,282.42\text{ m}^2$ ($0.928\text{ ha}$), and total bounding grid area $461.7726\text{ km}^2$ (+0.03% vs $461.6308\text{ km}^2$ SMC boundary). Updated `CellInspector.tsx`, `MapShell.tsx`, `ScenarioLab.tsx`, and `InterventionExplorer.tsx`.
+- **Verification:** Vitest tests (91/91) and TypeScript compilation succeed with zero errors.
+- **Status:** **VERIFIED_PASS**
+
+### DEF-015: Public-Works Markup Arithmetic Invariant (V1)
+- **Root Cause:** Potential regression in itemized cost components (direct + 6% design + 18% GST + 12% contingency + scaled setup = 1.3817x direct cost).
+- **Resolution:** Added automated invariant regression suite `backend/tests/test_final_qa_invariants.py` verifying itemized component reconstruction, cooling signs/units, non-duplication, and negative API inputs.
+- **Verification:** Pytest suite passes all 5 invariant tests.
 - **Status:** **VERIFIED_PASS**

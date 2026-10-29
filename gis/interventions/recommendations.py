@@ -368,19 +368,50 @@ def generate_polygon_recommendations(
         tot_maint = sum(r.cost_range_inr.base * 0.02 for r in eligible_recs)
         tot_area_m2 = sum(r.quantity_basis.estimated_quantity for r in eligible_recs if "m²" in r.quantity_basis.unit)
 
-        phase1_fraction = 0.10
-        phase1_capital = round(tot_capital * phase1_fraction, 2)
-        phase1_area_m2 = round(tot_area_m2 * phase1_fraction, 1)
+        # Budget-driven Phase 1 selector (harmonized with Optimization knapsack logic)
+        # Pilot ceiling: ₹2.5 Cr (SMC Smart City Phase 1 standard), or 50% of capex if total < ₹2.5 Cr
+        pilot_budget_ceiling = 25000000.0 if tot_capital >= 25000000.0 else max(500000.0, tot_capital * 0.50)
+
+        def rec_efficiency(r: RecommendationItem) -> float:
+            area_m2 = r.quantity_basis.estimated_quantity if "m²" in r.quantity_basis.unit else 1000.0
+            cooling = r.cooling_range_c.expected if r.cooling_range_c else 1.0
+            cost = max(1.0, r.cost_range_inr.base)
+            priority_weight = 1.5 if r.priority == "CRITICAL" else 1.2 if r.priority == "HIGH" else 1.0
+            return (cooling * area_m2 * priority_weight) / cost
+
+        sorted_recs = sorted(eligible_recs, key=rec_efficiency, reverse=True)
+        phase1_recs: List[RecommendationItem] = []
+        phase1_capital = 0.0
+        phase1_area_m2 = 0.0
+
+        for r in sorted_recs:
+            r_cost = r.cost_range_inr.base
+            r_area = r.quantity_basis.estimated_quantity if "m²" in r.quantity_basis.unit else 0.0
+            if phase1_capital + r_cost <= pilot_budget_ceiling:
+                phase1_recs.append(r)
+                phase1_capital += r_cost
+                phase1_area_m2 += r_area
+            elif not phase1_recs:
+                phase1_recs.append(r)
+                phase1_capital += r_cost
+                phase1_area_m2 += r_area
+                break
+
+        phase1_capital = round(phase1_capital, 2)
+        phase1_area_m2 = round(phase1_area_m2, 1)
+        phase1_fraction_pct = round((phase1_capital / tot_capital) * 100, 1) if tot_capital > 0 else 0.0
 
         cost_rollup = {
             "phase1_headline": {
-                "title": "Phase 1 Municipal Pilot Implementation (Recommended)",
-                "fraction": "10% of eligible spatial footprint",
+                "title": "Phase 1 Municipal Pilot Implementation (Budget-Driven Selection)",
+                "fraction": f"{phase1_fraction_pct}% of eligible spatial footprint ({len(phase1_recs)} prioritized options)",
                 "capital_spend_inr": phase1_capital,
                 "capital_spend_formatted": format_inr(phase1_capital),
                 "treated_area_m2": phase1_area_m2,
                 "treated_area_ha": round(phase1_area_m2 / 10000.0, 3),
-                "description": "Recommended initial municipal pilot tranche for field validation before full deployment.",
+                "selected_options_count": len(phase1_recs),
+                "selected_typologies": [r.title for r in phase1_recs],
+                "description": f"Budget-driven Phase 1 pilot tranche allocated via benefit-to-cost knapsack optimization under a {format_inr(pilot_budget_ceiling)} ceiling.",
             },
             "full_potential_upper_bound": {
                 "title": "Theoretical 100% Spatial Build-Out (Upper Bound)",

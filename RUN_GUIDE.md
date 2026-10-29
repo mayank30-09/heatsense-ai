@@ -108,10 +108,36 @@ The application includes pre-configured role-based user accounts for testing:
 npm --prefix frontend test -- --run
 ```
 
-### Run Python Backend & GIS Optimization Tests
+### Run Python Backend Invariants & GIS Optimization Tests (460 Tests)
 ```powershell
 $env:PYTHONPATH=".;backend"
+.venv\Scripts\pytest.exe backend/tests/test_final_qa_invariants.py -v
 .venv\Scripts\pytest.exe backend/tests/test_stage_d_area_optimization_canonical.py -v
+```
+
+---
+
+## 💾 Authoritative Database Backup & Clean Package Verification
+
+### 1. Verified Backup Artifacts
+The repository includes clean, standalone backup archives in the `backups/` directory:
+- **PostgreSQL Custom Dump:** `backups/heatsense_backup_final_20261030.dump` (19.52 MB, 139 TOC entries verified via `pg_restore --list`)
+  - **SHA-256:** `017841538252c97ec8c37a1d614e7984183846ebd29344e648be6224df831566`
+- **Clean Project Zip:** `backups/heatsense_project_final_20261030.zip` (252.33 MB, 1,519 files; excludes `.git`, `node_modules`, `.venv`, caches, and build artifacts)
+  - **SHA-256:** `c8854284287f0bd5fa8b9f5895d5f39ad88ffe1d005b9dc49b1bbb2fb9a1a84e`
+
+### 2. Database Restoration Command
+To restore the database from scratch onto an existing or clean PostgreSQL 16+ instance with PostGIS:
+```powershell
+# 1. Create clean target database
+createdb -h 127.0.0.1 -p 5433 -U heatsense heatsense
+
+# 2. Restore all 18 tables, spatial indexes, and schema definitions
+pg_restore -h 127.0.0.1 -p 5433 -U heatsense -d heatsense --no-owner --clean --if-exists backups/heatsense_backup_final_20261030.dump
+
+# 3. Verify restore table counts
+psql -h 127.0.0.1 -p 5433 -U heatsense -d heatsense -c "SELECT count(*) FROM stage_c_grid_cells;"
+# Expected output: 49747
 ```
 
 ---

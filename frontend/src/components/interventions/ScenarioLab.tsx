@@ -939,7 +939,7 @@ export default function ScenarioLab({
               As budget scales to ₹10 Crores, <strong>total extensive thermal benefit rises monotonically</strong> (from ~74k to ~160k+ °C·m²), while <strong>mean local cooling moderates</strong> (from -1.92°C to -1.22°C) because the portfolio averages in moderately heated peripheral sites.
             </p>
             <div className="mt-2 text-[11px] text-slate-500">
-              <strong>Spatial Footprint Reconciliation:</strong> Each 100m grid cell represents 10,000 m² (1.0 ha). Deployments modify a partial footprint (~1,500 m² = 0.15 ha) targeting available roofs, verges, or parking, preserving spatial conservation. All cooling metrics are modeled surface skin temperature reductions (ΔT_skin); ambient air temperature is not modeled. Modeled and indicative, not field-validated.
+              <strong>Spatial Footprint Reconciliation:</strong> Each nominal 100m grid cell represents ~9,282 m² (0.928 ha in UTM 43N, range 9,273–9,291 m²). Deployments modify a partial footprint (~1,500 m² = 0.15 ha) targeting available roofs, verges, or parking, preserving spatial conservation. All cooling metrics are modeled surface skin temperature reductions (ΔT_skin); ambient air temperature is not modeled. Modeled and indicative, not field-validated.
             </div>
           </div>
         </>
