@@ -92,7 +92,7 @@ export interface ViewportBBox {
   max_lat: number;
 }
 
-export type ActiveLayerMode = "hpi" | "lst" | "confidence" | "chronic" | "latest_scene";
+export type ActiveLayerMode = "hpi" | "lst" | "confidence" | "chronic" | "latest_scene" | "landcover";
 
 export type SeasonName = "summer" | "winter" | "monsoon" | "post_monsoon";
 

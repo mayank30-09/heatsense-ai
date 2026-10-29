@@ -113,7 +113,7 @@ export default function HPILegend({
   const isPostMonsoonNotice = season === "post_monsoon";
   const isMonsoonPartial = season === "monsoon" || (stats?.is_partial ?? false);
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== "undefined" && window.innerWidth < 1024);
   const [showSceneList, setShowSceneList] = useState(false);
 
   const getLegendTitle = () => {
@@ -134,7 +134,7 @@ export default function HPILegend({
   };
 
   return (
-    <div className="pointer-events-none absolute bottom-3 sm:bottom-6 left-3 z-[1000] w-[calc(100vw-24px)] max-w-[300px] sm:max-w-xs md:max-w-sm">
+    <div className="pointer-events-none absolute top-3 left-[56px] z-[900] w-[calc(100vw-76px)] max-w-[300px] max-h-[calc(100%-24px)] flex flex-col">
       <div className="pointer-events-auto rounded-xl border border-slate-200/90 bg-white/95 p-3 shadow-md backdrop-blur">
         {/* Header with Collapse/Expand Toggle */}
         <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/80 mb-2">
@@ -688,6 +688,67 @@ export default function HPILegend({
 
             <div className="mt-1 text-[9px] font-medium text-amber-700 bg-amber-50 rounded p-1 border border-amber-200">
               ⚠️ NRT scenes use a different QA mask from the frozen seasonal composites and are not comparable.
+            </div>
+          </div>
+        )}
+
+        {/* Layer Mode: Dynamic World Land Cover */}
+        {layerMode === "landcover" && (
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                Dynamic World Land Cover (10m LULC)
+              </span>
+              <span className="rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">
+                Sentinel-2 Model
+              </span>
+            </div>
+
+            <div className="mt-2 text-[10px] text-slate-600">
+              9-class near-real-time global land use land cover at 10 m resolution:
+            </div>
+
+            <div className="mt-2 grid grid-cols-3 gap-1.5 text-[10px]">
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#C4281B" }} />
+                <span className="font-medium text-slate-700">Built</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#397D49" }} />
+                <span className="font-medium text-slate-700">Trees</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#88B053" }} />
+                <span className="font-medium text-slate-700">Grass</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#E49635" }} />
+                <span className="font-medium text-slate-700">Crops</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#DFC35A" }} />
+                <span className="font-medium text-slate-700">Shrub</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#419BDF" }} />
+                <span className="font-medium text-slate-700">Water</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#7A87C6" }} />
+                <span className="font-medium text-slate-700">Wetland</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#A59B8F" }} />
+                <span className="font-medium text-slate-700">Bare</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-xs shrink-0" style={{ backgroundColor: "#B39FE1" }} />
+                <span className="font-medium text-slate-700">Snow/Ice</span>
+              </div>
+            </div>
+
+            <div className="mt-2.5 rounded bg-teal-50 p-2 border border-teal-200 text-[9.5px] leading-relaxed text-teal-900">
+              <strong>Scientific Disclosure:</strong> Dynamic World outputs are deep learning model predictions from Sentinel-2 TOA reflectance (CC BY 4.0; Brown et al. 2022, Sci Data). Not empirical in-situ ground truth. Physical surveys remain required for structural suitability and tenure.
             </div>
           </div>
         )}

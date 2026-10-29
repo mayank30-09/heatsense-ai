@@ -232,39 +232,49 @@ export default function ScenarioLab({
   return (
     <div className="flex flex-col gap-6">
       {/* Header Banner */}
-      <div className="rounded-xl border border-slate-700/80 bg-slate-900 p-6 text-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="rounded-2xl border border-slate-800/90 bg-slate-900 p-7 text-white shadow-elevated relative overflow-hidden">
+        {/* Subtle background geospatial grid lines */}
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(#2dd4bf 1px, transparent 1px), radial-gradient(#2dd4bf 1px, #0f172a 1px)",
+            backgroundSize: "24px 24px",
+            backgroundPosition: "0 0, 12px 12px",
+          }}
+        />
+
+        <div className="relative flex flex-wrap items-center justify-between gap-6 z-10">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-indigo-500/20 px-2.5 py-0.5 text-xs font-bold text-indigo-300 border border-indigo-500/30">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="rounded-full bg-teal-500/15 px-3 py-0.5 text-xs font-bold text-teal-300 border border-teal-500/30 font-mono">
                 Stage D Decision Support
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
                 Urban Heat Action Plan (UHAP 2026)
               </span>
             </div>
-            <h2 className="mt-2 text-2xl font-extrabold text-white">
+            <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
               Surat Heat Mitigation Scenario Lab
             </h2>
-            <p className="mt-1 max-w-3xl text-sm text-slate-300">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-300">
               Explore multi-tier capital budget benchmarks and simulate custom intervention portfolios.
               Calibrated on linearized microclimate heat dissipation equations, indicative engineering
               cost benchmarks, and spatially constrained optimization.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
             {isAuthenticated ? (
               <div className="text-right">
                 <div className="text-xs text-slate-300">
                   Logged in: <strong className="text-white">{user?.username}</strong>
                 </div>
-                <span className="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                <span className="inline-block mt-0.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/40 font-mono">
                   {role}
                 </span>
               </div>
             ) : (
-              <span className="rounded bg-white/10 px-2.5 py-1 text-xs text-slate-300 border border-white/20">
+              <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300 border border-slate-700">
                 Logged Out
               </span>
             )}
@@ -273,7 +283,7 @@ export default function ScenarioLab({
               <button
                 type="button"
                 onClick={onSwitchToMap}
-                className="flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700/80 hover:text-white transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <span>View Heat Map</span>
               </button>
@@ -283,7 +293,7 @@ export default function ScenarioLab({
               <button
                 type="button"
                 onClick={() => onSwitchToOptimization(simBudget)}
-                className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow hover:bg-indigo-500 transition-all cursor-pointer"
+                className="flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-teal-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-slate-900"
               >
                 <span>Launch Optimizer ({formatINR(simBudget)})</span>
                 <span>→</span>
@@ -335,9 +345,9 @@ export default function ScenarioLab({
                       setSelectedScenarioIdx(idx);
                       setSimBudget(sc.budget_inr);
                     }}
-                    className={`flex flex-col justify-between rounded-xl border p-5 text-left transition-all cursor-pointer ${
+                    className={`flex flex-col justify-between rounded-2xl border p-5 text-left transition-all cursor-pointer ${
                       isSelected
-                        ? "border-indigo-600 bg-indigo-50/40 shadow-md ring-2 ring-indigo-500/20"
+                        ? "border-teal-600 bg-teal-50/40 shadow-md ring-2 ring-teal-500/20"
                         : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs"
                     }`}
                   >
@@ -392,11 +402,11 @@ export default function ScenarioLab({
 
           {/* Active Scenario Detailed Dashboard */}
           {activeScenario && (
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="rounded-sm bg-indigo-100 px-2 py-0.5 text-[11px] font-bold text-indigo-900 uppercase">
+                    <span className="rounded-sm bg-teal-100 px-2 py-0.5 text-[11px] font-bold text-teal-900 uppercase">
                       Active Benchmark
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
@@ -415,7 +425,7 @@ export default function ScenarioLab({
                   <button
                     type="button"
                     onClick={() => onSwitchToOptimization(activeScenario.budget_inr)}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-500 shadow-xs cursor-pointer"
+                    className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-500 shadow-xs cursor-pointer"
                   >
                     Execute This Scenario In Optimizer →
                   </button>
@@ -576,10 +586,10 @@ export default function ScenarioLab({
           ) : (
             <>
               {/* Interactive Custom Scenario Simulator (Physics Grounded) */}
-              <div className="rounded-xl border border-indigo-200 bg-gradient-to-b from-white to-indigo-50/30 p-6 shadow-sm">
-            <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
+              <div className="rounded-2xl border border-teal-200/80 bg-gradient-to-b from-white to-teal-50/20 p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b border-teal-100 pb-3">
               <div>
-                <span className="rounded-sm bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                <span className="rounded-sm bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
                   Physics Simulator
                 </span>
                 <h3 className="mt-1 text-lg font-extrabold text-slate-900">
@@ -597,7 +607,7 @@ export default function ScenarioLab({
                 <div>
                   <div className="flex items-center justify-between text-xs font-bold text-slate-700">
                     <span>Municipal Budget Ceiling:</span>
-                    <span className="font-mono text-sm text-indigo-700 font-extrabold">
+                    <span className="font-mono text-sm text-teal-700 font-extrabold">
                       {formatINR(simBudget)}
                     </span>
                   </div>
@@ -608,7 +618,7 @@ export default function ScenarioLab({
                     step="5000000"
                     value={simBudget}
                     onChange={(e) => setSimBudget(Number(e.target.value))}
-                    className="mt-2 w-full accent-indigo-600 cursor-pointer"
+                    className="mt-2 w-full accent-teal-600 cursor-pointer"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                     <span>₹50 Lakh</span>
@@ -679,7 +689,7 @@ export default function ScenarioLab({
                           }
                           className={`rounded-lg px-2.5 py-1 text-xs font-medium border transition-all cursor-pointer ${
                             isEnabled
-                              ? "bg-indigo-50 border-indigo-300 text-indigo-900 font-bold"
+                              ? "bg-teal-50 border-teal-300 text-teal-900 font-bold"
                               : "bg-white border-slate-200 text-slate-400"
                           }`}
                         >
@@ -699,9 +709,9 @@ export default function ScenarioLab({
               </div>
 
               {/* Physical Outcome Card (Direct from Greedy Knapsack Backend Optimization) */}
-              <div className="flex flex-col justify-between rounded-xl border border-indigo-100 bg-white p-5 shadow-xs">
+              <div className="flex flex-col justify-between rounded-2xl border border-teal-100 bg-white p-5 shadow-xs">
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-900">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-teal-900">
                     Physical Output at {formatINR(simBudget)} (Greedy Knapsack Frontier)
                   </h4>
 
@@ -798,7 +808,7 @@ export default function ScenarioLab({
                     <button
                       type="button"
                       onClick={() => onSwitchToOptimization(simBudget)}
-                      className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-500 transition-colors shadow-xs cursor-pointer"
+                      className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-500 transition-colors shadow-xs cursor-pointer"
                     >
                       Run Full Optimization →
                     </button>
@@ -832,9 +842,11 @@ export default function ScenarioLab({
                       <th className="p-2.5">Budget Cap</th>
                       <th className="p-2.5">Treated Cells</th>
                       <th className="p-2.5">Footprint (ha)</th>
-                      <th className="p-2.5">Local Skin Cooling</th>
+                      <th className="p-2.5">Local Skin ΔT</th>
                       <th className="p-2.5">Citywide ΔT</th>
-                      <th className="p-2.5">Thermal Benefit (ΔT·m²)</th>
+                      <th className="p-2.5">Total Benefit (ΔT·m²)</th>
+                      <th className="p-2.5">Marginal Return (ΔB/ΔCost)</th>
+                      <th className="p-2.5">Utilization %</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-mono">
@@ -855,6 +867,16 @@ export default function ScenarioLab({
                               maximumFractionDigits: 0,
                             })}
                           </td>
+                          <td className="p-2.5 text-slate-600">
+                            {pt.marginal_benefit_per_inr !== undefined && pt.marginal_benefit_per_inr > 0
+                              ? `${pt.marginal_benefit_per_inr.toFixed(5)} °C·m²/₹`
+                              : "Baseline / Initial"}
+                          </td>
+                          <td className="p-2.5 text-slate-500">
+                            {pt.budget_utilization_percent !== undefined
+                              ? `${pt.budget_utilization_percent.toFixed(1)}%`
+                              : `${((pt.total_cost_inr / pt.budget_inr) * 100).toFixed(1)}%`}
+                          </td>
                         </tr>
                       );
                     })}
@@ -866,17 +888,37 @@ export default function ScenarioLab({
         </>
       )}
 
-          {/* Scientific Governance Callout */}
+          {/* Benchmark vs Custom Simulator Scope Transparency Callout */}
+          <div className="rounded-xl border border-teal-200 bg-teal-50/50 p-5 text-xs text-slate-700 shadow-xs">
+            <h4 className="font-bold text-teal-950 flex items-center gap-1.5">
+              <span>🔍</span>
+              <span>Scope Disclosure: UHAP Benchmark vs. Custom Simulator at Equal Budget (e.g. ₹2.5 Cr)</span>
+            </h4>
+            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] leading-relaxed">
+              <div className="bg-white/80 p-3 rounded-lg border border-teal-100">
+                <strong className="text-teal-900 block mb-0.5">SMC UHAP Benchmark (Citywide Catalog):</strong>
+                Derived from a comprehensive citywide UHAP deployment covering all 7 administrative zones. Interventions are dispersed across <strong>138 cells</strong> (15.2 ha) with variable building sizes (30,240 m² roof, 2,208 trees), yielding a balanced citywide average reduction of <strong>-0.83°C</strong>.
+              </div>
+              <div className="bg-white/80 p-3 rounded-lg border border-teal-100">
+                <strong className="text-teal-900 block mb-0.5">Custom Simulator (Priority Knapsack Pool):</strong>
+                Focuses capital intensively on the highest-heat chronic cells in the priority queue. It allocates uniform 1,500 m² deployments across <strong>60–69 cells</strong> (9.0–10.3 ha), delivering higher local skin cooling (<strong>-1.22°C to -1.34°C</strong>) by concentrating investment in extreme hotspots.
+              </div>
+            </div>
+          </div>
+
+          {/* Scientific Diminishing Marginal Returns Note */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 text-xs text-slate-600 shadow-xs">
             <h4 className="font-bold text-slate-800">
               Scientific Diminishing Marginal Returns Note:
             </h4>
             <p className="mt-1 leading-relaxed">
               Urban cooling investments follow non-linear returns governed by linearized heat dissipation and microclimatic boundary-layer attenuation.
-              Pilot investment (₹50 Lakhs) captures the highest-heat chronic cells with rapid local relief (-0.73°C skin cooling).
-              Scaling by 20x to ₹10 Crores expands the treated physical footprint by 12.6x (from 3.7 ha to 46.5 ha), delivering
-              extensive citywide thermal buffering across all 7 SMC administrative zones.
+              Pilot investment (₹50 Lakhs) prioritizes the highest-temperature chronic cells with rapid local relief (-1.92°C skin cooling).
+              As budget scales to ₹10 Crores, <strong>total extensive thermal benefit rises monotonically</strong> (from ~74k to ~160k+ °C·m²), while <strong>mean local cooling moderates</strong> (from -1.92°C to -1.22°C) because the portfolio averages in moderately heated peripheral sites.
             </p>
+            <div className="mt-2 text-[11px] text-slate-500">
+              <strong>Spatial Footprint Reconciliation:</strong> Each 100m grid cell represents 10,000 m² (1.0 ha). Deployments modify a partial footprint (~1,500 m² = 0.15 ha) targeting available roofs, verges, or parking, preserving spatial conservation. All cooling metrics are modeled surface skin temperature reductions (ΔT_skin); ambient air temperature is not modeled. Modeled and indicative, not field-validated.
+            </div>
           </div>
         </>
       )}

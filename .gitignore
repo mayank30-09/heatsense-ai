@@ -44,4 +44,7 @@ artifacts/ml_freeze/sentinel_sensitivity/sentinel_spatial_proximity.csv
 
 # Local scratch workspaces
 scratch/
+backups/
+.chrome-temp-profile/
+scratch_user_prompt.txt
 

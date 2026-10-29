@@ -189,6 +189,8 @@ export function MapShell({
     setAnalysisError,
   ] = useState<string | null>(null);
 
+  const [isAreasCollapsed, setIsAreasCollapsed] = useState(false);
+
   const handleAreaCreated =
   useCallback(
     (
@@ -260,10 +262,31 @@ const handleAreaRemoved =
     );
 
   return (
-    <div
-      className="map-frame"
-      aria-label="HEATSENSE AI map"
-    >
+    <div className="map-view-container flex flex-col w-full flex-1 min-h-0">
+      <LayerControls
+        isAreaAnalysis={isAreaAnalysis}
+        layerMode={layerMode}
+        onLayerModeChange={setLayerMode}
+        showRasterTile={showRasterTile}
+        onToggleRasterTile={() => setShowRasterTile((prev) => !prev)}
+        minHpiFilter={minHpiFilter}
+        onToggleMinHpi={() => setMinHpiFilter((prev) => (prev === undefined ? 50 : undefined))}
+        season={season}
+        onSeasonChange={handleSeasonChange}
+        activeTool={activeTool}
+        scenes={scenes}
+        selectedSceneId={selectedSceneId ?? undefined}
+        onSelectScene={setSelectedSceneId}
+        recentDayThreshold={recentDayThreshold}
+        pipelineStatus={pipelineStatus}
+        scenesLoading={scenesLoading}
+        scenesError={scenesError}
+      />
+
+      <div
+        className="map-frame"
+        aria-label="HEATSENSE AI map"
+      >
       <MapContainer
         center={SURAT_CENTER}
         zoom={11}
@@ -339,7 +362,7 @@ const handleAreaRemoved =
 
       {/* Monsoon Cloud Contamination Banner (non-colliding) */}
       {season === "monsoon" && layerMode !== "latest_scene" && (
-        <div className="pointer-events-none absolute bottom-12 left-1/2 z-[1000] -translate-x-1/2">
+        <div className="pointer-events-none absolute bottom-8 left-1/2 z-[800] -translate-x-1/2">
           <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1.5 shadow-md backdrop-blur">
             <span className="text-amber-800 text-xs font-semibold">
               ⚠️ Monsoon Layer: Low reliability due to cloud contamination (QA filtering in progress)
@@ -348,25 +371,7 @@ const handleAreaRemoved =
         </div>
       )}
 
-      <LayerControls
-        isAreaAnalysis={isAreaAnalysis}
-        layerMode={layerMode}
-        onLayerModeChange={setLayerMode}
-        showRasterTile={showRasterTile}
-        onToggleRasterTile={() => setShowRasterTile((prev) => !prev)}
-        minHpiFilter={minHpiFilter}
-        onToggleMinHpi={() => setMinHpiFilter((prev) => (prev === undefined ? 50 : undefined))}
-        season={season}
-        onSeasonChange={handleSeasonChange}
-        activeTool={activeTool}
-        scenes={scenes}
-        selectedSceneId={selectedSceneId ?? undefined}
-        onSelectScene={setSelectedSceneId}
-        recentDayThreshold={recentDayThreshold}
-        pipelineStatus={pipelineStatus}
-        scenesLoading={scenesLoading}
-        scenesError={scenesError}
-      />
+
 
       {layerMode === "latest_scene" && !isAreaAnalysis && (
         <LatestSceneSidebar
@@ -395,52 +400,83 @@ const handleAreaRemoved =
 
       {/* Polygon Drawing Area Analysis Drawer */}
       {isAreaAnalysis && (activeTool === "drawing" || analysisAreas.length > 0) && (
-        <div className="pointer-events-none absolute bottom-3 right-3 z-[1000] w-[calc(100vw-24px)] max-w-md sm:w-[420px] max-h-[75vh] overflow-y-auto">
-          <div className="pointer-events-auto rounded-xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-                  Area Analysis
+        <div className="pointer-events-none absolute bottom-8 right-3 z-[900] w-[calc(100vw-24px)] max-w-[320px] max-h-[calc(100%-80px)] overflow-y-auto scrollbar-thin">
+          {isAreasCollapsed ? (
+            <div className="pointer-events-auto rounded-xl border border-slate-200/90 bg-white/95 px-3 py-2 shadow-md backdrop-blur">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                  <span>📐</span>
+                  <span>Analysis Areas ({analysisAreas.length})</span>
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-900">
-                  Selected Analysis Areas
+                <button
+                  type="button"
+                  onClick={() => setIsAreasCollapsed(false)}
+                  aria-expanded={false}
+                  className="text-[10px] font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                >
+                  Expand ▲
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="pointer-events-auto rounded-2xl border border-slate-200/90 bg-white/95 p-3.5 sm:p-4 shadow-elevated backdrop-blur-md">
+              <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                    Zonal Analysis
+                  </div>
+                  <div className="mt-0.5 text-sm font-extrabold text-slate-900 tracking-tight">
+                    Selected Analysis Areas
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {activeTool === "drawing" && (
+                    <span className="rounded-md bg-teal-50 border border-teal-200 px-1.5 py-0.5 text-[9px] font-bold text-teal-800 font-mono">
+                      Draw Active
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsAreasCollapsed(true)}
+                    aria-expanded={true}
+                    className="text-[10px] font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                  >
+                    Collapse ▼
+                  </button>
                 </div>
               </div>
-              {activeTool === "drawing" && (
-                <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
-                  Draw Tool Active
-                </span>
+
+              {analysisError && (
+                <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                  {analysisError}
+                </div>
               )}
-            </div>
 
-            {analysisError && (
-              <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-700">
-                {analysisError}
-              </div>
-            )}
-
-            {analysisAreas.length === 0 && (
-              <div className="text-sm leading-5 text-slate-500">
-                Use the polygon drawing tool on the left toolbar to draw an area for Landsat zonal statistics.
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {analysisAreas.map(
-                (area) => (
-                  <AnalysisAreaCard
-                    key={area.id}
-                    area={area}
-                    season={season}
-                    year={effectiveYear}
-                    onUpdateArea={(areaId, updated) => handleAreaUpdated(areaId, updated, area.name)}
-                  />
-                )
+              {analysisAreas.length === 0 && (
+                <div className="rounded-xl border border-dashed border-slate-200 p-3 text-center text-xs leading-relaxed text-slate-500 bg-slate-50/50">
+                  <span className="block text-base mb-1">📐</span>
+                  Use the polygon drawing tool on the left toolbar to delineate an area for Landsat zonal statistics.
+                </div>
               )}
+
+              <div className="space-y-3">
+                {analysisAreas.map(
+                  (area) => (
+                    <AnalysisAreaCard
+                      key={area.id}
+                      area={area}
+                      season={season}
+                      year={effectiveYear}
+                      onUpdateArea={(areaId, updated) => handleAreaUpdated(areaId, updated, area.name)}
+                    />
+                  )
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
+    </div>
     </div>
   );
 }

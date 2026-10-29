@@ -70,22 +70,22 @@ export default function LoginPanel({
   }
 
   return (
-    <div className="mx-auto max-w-lg rounded-xl border border-slate-200 bg-white p-8 shadow-card">
+    <div className="mx-auto max-w-lg rounded-2xl border border-slate-200/90 bg-white p-8 shadow-card">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-          <span className="h-2 w-2 rounded-full bg-indigo-700"></span>
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <span className="h-2 w-2 rounded-full bg-teal-600"></span>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
             Access Control
           </span>
         </div>
         <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-        <p className="text-sm text-slate-600 mt-1">{subtitle}</p>
+        <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
       </div>
 
       {sessionMessage && (
         <div
           role="alert"
-          className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"
+          className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800"
         >
           {sessionMessage}
         </div>
@@ -94,7 +94,7 @@ export default function LoginPanel({
       {loginError && (
         <div
           role="alert"
-          className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"
+          className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800"
         >
           {loginError}
         </div>
@@ -104,7 +104,7 @@ export default function LoginPanel({
         <div>
           <label
             htmlFor="auth-username"
-            className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1"
+            className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
           >
             Username
           </label>
@@ -116,7 +116,7 @@ export default function LoginPanel({
             onChange={(e) => setUsername(e.target.value)}
             disabled={isLoading}
             placeholder="Municipal username (e.g. planner_officer)"
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/30"
+            className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20"
             required
           />
         </div>
@@ -124,7 +124,7 @@ export default function LoginPanel({
         <div>
           <label
             htmlFor="auth-password"
-            className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1"
+            className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
           >
             Password
           </label>
@@ -136,7 +136,7 @@ export default function LoginPanel({
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             placeholder="Account password"
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/30"
+            className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20"
             required
           />
         </div>
@@ -144,16 +144,16 @@ export default function LoginPanel({
         <button
           type="submit"
           disabled={isLoading || !username.trim() || !password}
-          className="w-full rounded-lg bg-indigo-700 py-2.5 px-4 text-sm font-semibold text-white shadow-xs hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 transition"
+          className="w-full rounded-xl bg-slate-900 py-2.5 px-4 text-sm font-semibold text-white shadow-xs hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 transition-all cursor-pointer"
         >
           {isLoading ? "Authenticating..." : "Sign In to Access Optimization"}
         </button>
       </form>
 
       <div className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-500">
-        <p className="font-semibold text-slate-600 mb-1">Municipal Role Accounts:</p>
-        <p>
-          Authoritative roles: <code>planner_officer</code> (Planner) or <code>smc_admin</code> (Admin).
+        <p className="font-semibold text-slate-700 mb-1">Municipal Role Accounts:</p>
+        <p className="text-[11px] leading-relaxed text-slate-500">
+          Authoritative roles: <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-800">planner_officer</code> (Planner) or <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-800">smc_admin</code> (Admin).
           Authentication tokens are held strictly in memory during active browser sessions.
         </p>
       </div>

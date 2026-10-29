@@ -75,29 +75,27 @@ def estimate_intervention_cost(
 
         design_supervision = direct_cost * DESIGN_SUPERVISION_RATE
         gst = (direct_cost + design_supervision) * GST_RATE
+        # 12% contingency explicitly covers ground variations and normal 15% sapling mortality replenishment
         contingency = (direct_cost + design_supervision) * CONTINGENCY_RATE_EXPECTED
 
-        # Water tanker cost: ~40 L/tree/week for 40 active hot weeks over 3 years
-        # Total water ~ 4.8 m³ / tree = ₹576 / tree
-        water_cost = count * 600.0
+        # Water tanker delivery is strictly an ongoing OPEX activity over the 3-year establishment period,
+        # included in maint_3yr to prevent double-counting in Capex.
+        water_cost = 0.0
+        plant_replacement = 0.0
 
-        # Survival rate = 85% -> 15% mortality replacement provision
-        survival_rate = 0.85
-        mortality_fraction = 1.0 - survival_rate
-        plant_replacement = mortality_fraction * count * (mat_per_unit + lab_per_unit)
-
-        # 3-year municipal maintenance: weeding, pruning, tanker routing
+        # 3-year municipal maintenance (Opex): scheduled water tanker delivery (~40 L/tree/week), de-weeding, pruning
         maint_3yr = count * 1500.0
-        # 10-year maintenance: post-establishment pruning, arborist inspection
+        # 10-year maintenance (Opex): mature crown formative pruning, arborist inspection
         maint_10yr = maint_3yr + count * 2200.0
 
-        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup + water_cost
-        wlc_3yr = capital_cost + maint_3yr + plant_replacement
-        wlc_10yr = capital_cost + maint_10yr + plant_replacement
+        # Capex = Direct Materials + Direct Labour + Design 6% + GST 18% + Contingency 12% + Site Setup
+        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup
+        wlc_3yr = capital_cost + maint_3yr
+        wlc_10yr = capital_cost + maint_10yr
 
         # Uncertainty bounds: ±20% market variance
         unc_frac = 0.20
-        source = "Indicative engineering estimate modeled on SMC Parks & Gardens Dept Annual Rate Contract for Plantation (schedule unverified locally in repo)"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on prevailing plantation norms (~₹2,000/tree direct cost; unverified against physical tender documents)"
         unit_str = "INR per tree"
         quantity = count
 
@@ -128,7 +126,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.15
-        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Item 12.58 / SMC Waterproofing & Painting Schedule (schedule unverified locally in repo)"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on prevailing civil and waterproofing rates in Gujarat (~₹300/m² direct material and application; unverified against official CPWD/SMC tender documents)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -148,17 +146,15 @@ def estimate_intervention_cost(
         design_supervision = direct_cost * 0.08
         gst = (direct_cost + design_supervision) * GST_RATE
         contingency = (direct_cost + design_supervision) * 0.15
-        water_cost = area * 150.0 # Automated drip tie-in & supplementary water
+        water_cost = 0.0
+        plant_replacement = 0.0
 
-        survival_rate = 0.80
-        plant_replacement = (1.0 - survival_rate) * area * 350.0
-
-        maint_3yr = area * 600.0   # Drip lines, weeding, nutrient replenishment
+        maint_3yr = area * 600.0   # Drip lines, weeding, nutrient replenishment, establishment irrigation
         maint_10yr = area * 1800.0 # Substrate replenishment, membrane testing
 
-        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup + water_cost
-        wlc_3yr = capital_cost + maint_3yr + plant_replacement
-        wlc_10yr = capital_cost + maint_10yr + plant_replacement
+        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup
+        wlc_3yr = capital_cost + maint_3yr
+        wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.25
         source = "Indicative engineering estimate modeled on Specialized Vendor Quotes (e.g. Indian Green Building Council rate cards) [UNVERIFIED IN REPO]"
@@ -192,7 +188,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.18
-        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Item 16.68 / SMC Road Works Schedule (schedule unverified locally in repo)"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on prevailing paver block rates (~₹400/m² direct cost; unverified against official public works schedules)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -212,20 +208,18 @@ def estimate_intervention_cost(
         design_supervision = direct_cost * 0.07
         gst = (direct_cost + design_supervision) * GST_RATE
         contingency = (direct_cost + design_supervision) * 0.12
-        water_cost = area * 120.0 # Initial establishment watering
+        water_cost = 0.0
+        plant_replacement = 0.0
 
-        survival_rate = 0.85
-        plant_replacement = (1.0 - survival_rate) * area * 100.0
+        maint_3yr = area * 300.0   # Turf mowing, irrigation, de-weeding
+        maint_10yr = area * 950.0  # Tree pruning, turf re-seeding, pathway maintenance
 
-        maint_3yr = area * 300.0
-        maint_10yr = area * 950.0
-
-        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup + water_cost
-        wlc_3yr = capital_cost + maint_3yr + plant_replacement
-        wlc_10yr = capital_cost + maint_10yr + plant_replacement
+        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup
+        wlc_3yr = capital_cost + maint_3yr
+        wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.22
-        source = "Indicative engineering estimate modeled on SMC Parks & Gardens Schedule / CPWD DSR 2023 Horticulture Works (schedule unverified locally in repo)"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on municipal park standards [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -246,20 +240,18 @@ def estimate_intervention_cost(
         design_supervision = direct_cost * 0.06
         gst = (direct_cost + design_supervision) * GST_RATE
         contingency = (direct_cost + design_supervision) * 0.12
-        water_cost = area * 250.0 # Intensive initial watering in Years 1-2
+        water_cost = 0.0
+        plant_replacement = 0.0
 
-        survival_rate = 0.90
-        plant_replacement = (1.0 - survival_rate) * area * 150.0
-
-        maint_3yr = area * 400.0  # Intensive weeding in Years 1-2, self-sustaining Year 3
+        maint_3yr = area * 400.0  # Intensive weeding & watering in Years 1-2, self-sustaining Year 3
         maint_10yr = area * 600.0 # Minimal post-establishment intervention
 
-        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup + water_cost
-        wlc_3yr = capital_cost + maint_3yr + plant_replacement
-        wlc_10yr = capital_cost + maint_10yr + plant_replacement
+        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup
+        wlc_3yr = capital_cost + maint_3yr
+        wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.25
-        source = "Indicative engineering estimate modeled on SMC CSR Plantation Rate Benchmarks [UNVERIFIED IN REPO]"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on CSR plantation norms [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -279,20 +271,18 @@ def estimate_intervention_cost(
         design_supervision = direct_cost * 0.06
         gst = (direct_cost + design_supervision) * GST_RATE
         contingency = (direct_cost + design_supervision) * 0.12
-        water_cost = area * 50.0 # Minimal dry-spell supplemental watering
-
-        survival_rate = 0.85
-        plant_replacement = (1.0 - survival_rate) * area * 80.0
+        water_cost = 0.0
+        plant_replacement = 0.0
 
         maint_3yr = area * 180.0
         maint_10yr = area * 500.0
 
-        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup + water_cost
-        wlc_3yr = capital_cost + maint_3yr + plant_replacement
-        wlc_10yr = capital_cost + maint_10yr + plant_replacement
+        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup
+        wlc_3yr = capital_cost + maint_3yr
+        wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.20
-        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Roadside Drainage Works [UNVERIFIED IN REPO]"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on roadside drainage works [UNVERIFIED IN REPO]"
         unit_str = "INR per m²"
         quantity = area
 
@@ -312,15 +302,13 @@ def estimate_intervention_cost(
         design_supervision = direct_cost * 0.08
         gst = (direct_cost + design_supervision) * GST_RATE
         contingency = (direct_cost + design_supervision) * 0.15
-        water_cost = area * 200.0 # Initial reservoir filling & treated water pipeline tie-in
-
-        survival_rate = 1.00 # Civil structure
+        water_cost = 0.0
         plant_replacement = 0.0
 
         maint_3yr = area * 450.0  # Desilting, aeration power, aquatic weed harvesting
         maint_10yr = area * 1400.0 # Liner inspection, dredging, embankment repair
 
-        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup + water_cost
+        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup
         wlc_3yr = capital_cost + maint_3yr
         wlc_10yr = capital_cost + maint_10yr
 
@@ -356,7 +344,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.15
-        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Structural Steel & Fabric Works Item 10.25 (schedule unverified locally in repo)"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on prevailing structural steel and shade fabric norms (unverified against official public works schedules)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -376,17 +364,15 @@ def estimate_intervention_cost(
         design_supervision = direct_cost * 0.07
         gst = (direct_cost + design_supervision) * GST_RATE
         contingency = (direct_cost + design_supervision) * 0.12
-        water_cost = area * 180.0
+        water_cost = 0.0
+        plant_replacement = 0.0
 
-        survival_rate = 0.80
-        plant_replacement = (1.0 - survival_rate) * area * 300.0
+        maint_3yr = area * 550.0   # Drip line checks, pruning, nutrient feed
+        maint_10yr = area * 1600.0 # Trellis anchor testing, climbing plant rejuvenation
 
-        maint_3yr = area * 550.0
-        maint_10yr = area * 1600.0
-
-        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup + water_cost
-        wlc_3yr = capital_cost + maint_3yr + plant_replacement
-        wlc_10yr = capital_cost + maint_10yr + plant_replacement
+        capital_cost = direct_cost + design_supervision + gst + contingency + scaled_setup
+        wlc_3yr = capital_cost + maint_3yr
+        wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.22
         source = "Indicative engineering estimate modeled on Commercial Vendor Quotations (IGBC / LEED India) [UNVERIFIED IN REPO]"
@@ -420,7 +406,7 @@ def estimate_intervention_cost(
         wlc_10yr = capital_cost + maint_10yr
 
         unc_frac = 0.15
-        source = "Indicative engineering estimate modeled on CPWD DSR 2023 Item 16.12 Gravel and Aggregate Pathways (schedule unverified locally in repo)"
+        source = "Unverified indicative benchmark modeled by HEATSENSE team based on prevailing aggregate pathway rates (unverified against official public works schedules)"
         unit_str = "INR per m²"
         quantity = area
 
@@ -438,6 +424,7 @@ def estimate_intervention_cost(
     metadata: dict[str, Any] = {
         "rate_status": "INDICATIVE_ASSUMPTION",
         "schedule_alignment": "UNVERIFIED_IN_REPO (Model estimates based on published public norms; official schedule PDFs/CSVs not in repo)",
+        "verified": False,
         "unit": unit_str,
         "quantity": quantity,
         "materials_cost": round(materials, 2),

@@ -14,6 +14,8 @@ from backend.app.db.models.stage_c import (
 from backend.app.db.models.stage_d import (
     StageDInterventionCandidate,
     StageDScenarioResult,
+    StageDDynamicWorldLandCover,
+    StageDLandCoverPipelineRun,
 )
 
 __all__ = [
@@ -29,4 +31,6 @@ __all__ = [
     "StageCProvisionalHotspot",
     "StageDInterventionCandidate",
     "StageDScenarioResult",
+    "StageDDynamicWorldLandCover",
+    "StageDLandCoverPipelineRun",
 ]

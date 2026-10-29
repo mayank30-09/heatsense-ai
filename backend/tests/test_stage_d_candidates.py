@@ -105,9 +105,9 @@ def test_cost_models_positive_and_detailed():
     """Verify INR cost models produce positive values and structured breakdowns."""
     cost, c_min, c_max, meta = estimate_intervention_cost(InterventionType.TREE_CANOPY, usable_area_m2=1000, tree_count=40)
     # Itemized realistic engineering cost: materials, labour, design (6%), GST (18%), contingency (12%), setup, tanker
-    assert cost == 139254.98
-    assert c_min == 111403.98  # -20%
-    assert c_max == 167105.98  # +20%
+    assert cost == 115254.98
+    assert c_min == 92203.98  # -20%
+    assert c_max == 138305.98  # +20%
     assert "maintenance_3yr_cost" in meta
     assert meta["maintenance_3yr_cost"] == 60000.0
 

@@ -43,7 +43,7 @@ export default function AreaRecommendationsPanel({
   const [data, setData] = useState<RecommendationsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"recommendations" | "assumptions">("recommendations");
+  const [activeTab, setActiveTab] = useState<"recommendations" | "evidence" | "assumptions">("recommendations");
 
   const loadRecommendations = () => {
     if (!geometry) {
@@ -95,12 +95,12 @@ export default function AreaRecommendationsPanel({
   const needsSurvey = Boolean(data?.polygon_summary.needs_site_survey || typologyKey === "unclassified");
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3.5 shadow-sm text-slate-800">
+    <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 shadow-sm text-slate-800">
       {/* Header */}
       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-900">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
               Polygon statistics & recommendations
             </span>
             <span className="badge-evidence badge-assumption">
@@ -149,7 +149,7 @@ export default function AreaRecommendationsPanel({
       {/* Loading State */}
       {loading && (
         <div className="py-8 text-center space-y-2">
-          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
           <div className="text-xs font-medium text-slate-500">
             Synthesizing Stage D intervention recommendations...
           </div>
@@ -205,10 +205,10 @@ export default function AreaRecommendationsPanel({
           )}
 
           {/* Land Typology & Allowed Interventions Bar */}
-          <div className="rounded border border-indigo-100 bg-indigo-50/50 p-2 text-[10.5px] space-y-1.5">
+          <div className="rounded-lg border border-slate-200/80 bg-slate-50/70 p-2.5 text-[10.5px] space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-slate-500 font-medium">Land-Use Typology:</span>
-              <span className="font-bold text-indigo-950">{typologyTitle}</span>
+              <span className="font-bold text-slate-900">{typologyTitle}</span>
             </div>
             <div className="flex items-center justify-between text-[9.5px] text-slate-500 border-t border-indigo-100/60 pt-1">
               <span>Boundary source: SMC study-area polygon in PostGIS</span>
@@ -313,6 +313,17 @@ export default function AreaRecommendationsPanel({
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab("evidence")}
+              className={`pb-1 px-2 font-semibold cursor-pointer ${
+                activeTab === "evidence"
+                  ? "border-b-2 border-indigo-600 text-indigo-900"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Reasoning Engine (7 Sections)
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab("assumptions")}
               className={`pb-1 px-2 font-semibold cursor-pointer ${
                 activeTab === "assumptions"
@@ -323,6 +334,245 @@ export default function AreaRecommendationsPanel({
               Assumptions ({data.assumptions_applied.length})
             </button>
           </div>
+
+          {/* Reasoning Engine (7 Sections) Tab */}
+          {activeTab === "evidence" && (
+            <div className="space-y-3.5 text-xs">
+              {/* Section 1: Heat Conditions */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 font-bold text-slate-800">
+                  <span className="flex items-center gap-1.5">
+                    <span>🔥</span>
+                    <span>1. Observed &amp; Modeled Heat Conditions</span>
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-mono bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                    Tier: {data.heat_conditions?.confidence_tier || data.polygon_summary.confidence_tier}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-[11px]">
+                  <div>
+                    <span className="text-slate-500 block">Mean LST:</span>
+                    <strong className="font-mono text-slate-900">
+                      {data.heat_conditions?.mean_lst_c ? `${data.heat_conditions.mean_lst_c}°C` : "N/A"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Max LST:</span>
+                    <strong className="font-mono text-slate-900">
+                      {data.heat_conditions?.max_lst_c ? `${data.heat_conditions.max_lst_c}°C` : "N/A"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Mean HPI:</span>
+                    <strong className="font-mono text-amber-700">
+                      {data.heat_conditions?.mean_hpi ?? "N/A"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Chronic Cells:</span>
+                    <strong className="font-mono text-red-700">
+                      {data.heat_conditions?.chronic_hotspot_cells ?? 0}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Quality (C_i):</span>
+                    <strong className="font-mono text-emerald-700">
+                      {data.heat_conditions?.confidence_score ?? 0}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Mean NDVI / NDBI:</span>
+                    <span className="font-mono text-[10px] text-slate-700">
+                      {data.heat_conditions?.mean_ndvi?.toFixed(2) ?? "N/A"} / {data.heat_conditions?.mean_ndbi?.toFixed(2) ?? "N/A"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Physical Features & Opportunities */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 font-bold text-slate-800">
+                  <span className="flex items-center gap-1.5">
+                    <span>📐</span>
+                    <span>2. Physical Features &amp; Surface Opportunities</span>
+                  </span>
+                  <span className="text-[10px] text-slate-600 font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                    {data.physical_features?.polygon_area_ha ?? (data.polygon_summary.area_km2 * 100).toFixed(1)} ha
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div>
+                    <span className="text-slate-500 block">Built Surface Fraction:</span>
+                    <strong className="font-mono text-slate-800">
+                      {((data.physical_features?.built_ratio ?? data.polygon_summary.built_density_component ?? 0) * 100).toFixed(1)}%
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Permeable Open Ground:</span>
+                    <strong className="font-mono text-emerald-800">
+                      {(((data.physical_features?.bare_ratio ?? 0) + (data.physical_features?.grass_ratio ?? 0)) * 100).toFixed(1)}%
+                    </strong>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-slate-500 block">Land-Use Typology:</span>
+                    <span className="font-semibold text-slate-800">
+                      {data.physical_features?.typology_title || typologyTitle}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Candidate Sites with Geometry */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 font-bold text-slate-800">
+                  <span className="flex items-center gap-1.5">
+                    <span>📍</span>
+                    <span>3. Physical Candidate Sites ({data.candidate_sites?.length ?? 0})</span>
+                  </span>
+                </div>
+                {(!data.candidate_sites || data.candidate_sites.length === 0) ? (
+                  <div className="text-[11px] text-slate-500 italic">No candidate sites eligible under current physical screening.</div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {data.candidate_sites.map((c) => (
+                      <div key={c.candidate_id} className="rounded bg-white p-2 border border-slate-200 text-[11px] flex items-center justify-between">
+                        <div>
+                          <strong className="text-slate-900 block">{c.title}</strong>
+                          <span className="text-slate-500 text-[10px]">
+                            Unit: {c.spatial_unit} · Qty: {Number(c.quantity).toLocaleString()} {c.unit}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-block rounded px-1.5 py-0.5 text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            {c.reasoning_state}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 4: Quantity & Cost Roll-up */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 font-bold text-slate-800">
+                  <span className="flex items-center gap-1.5">
+                    <span>💰</span>
+                    <span>4. Quantity &amp; Cost Roll-Up (All-Inclusive Cost Base)</span>
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div>
+                    <span className="text-slate-500 block">Total Capital Spend (Base):</span>
+                    <strong className="font-mono text-indigo-700 text-xs">
+                      {data.quantity_cost_rollup?.total_capital_spend_formatted ?? "₹0.00"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Est. Annual Maintenance:</span>
+                    <strong className="font-mono text-slate-700 text-xs">
+                      ₹{Number(data.quantity_cost_rollup?.total_annual_maintenance_inr ?? 0).toLocaleString()} / yr
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Total Treated Footprint:</span>
+                    <strong className="font-mono text-slate-800">
+                      {Number(data.quantity_cost_rollup?.total_treated_area_m2 ?? 0).toLocaleString()} m² ({data.quantity_cost_rollup?.total_treated_area_ha ?? 0} ha)
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Eligible vs Rejected Options:</span>
+                    <span className="font-mono text-slate-800 font-semibold">
+                      {data.quantity_cost_rollup?.eligible_options_count ?? 0} eligible / {data.quantity_cost_rollup?.rejected_options_count ?? 0} rejected
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 5: Evidence Gaps & Required Field Checks */}
+              <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 space-y-1.5">
+                <div className="font-bold text-amber-950 flex items-center gap-1.5 border-b border-amber-200/80 pb-1">
+                  <span>📋</span>
+                  <span>5. Evidence Gaps &amp; Required Municipal Field Surveys</span>
+                </div>
+                <ul className="list-disc pl-4 space-y-1 text-[11px] text-amber-900 leading-snug">
+                  {(data.evidence_gaps ?? [
+                    "Cadastral building footprints with structural load ratings (UNAVAILABLE)",
+                    "Municipal road network with right-of-way and sidewalk widths (UNAVAILABLE)",
+                    "Revenue parcel ownership tenure (UNAVAILABLE)",
+                    "High-resolution DEM and stormwater drainage network (UNAVAILABLE)",
+                  ]).map((gap, idx) => (
+                    <li key={idx}>{gap}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Section 6: Excluded / Rejected Candidates with Rule IDs */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 font-bold text-slate-800">
+                  <span className="flex items-center gap-1.5">
+                    <span>🚫</span>
+                    <span>6. Excluded Alternatives &amp; Failed Constraints</span>
+                  </span>
+                </div>
+                {(!data.rejected_candidates || data.rejected_candidates.length === 0) ? (
+                  <div className="text-[11px] text-slate-500 italic">No candidates rejected.</div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {data.rejected_candidates.map((rc, idx) => (
+                      <div key={idx} className="rounded bg-white p-2 border border-slate-200 text-[11px] space-y-0.5">
+                        <div className="flex items-center justify-between">
+                          <strong className="text-slate-900">{rc.title}</strong>
+                          <span className="font-mono text-[9px] bg-slate-100 px-1 py-0.5 rounded text-slate-600 border border-slate-200">
+                            {rc.rule_id}
+                          </span>
+                        </div>
+                        <div className="text-rose-800 text-[10px]">
+                          Reason: {rc.reasons.join("; ")}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 7: Evidence Availability Panel */}
+              <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 font-bold text-slate-800">
+                  <span className="flex items-center gap-1.5">
+                    <span>📡</span>
+                    <span>7. Evidence Layers Availability Status</span>
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  {(data.evidence_availability_panel ?? []).map((ev) => (
+                    <div key={ev.provider_id} className="rounded border border-slate-100 bg-slate-50/60 p-2 text-[10.5px] space-y-0.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-900">{ev.layer_title}</span>
+                        <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                          ev.availability === "AVAILABLE"
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                            : ev.availability === "PARTIAL"
+                            ? "bg-amber-100 text-amber-800 border border-amber-300"
+                            : "bg-rose-100 text-rose-800 border border-rose-300"
+                        }`}>
+                          {ev.availability}
+                        </span>
+                      </div>
+                      <div className="text-slate-500 text-[10px]">
+                        Dataset: {ev.dataset_name} ({ev.spatial_resolution})
+                      </div>
+                      {ev.missing_reason && (
+                        <div className="text-amber-800 text-[9.5px] italic">
+                          Missing: {ev.missing_reason}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Recommendations Tab */}
           {activeTab === "recommendations" && (

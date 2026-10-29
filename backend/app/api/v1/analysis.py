@@ -432,4 +432,10 @@ def get_polygon_recommendations(
     )
 
     # 7. Generate Recommendations via pure rule engine
-    return generate_polygon_recommendations(summary)
+    return generate_polygon_recommendations(
+        summary=summary,
+        geometry=request_data.geometry,
+        db=db,
+        season=request_data.season.value,
+        year=effective_year,
+    )

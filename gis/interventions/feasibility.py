@@ -28,6 +28,39 @@ MAX_EXISTING_CANOPY_NDVI = 0.55
 MIN_BUILT_NDBI_FOR_ROOF = -0.10
 
 
+def get_survey_prerequisites(intervention_type: InterventionType | str) -> list[str]:
+    """Return explicit unresolved statutory, structural, and field survey prerequisites."""
+    t_val = intervention_type.value if hasattr(intervention_type, "value") else str(intervention_type)
+    if t_val in ("cool_roof", "green_roof", "green_wall"):
+        return [
+            "STRUCTURAL_LOAD_CAPACITY_SURVEY",
+            "OWNERSHIP_AND_ROOFTOP_RIGHTS_VERIFICATION",
+            "WATERPROOFING_MEMBRANE_ASSESSMENT",
+        ]
+    elif t_val in ("tree_canopy", "public_park_native_trees", "dense_miyawaki_plantation"):
+        return [
+            "UNDERGROUND_UTILITIES_CLEARANCE",
+            "MUNICIPAL_RIGHT_OF_WAY_TENURE",
+            "SOIL_DEPTH_AND_DRAINAGE_VERIFICATION",
+        ]
+    elif t_val in ("cool_pavement", "permeable_ground_cover", "bioswale_rain_garden"):
+        return [
+            "SUBGRADE_PERMEABILITY_SURVEY",
+            "TRAFFIC_AXLE_LOAD_SUITABILITY_ASSESSMENT",
+        ]
+    elif t_val == "shaded_parking_structure":
+        return [
+            "FOUNDATION_AND_STRUCTURAL_WIND_LOAD_PERMIT",
+            "ELECTRICAL_CLEARANCE_IF_SOLAR_PV_INTEGRATED",
+        ]
+    elif t_val == "rainwater_fed_pond":
+        return [
+            "HYDROLOGICAL_CATCHMENT_YIELD_ASSESSMENT",
+            "GROUNDWATER_TABLE_SEEPAGE_ANALYSIS",
+        ]
+    return ["MUNICIPAL_SITE_SURVEY_REQUIRED"]
+
+
 def evaluate_candidate_feasibility(
     candidate: InterventionCandidate,
     ndvi: float | None = None,

@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  fetchAreaClusters,
+  fetchAreaSummary,
   fetchCandidateDetail,
+  fetchClusterCells,
+  fetchCellLandCover,
+  fetchLandCoverSummary,
   fetchDiminishingReturns,
+  fetchInterventionAreas,
   fetchInterventionCandidates,
   fetchScenarios,
   optimizeInterventions,
@@ -286,6 +292,138 @@ describe("interventionsApi", () => {
       );
     });
   });
+
+  describe("fetchInterventionAreas", () => {
+    it("fetches areas list with min_hpi parameter", async () => {
+      const mockAreas = [
+        { area_name: "Udhana", total_cells: 1524, eligible_cell_count: 1524, is_sufficient: true },
+        { area_name: "Bhestan", total_cells: 2278, eligible_cell_count: 2278, is_sufficient: true },
+      ];
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockAreas,
+      });
+
+      const res = await fetchInterventionAreas(40.0);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/areas?min_hpi=40");
+      expect(res).toEqual(mockAreas);
+    });
+  });
+
+  describe("fetchAreaSummary", () => {
+    it("fetches locality summary with query params", async () => {
+      const mockSummary = {
+        area_name: "Udhana",
+        is_sufficient: true,
+        best_option_mean_cooling_c: 0.8,
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockSummary,
+      });
+
+      const res = await fetchAreaSummary("Udhana", { min_hpi: 35, intervention_type: "cool_roof" });
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/areas/Udhana/summary");
+      expect(url).toContain("min_hpi=35");
+      expect(url).toContain("intervention_type=cool_roof");
+      expect(res).toEqual(mockSummary);
+    });
+  });
+
+  describe("fetchAreaClusters", () => {
+    it("fetches ranked clusters with pagination and sorting", async () => {
+      const mockClusters = {
+        total_clusters: 12,
+        clusters: [{ cluster_id: "CLUST_001", priority_score: 85 }],
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockClusters,
+      });
+
+      const res = await fetchAreaClusters("Udhana", { sort_by: "cooling_desc", limit: 5 });
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/areas/Udhana/clusters");
+      expect(url).toContain("sort_by=cooling_desc");
+      expect(url).toContain("limit=5");
+      expect(res).toEqual(mockClusters);
+    });
+  });
+
+  describe("fetchClusterCells", () => {
+    it("fetches contributing cells for cluster", async () => {
+      const mockDetail = {
+        cluster_id: "CLUST_001",
+        cell_count: 3,
+        cells: [{ cell_id: "R100_C200" }],
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockDetail,
+      });
+
+      const res = await fetchClusterCells("CLUST_001");
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/clusters/CLUST_001/cells");
+      expect(res).toEqual(mockDetail);
+    });
+  });
+
+  describe("Dynamic World Land Cover API", () => {
+    it("fetches cell land cover with 9-class probabilities and suitability", async () => {
+      const mockDw = {
+        cell_id: "R000_C249",
+        top_class: "built",
+        confidence: 0.6346,
+        probabilities: { built: 0.6346, bare: 0.0396 },
+        suitability: { rule_fired: "RULE_DW_BUILT_DENSE" },
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockDw,
+      });
+
+      const res = await fetchCellLandCover("R000_C249", "summer", 2024);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/landcover/R000_C249?season=summer&year=2024");
+      expect(res).toEqual(mockDw);
+    });
+
+    it("fetches land cover summary", async () => {
+      const mockSummary = {
+        total_cells_recorded: 330,
+        cells_sufficient: 330,
+        class_distribution: { built: 302 },
+      };
+
+      (fetch as any).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockSummary,
+      });
+
+      const res = await fetchLandCoverSummary("summer", 2024);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [url] = (fetch as any).mock.calls[0];
+      expect(url).toContain("/api/v1/interventions/landcover/summary?season=summer&year=2024");
+      expect(res).toEqual(mockSummary);
+    });
+  });
 });
-
-

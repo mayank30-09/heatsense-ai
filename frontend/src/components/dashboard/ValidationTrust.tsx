@@ -49,22 +49,32 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
   return (
     <div className="flex flex-col gap-6">
       {/* Hero Header */}
-      <div className="rounded-xl border border-slate-700/80 bg-slate-900 p-6 text-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="rounded-2xl border border-slate-800/90 bg-slate-900 p-7 text-white shadow-elevated relative overflow-hidden">
+        {/* Subtle background geospatial grid lines */}
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(#2dd4bf 1px, transparent 1px), radial-gradient(#2dd4bf 1px, #0f172a 1px)",
+            backgroundSize: "24px 24px",
+            backgroundPosition: "0 0, 12px 12px",
+          }}
+        />
+
+        <div className="relative flex flex-wrap items-center justify-between gap-6 z-10">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full bg-indigo-500/20 px-2.5 py-0.5 text-xs font-bold text-indigo-300 border border-indigo-500/30">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="rounded-full bg-teal-500/15 px-3 py-0.5 text-xs font-bold text-teal-300 border border-teal-500/30 font-mono">
                 QC Status: {qc?.status || "PASS"} (Audit Validated)
               </span>
-              <span className="text-xs font-mono text-slate-300">
+              <span className="text-xs font-mono text-slate-400 bg-slate-800/80 px-2.5 py-0.5 rounded border border-slate-700">
                 Commit: {meta?.git_commit ? meta.git_commit.substring(0, 10) : "c91bc69038"}
               </span>
               <span className="badge-evidence badge-modelled">MODEL ESTIMATE</span>
             </div>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
-              Model Validation & Scientific Trust Center
+            <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Model Validation &amp; Scientific Trust Center
             </h2>
-            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-300">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-300">
               Complete transparency into spatial cross-validation, independent holdout metrics,
               seasonal error diagnostics, sensor calibration pipelines, and data leakage controls for
               Surat Municipal Corporation.
@@ -75,7 +85,7 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={onSwitchToMap}
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+              className="flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-teal-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
               <span>Inspect Grid On Map</span>
               <span aria-hidden="true">→</span>
@@ -257,14 +267,14 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex border-b border-slate-200">
+          <div className="flex border-b border-slate-200/90 gap-1 overflow-x-auto pb-px">
             <button
               type="button"
               onClick={() => setActiveTab("holdout")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer whitespace-nowrap rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${
                 activeTab === "holdout"
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-teal-700 text-teal-950 bg-teal-50/60"
+                  : "border-transparent text-slate-600 hover:text-slate-950 hover:bg-slate-50"
               }`}
             >
               1. Spatial Holdout & Leakage Controls
@@ -273,10 +283,10 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("seasons")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer whitespace-nowrap rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${
                 activeTab === "seasons"
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-teal-700 text-teal-950 bg-teal-50/60"
+                  : "border-transparent text-slate-600 hover:text-slate-950 hover:bg-slate-50"
               }`}
             >
               2. Seasonal Performance
@@ -285,10 +295,10 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("hotspots")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer whitespace-nowrap rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${
                 activeTab === "hotspots"
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-teal-700 text-teal-950 bg-teal-50/60"
+                  : "border-transparent text-slate-600 hover:text-slate-950 hover:bg-slate-50"
               }`}
             >
               3. Hotspot Stratification & Conformal Diagnostics
@@ -297,10 +307,10 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("provenance")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer whitespace-nowrap rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${
                 activeTab === "provenance"
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-teal-700 text-teal-950 bg-teal-50/60"
+                  : "border-transparent text-slate-600 hover:text-slate-950 hover:bg-slate-50"
               }`}
             >
               4. Sensor Provenance & Chain of Custody
@@ -309,10 +319,10 @@ export default function ValidationTrust({ onSwitchToMap }: ValidationTrustProps)
             <button
               type="button"
               onClick={() => setActiveTab("sensitivity")}
-              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 -mb-px cursor-pointer ${
+              className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer whitespace-nowrap rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ${
                 activeTab === "sensitivity"
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-teal-700 text-teal-950 bg-teal-50/60"
+                  : "border-transparent text-slate-600 hover:text-slate-950 hover:bg-slate-50"
               }`}
             >
               5. HPI Sensitivity & Robustness

@@ -272,11 +272,11 @@ def test_itemized_engineering_cost_model_breakdown():
     assert meta["gst_18_pct"] > 0
     assert meta["contingency_cost"] > 0
     assert meta["site_setup_scaled_cost"] > 0
-    assert meta["water_tanker_cost"] > 0
+    assert meta["water_tanker_cost"] == 0.0  # Segregated into establishment Opex to prevent Capex double-counting
     assert meta["maintenance_3yr_cost"] > 0
     assert meta["whole_life_cost_3yr_inr"] > cost_base
     assert meta["whole_life_cost_per_c_m2"] > 0
-    assert "SMC" in meta["source_to_be_replaced"]
+    assert "HEATSENSE" in meta["source_to_be_replaced"]
 
     # Cool Roof
     r_cost, _, _, r_meta = estimate_intervention_cost(

@@ -106,7 +106,7 @@ export default function AreaDrawing({
       drawPolyline: false,
       drawCircle: false,
       drawCircleMarker: false,
-      drawRectangle: false,
+      drawRectangle: true,
       drawMarker: false,
       drawText: false,
 

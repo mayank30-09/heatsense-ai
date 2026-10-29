@@ -231,7 +231,7 @@ class LanduseClassifier:
         elif (
             b_count > 15 and tot_roof > 0 and (tot_roof / b_count) < 65.0
             or landuse_tag in ("slum", "informal")
-            or (locality in ("Udhna", "Limbayat") and b_count > 10 and max_roof < 75.0)
+            or (b_count > 10 and max_roof < 75.0 and ((built_density is not None and built_density >= 0.60) or (ndbi is not None and ndbi >= 0.25)))
         ):
             typology = "informal_settlement_roof"
             evidence_notes.append(

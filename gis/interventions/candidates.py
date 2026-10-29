@@ -24,7 +24,8 @@ from gis.interventions import (
 )
 from gis.interventions.costs import estimate_intervention_cost
 from gis.interventions.cooling_effects import estimate_cooling_effect
-from gis.interventions.feasibility import evaluate_candidate_feasibility
+from gis.interventions.feasibility import evaluate_candidate_feasibility, get_survey_prerequisites
+from gis.interventions.landcover_suitability import evaluate_landcover_suitability, LandCoverSuitabilityAssessment
 from gis.interventions.landuse import LanduseClassifier
 from gis.spatial.grid import get_cell_centroid, get_cell_polygon
 
@@ -77,6 +78,7 @@ def generate_candidate_for_cell(
     has_documented_water_source: bool = False,
     selection_rationale: str = "",
     rejected_alternatives: list[dict[str, str]] | None = None,
+    dw_record: dict[str, Any] | None = None,
 ) -> InterventionCandidate:
     """
     Construct a complete candidate object with cost, cooling effect, geometry, and feasibility.
@@ -216,6 +218,8 @@ def generate_candidate_for_cell(
     candidate.ownership_legal = "UNVERIFIED"
     candidate.engineering_clearance = "NOT ASSESSED"
     candidate.procurement_status = "NOT STARTED"
+    candidate.survey_prerequisites = get_survey_prerequisites(intervention_type)
+    candidate.prerequisites_status = "FEASIBLE_SUBJECT_TO_SURVEY" if status == FeasibilityStatus.FEASIBLE else "REJECTED"
     candidate.benefit_evidence = "MODELLED"
     candidate.data_confidence = "HIGH" if baseline_hpi is not None and baseline_hpi >= 0.50 else "MEDIUM"
     candidate.cooling_metric = "modelled surface (skin) temperature reduction on treated area"
@@ -224,6 +228,30 @@ def generate_candidate_for_cell(
     candidate.schedule_alignment_note = "rates not verified against CPWD/SMC schedule"
     candidate.unit_rate = BASE_UNIT_RATES.get(intervention_type, 0.0)
     candidate.unit_rate_unit = BASE_UNIT_STRS.get(intervention_type, "INR per unit")
+
+    # Dynamic World land-cover integration & scientific disclosures
+    if dw_record is not None:
+        lc_eval = evaluate_landcover_suitability(dw_record, cell_id=cell_id, baseline_hpi=baseline_hpi or 0.50)
+        candidate.landcover_assessment = lc_eval.to_dict()
+        candidate.landcover_rule_fired = lc_eval.rule_fired
+        candidate.landcover_disclosure = lc_eval.scientific_notice
+        candidate.landcover_version = lc_eval.pipeline_version
+        candidate.landcover_top_class = lc_eval.dw_top_class
+        candidate.landcover_confidence = lc_eval.dw_confidence
+        candidate.landcover_entropy = lc_eval.dw_entropy
+
+        # Check if intervention is screened out by satellite land cover
+        if intervention_type in lc_eval.screened_out_interventions:
+            candidate.feasibility_status = FeasibilityStatus.REJECTED
+            candidate.rejection_reason = RejectionReason.INCOMPATIBLE_LANDUSE_TYPOLOGY
+            candidate.screening_status = "NOT_APPLICABLE"
+            candidate.screening_reason_code = lc_eval.rule_fired
+            candidate.selection_rationale = f"Screened out by Dynamic World ({lc_eval.rule_fired}): {lc_eval.screening_reason}"
+        elif lc_eval.screening_status == "NEEDS_SITE_SURVEY":
+            candidate.needs_site_survey = True
+
+    # Satellite data never resolves field survey prerequisites (mandatory rule)
+    candidate.prerequisites_status = "FEASIBLE_SUBJECT_TO_SURVEY" if candidate.feasibility_status == FeasibilityStatus.FEASIBLE else "REJECTED" 
 
     if candidate.screening_status == "MODEL_ELIGIBLE":
         candidate.selection_rationale = selection_rationale or f"Screening status: Model-eligible (survey required). Modeled for cell {cell_id} on {resolved_typology}."
@@ -267,7 +295,7 @@ def generate_intervention_candidates(
         hpi = float(r["heat_priority_index"]) if pd.notna(r.get("heat_priority_index")) else None
         lst = float(r["lst_c"]) if pd.notna(r.get("lst_c")) else 38.0
         is_chronic = bool(r.get("is_chronic_hotspot", False))
-        zone = str(r.get("administrative_zone", "Central Zone"))
+        zone = str(r.get("administrative_zone", "Unassigned Zone"))
         ndvi = float(r.get("ndvi", 0.25))
         ndbi = float(r.get("ndbi", 0.05))
         ndwi = float(r.get("ndwi", -0.20))

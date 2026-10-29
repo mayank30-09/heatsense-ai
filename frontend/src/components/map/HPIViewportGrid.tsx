@@ -25,6 +25,18 @@ interface HPIViewportGridProps {
 
 const MIN_ZOOM_FOR_CELLS = 12;
 
+const DW_CLASS_COLORS: Record<string, string> = {
+  water: "#419BDF",
+  trees: "#397D49",
+  grass: "#88B053",
+  flooded_vegetation: "#7A87C6",
+  crops: "#E49635",
+  shrub_and_scrub: "#DFC35A",
+  built: "#C4281B",
+  bare: "#A59B8F",
+  snow_and_ice: "#B39FE1",
+};
+
 export default function HPIViewportGrid({
   layerMode,
   selectedCell,
@@ -159,6 +171,9 @@ export default function HPIViewportGrid({
       fillColor = getConfidenceColor(cell.confidence_tier);
     } else if (layerMode === "chronic") {
       fillColor = "#b91c1c";
+    } else if (layerMode === "landcover") {
+      const topCls = (cell as any).top_class || ((cell.heat_priority_score ?? 0) >= 50 ? "built" : ((cell.vegetation_deficit_component ?? 0) < 0.4 ? "trees" : "bare"));
+      fillColor = DW_CLASS_COLORS[topCls] || "#C4281B";
     }
 
     const radius = isSelected ? 8 : zoomLevel >= 15 ? 7 : zoomLevel >= 14 ? 6 : 5;
@@ -180,9 +195,9 @@ export default function HPIViewportGrid({
     <>
       {/* Zoom level warning banner when zoomed out */}
       {zoomLevel < MIN_ZOOM_FOR_CELLS && layerMode !== "chronic" && (
-        <div className="pointer-events-none absolute top-3 left-1/2 z-[1000] -translate-x-1/2">
-          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-blue-200 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur">
-            <svg className="h-4 w-4 text-blue-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-[800] -translate-x-1/2">
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-teal-200/80 bg-white/95 px-4 py-1.5 shadow-md backdrop-blur-md">
+            <svg className="h-4 w-4 text-teal-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
             </svg>
             <span className="text-xs font-semibold text-slate-700">
@@ -197,9 +212,9 @@ export default function HPIViewportGrid({
 
       {/* Loading Indicator Status Pill */}
       {isLoading && (
-        <div className="pointer-events-none absolute top-3 left-14 z-[1000]">
-          <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white/95 px-3 py-1.5 shadow-sm backdrop-blur">
-            <div className="h-3 w-3 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+        <div className="pointer-events-none absolute top-3 right-3 z-[800]">
+          <div className="flex items-center gap-2 rounded-full border border-slate-200/90 bg-white/95 px-3.5 py-1.5 shadow-sm backdrop-blur-md">
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
             <span className="text-xs font-medium text-slate-700">Fetching viewport cells…</span>
           </div>
         </div>
@@ -207,8 +222,8 @@ export default function HPIViewportGrid({
 
       {/* Offline cached data notice */}
       {isUsingCachedData && (
-        <div className="pointer-events-none absolute top-12 left-14 z-[1000]">
-          <div className="pointer-events-auto flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50/95 px-3 py-1.5 shadow-sm backdrop-blur text-amber-900 text-xs font-medium">
+        <div className="pointer-events-none absolute top-12 right-3 z-[800]">
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-300/80 bg-amber-50/95 px-3.5 py-1.5 shadow-sm backdrop-blur-md text-amber-900 text-xs font-medium">
             <span>⚠️</span>
             <span>Backend unavailable: displaying cached grid cells.</span>
           </div>
@@ -217,7 +232,7 @@ export default function HPIViewportGrid({
 
       {/* Error & Retry Banner */}
       {error && !isUsingCachedData && (
-        <div className="pointer-events-none absolute top-3 left-14 z-[1000]">
+        <div className="pointer-events-none absolute top-3 right-3 z-[800]">
           <div className="pointer-events-auto flex items-center gap-2 rounded-md border border-red-200 bg-red-50/95 px-3 py-1.5 shadow-sm backdrop-blur">
             <span className="text-xs font-medium text-red-800">{error}</span>
             <button
@@ -233,8 +248,8 @@ export default function HPIViewportGrid({
 
       {/* Cell count pill in viewport */}
       {zoomLevel >= MIN_ZOOM_FOR_CELLS && !isLoading && (
-        <div className="pointer-events-none absolute bottom-3 left-1/2 z-[1000] -translate-x-1/2">
-          <div className="rounded-full border border-slate-200/90 bg-white/90 px-3 py-1 text-[11px] font-medium text-slate-600 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-[800] -translate-x-1/2">
+          <div className="rounded-full border border-slate-200/90 bg-white/95 px-3.5 py-1 text-[11px] font-medium text-slate-600 shadow-sm backdrop-blur-md">
             Viewing <strong>{cells.length}</strong> cells in viewport (total in bounds: {totalInView.toLocaleString()})
           </div>
         </div>

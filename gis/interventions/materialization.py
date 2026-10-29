@@ -193,7 +193,7 @@ def materialize_stage_d_candidates(
             hpi_val = (float(raw_hpi) / 100.0) if raw_hpi is not None else None
             lst_val = float(cell["observed_lst_c"]) if cell["observed_lst_c"] is not None else 38.0
             is_chronic = bool(cell["is_chronic_hotspot"])
-            zone_name = str(cell["nearest_osm_place_name"] or "Central Zone")
+            zone_name = str(cell["nearest_osm_place_name"] or "Unassigned Zone")
             ndvi = float(cell["ndvi"]) if cell["ndvi"] is not None else 0.25
             ndbi = float(cell["ndbi"]) if cell["ndbi"] is not None else 0.05
             ndwi = float(cell["ndwi"]) if cell["ndwi"] is not None else -0.20

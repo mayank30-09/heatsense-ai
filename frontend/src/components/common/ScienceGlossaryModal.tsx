@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface ScienceGlossaryModalProps {
   isOpen: boolean;
@@ -82,7 +82,7 @@ const GLOSSARY_ENTRIES: GlossaryEntry[] = [
     summary:
       "First-order linearized heat dissipation model governed by empirical aerodynamic and radiative conductance, not numerical PDE or CFD solvers.",
     details:
-      "Stage D estimates local skin cooling (ΔT_skin) using a linearized surface heat dissipation equation (ΔT_s = f_treated · |ΔT_skin| · η_cell) with total effective conductance h_eff = 45.6 W/(m²·K) (radiative h_r = 6.5 W/(m²·K), convective h_c = 38.9 W/(m²·K)) under Surat summer solar irradiance (870 W/m²). This empirical formulation enforces physical saturation caps (e.g. tree canopy -3.5°C, cool roof -2.5°C, max combined -4.5°C) and sub-additive attenuation, but is not a full numerical CFD or PDE surface-energy-balance solver.",
+      "Stage D estimates local skin cooling using a simplified, uncalibrated heat dissipation equation (ΔT_cell = f_treated · |ΔT_skin| · C_attenuation · η_cell) with effective conductance h_eff = 45.6 W/(m²·K) and solar irradiance (870 W/m²). Direct coating skin drop is ~8.59°C, while cell-scale cooling incorporates 15% footprint fraction and empirical attenuation (0.372) yielding ~0.57°C. Not field-validated with in-situ sensors in Surat. This empirical formulation enforces physical saturation caps (e.g. tree canopy -3.5°C, cool roof -2.5°C, max combined -4.5°C) and sub-additive attenuation, but is not a full numerical CFD or PDE surface-energy-balance solver.",
     reference: "Akbari et al. (2001); Santamouris (2017); Bowler et al. (2010)",
   },
   {
@@ -101,6 +101,9 @@ export default function ScienceGlossaryModal({
   isOpen,
   onClose,
 }: ScienceGlossaryModalProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -114,6 +117,22 @@ export default function ScienceGlossaryModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  const categories = useMemo(() => {
+    return ["ALL", "Remote Sensing", "Index Formulation", "Climatology", "Intervention Physics"];
+  }, []);
+
+  const filteredEntries = useMemo(() => {
+    return GLOSSARY_ENTRIES.filter((entry) => {
+      const matchesCategory = selectedCategory === "ALL" || entry.category === selectedCategory;
+      const matchesSearch =
+        !searchTerm.trim() ||
+        entry.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (entry.abbreviation && entry.abbreviation.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        entry.summary.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [selectedCategory, searchTerm]);
+
   if (!isOpen) return null;
 
   return (
@@ -123,17 +142,18 @@ export default function ScienceGlossaryModal({
       aria-labelledby="glossary-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs"
     >
-      <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-7 shadow-2xl scrollbar-thin">
+        {/* Header */}
         <div className="flex items-start justify-between border-b border-slate-100 pb-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-bold text-indigo-900">
+              <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-bold text-teal-800 border border-teal-200 font-mono">
                 Scientific Reference
               </span>
-              <span className="text-xs text-slate-400">HEATSENSE AI Standards</span>
+              <span className="text-xs text-slate-400 font-mono">HEATSENSE AI Standards</span>
             </div>
-            <h2 id="glossary-modal-title" className="mt-1 text-2xl font-extrabold text-slate-900">
-              Science & Metric Glossary
+            <h2 id="glossary-modal-title" className="mt-1 text-2xl font-extrabold text-slate-900 tracking-tight">
+              Science &amp; Metric Glossary
             </h2>
             <p className="mt-1 text-xs text-slate-500">
               Authoritative definitions, thermodynamic grounding, and remote sensing standards for Surat Municipal Corporation.
@@ -144,20 +164,60 @@ export default function ScienceGlossaryModal({
             type="button"
             onClick={onClose}
             aria-label="Close glossary modal"
-            className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-600 transition-colors"
           >
             ✕
           </button>
         </div>
 
+        {/* Filter & Search Bar */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-1">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                  selectedCategory === cat
+                    ? "bg-slate-900 text-white shadow-2xs font-bold"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {cat === "ALL" ? "All Categories" : cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search concepts, terms..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-48 sm:w-56 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1.5 text-xs text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Entry List */}
         <div className="mt-5 space-y-4">
-          {GLOSSARY_ENTRIES.map((entry) => (
+          {filteredEntries.map((entry) => (
             <div
               key={entry.term}
-              className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 transition-all hover:border-indigo-300"
+              className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 transition-all hover:border-teal-300 hover:bg-white hover:shadow-xs"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-sm font-extrabold text-slate-900">
                     {entry.term}
                   </h3>
@@ -168,12 +228,12 @@ export default function ScienceGlossaryModal({
                   )}
                 </div>
 
-                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-500 border border-slate-200">
+                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-teal-800 border border-teal-200">
                   {entry.category}
                 </span>
               </div>
 
-              <p className="mt-2 text-xs font-semibold text-indigo-950 leading-relaxed">
+              <p className="mt-2 text-xs font-semibold text-slate-900 leading-relaxed">
                 {entry.summary}
               </p>
 

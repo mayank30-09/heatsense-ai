@@ -33,6 +33,18 @@ from gis.interventions import (
 from gis.interventions.costs import estimate_intervention_cost
 from gis.interventions.cooling_effects import estimate_cooling_effect
 from gis.interventions.landuse import LanduseClassifier
+from gis.interventions.evidence import (
+    evidence_registry,
+    compute_evidence_cache_key,
+    EvidenceAvailability,
+    EvidenceExtractionResult,
+)
+from gis.interventions.rules import (
+    reasoning_engine,
+    ReasoningState,
+    SpatialUnit,
+    RuleEvaluationResult,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -149,6 +161,17 @@ class RecommendationItem(BaseModel):
         default="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
         description="Cost markup items included in total cost"
     )
+    rule_id: str = Field(default="RULE-ROOF-01", description="Authoritative rule identifier")
+    rule_version: str = Field(default="2.0.0", description="Rule configuration version")
+    spatial_unit: str = Field(default="BUILDING_ROOF_POLYGON", description="Physical spatial unit")
+    reasoning_state: str = Field(default="FEASIBLE_SUBJECT_TO_SURVEY", description="Explicit reasoning engine state")
+    is_compatible_addon: bool = Field(default=False, description="Whether this is a compatible secondary surface add-on")
+    direct_cost_inr: float = Field(default=0.0, description="Direct material + labour cost in INR")
+    capital_cost_inr: float = Field(default=0.0, description="All-inclusive capital cost in INR (Cost Base)")
+    cost_base_multiplier: float = Field(default=1.3817, description="Direct to capital cost multiplier")
+    quantity_derivation_method: str = Field(default="", description="Derivation formula narrative")
+    missing_evidence: List[str] = Field(default_factory=list, description="Explicitly missing evidence layers")
+    screening_caveats: List[str] = Field(default_factory=list, description="Screening caveats and limitations")
 
 
 class PolygonSummary(BaseModel):
@@ -201,6 +224,14 @@ class RecommendationsResponse(BaseModel):
     caveats: List[str]
     assumptions_applied: List[str]
     evidence_label: str = "MODELLED"
+    heat_conditions: Dict[str, Any] = Field(default_factory=dict, description="Section 1: Observed and modeled thermal conditions")
+    physical_features: Dict[str, Any] = Field(default_factory=dict, description="Section 2: Physical features and opportunities")
+    candidate_sites: List[Dict[str, Any]] = Field(default_factory=list, description="Section 3: Candidate sites with spatial geometry")
+    quantity_cost_rollup: Dict[str, Any] = Field(default_factory=dict, description="Section 4: Portfolio quantity and cost roll-up")
+    evidence_gaps: List[str] = Field(default_factory=list, description="Section 5: Missing datasets and required field checks")
+    rejected_candidates: List[Dict[str, Any]] = Field(default_factory=list, description="Section 6: Excluded candidates with failed rule IDs")
+    evidence_availability_panel: List[Dict[str, Any]] = Field(default_factory=list, description="Section 7: Evidence layers availability status")
+    cache_key: Optional[str] = Field(default=None, description="Deterministic spatial-temporal-rule cache key")
 
 
 # ---------------------------------------------------------------------------
@@ -222,6 +253,10 @@ def format_inr(amount: float) -> str:
 def generate_polygon_recommendations(
     summary: PolygonSummary,
     cell_candidates: Optional[List[Dict[str, Any]]] = None,
+    geometry: Optional[dict] = None,
+    db: Optional[Any] = None,
+    season: str = "summer",
+    year: int = 2026,
 ) -> RecommendationsResponse:
     """
     Deterministic rule engine that synthesizes prioritized recommendations
@@ -242,26 +277,160 @@ def generate_polygon_recommendations(
         f"Water body conflict: NDWI water fraction >= {ASSUMPTION_WATER_WARNING_FRACTION * 100:.0f}% triggers warning; >= {ASSUMPTION_WATER_HARD_REJECT_FRACTION * 100:.0f}% rejects terrestrial interventions",
     ]
 
+    # Planar polygon area in projected square meters
+    polygon_area_m2 = float(summary.area_km2 * 1_000_000.0)
+
+    # Extract multi-layer evidence from EvidenceProvider registry
+    evidence_dict = evidence_registry.extract_all(
+        geometry=geometry or {},
+        season=season,
+        year=year,
+        db=db,
+        cached_cells=cell_candidates,
+    )
+    dw_res = evidence_dict.get("dynamic_world_landcover")
+    p_built = float(dw_res.metrics.get("p_built", 0.0)) if dw_res else 0.0
+    p_bare = float(dw_res.metrics.get("p_bare", 0.0)) if dw_res else 0.0
+    p_grass = float(dw_res.metrics.get("p_grass", 0.0)) if dw_res else 0.0
+    p_trees = float(dw_res.metrics.get("p_trees", 0.0)) if dw_res else 0.0
+    p_water = float(dw_res.metrics.get("p_water", 0.0)) if dw_res else 0.0
+
+    def _build_response(
+        rec_list: List[RecommendationItem],
+        custom_caveats: List[str],
+        evidence_tag: str = "MODELLED",
+    ) -> RecommendationsResponse:
+        # Reconcile costs & quantities: REJECTED or EXCLUDED items MUST carry 0 cost and 0 quantity
+        for r in rec_list:
+            if (
+                r.feasibility_status == FeasibilityStatus.REJECTED.value
+                or r.screening_status in ("NOT_APPLICABLE", "EXCLUDED")
+                or r.priority == "NOT_RECOMMENDED"
+            ):
+                r.cost_range_inr.base = 0.0
+                r.cost_range_inr.min = 0.0
+                r.cost_range_inr.max = 0.0
+                r.cost_range_inr.formatted = "₹0.00 (Option rejected / Not applicable)"
+                r.quantity_basis.estimated_quantity = 0.0
+                r.direct_cost_inr = 0.0
+                r.capital_cost_inr = 0.0
+
+        priority_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2, "NOT_RECOMMENDED": 3}
+        rec_list.sort(key=lambda r: priority_order.get(r.priority, 99))
+
+        heat_cond = {
+            "mean_lst_c": summary.mean_lst_c,
+            "max_lst_c": summary.max_lst_c,
+            "min_lst_c": summary.min_lst_c,
+            "p90_lst_c": summary.p90_lst_c,
+            "mean_hpi": summary.mean_hpi,
+            "max_hpi": summary.max_hpi,
+            "chronic_hotspot_cells": summary.chronic_cell_count,
+            "chronic_hotspot_share": summary.chronic_cell_share,
+            "confidence_score": summary.confidence_score,
+            "confidence_tier": summary.confidence_tier,
+            "mean_ndvi": summary.mean_ndvi,
+            "mean_ndbi": summary.mean_ndbi,
+            "mean_ndwi": summary.mean_ndwi,
+        }
+
+        phys_feat = {
+            "polygon_area_m2": round(polygon_area_m2, 1),
+            "polygon_area_ha": round(polygon_area_m2 / 10000.0, 3),
+            "built_ratio": round(p_built, 3),
+            "bare_ratio": round(p_bare, 3),
+            "grass_ratio": round(p_grass, 3),
+            "trees_ratio": round(p_trees, 3),
+            "water_ratio": round(p_water, 3),
+            "landuse_typology": getattr(summary, "landuse_typology", "unclassified") or "unclassified",
+            "typology_title": getattr(summary, "landuse_typology", "Unclassified Land Parcel") or "Unclassified Land Parcel",
+        }
+
+        cand_sites = []
+        for r in rec_list:
+            if r.feasibility_status != FeasibilityStatus.REJECTED.value:
+                cand_sites.append({
+                    "candidate_id": f"CAND_{r.type.upper()}",
+                    "type": r.type,
+                    "title": r.title,
+                    "spatial_unit": r.spatial_unit,
+                    "reasoning_state": r.reasoning_state,
+                    "quantity": r.quantity_basis.estimated_quantity,
+                    "unit": r.quantity_basis.unit,
+                    "cost_base_inr": r.cost_range_inr.base,
+                    "cooling_skin_expected_c": r.cooling_range_c.expected,
+                    "bounding_geometry": geometry if geometry else None,
+                })
+
+        eligible_recs = [r for r in rec_list if r.feasibility_status != FeasibilityStatus.REJECTED.value]
+        tot_capital = sum(r.cost_range_inr.base for r in eligible_recs)
+        tot_direct = sum(r.direct_cost_inr for r in eligible_recs)
+        tot_maint = sum(r.cost_range_inr.base * 0.02 for r in eligible_recs)
+        tot_area_m2 = sum(r.quantity_basis.estimated_quantity for r in eligible_recs if "m²" in r.quantity_basis.unit)
+
+        cost_rollup = {
+            "total_capital_spend_inr": round(tot_capital, 2),
+            "total_capital_spend_formatted": format_inr(tot_capital),
+            "total_direct_cost_inr": round(tot_direct, 2),
+            "total_annual_maintenance_inr": round(tot_maint, 2),
+            "total_treated_area_m2": round(tot_area_m2, 1),
+            "total_treated_area_ha": round(tot_area_m2 / 10000.0, 3),
+            "eligible_options_count": len(eligible_recs),
+            "rejected_options_count": len(rec_list) - len(eligible_recs),
+        }
+
+        ev_gaps = [
+            "Cadastral building footprints with structural load ratings (UNAVAILABLE) - On-site structural engineering survey required before cool/green roof tender.",
+            "Municipal road network with right-of-way and sidewalk widths (UNAVAILABLE) - Field survey required for tree planting setbacks.",
+            "Revenue parcel ownership tenure (UNAVAILABLE) - Municipal clearance required on private vs public plots.",
+            "High-resolution DEM and stormwater drainage network (UNAVAILABLE) - Stormwater retention interventions cannot be evaluated from satellite data alone.",
+        ]
+
+        rej_cands = []
+        for r in rec_list:
+            if r.feasibility_status == FeasibilityStatus.REJECTED.value or r.priority == "NOT_RECOMMENDED":
+                rej_cands.append({
+                    "type": r.type,
+                    "title": r.title,
+                    "rule_id": r.rule_id,
+                    "spatial_unit": r.spatial_unit,
+                    "reasoning_state": r.reasoning_state,
+                    "screening_status": r.screening_status,
+                    "reasons": r.rejection_reasons or [r.screening_reason_code],
+                })
+
+        ev_panel = evidence_registry.get_evidence_availability_panel(evidence_dict)
+        c_key = compute_evidence_cache_key(
+            geometry=geometry or {},
+            season=season,
+            year=year,
+            parameters={"typology": getattr(summary, "landuse_typology", "unclassified")},
+        )
+
+        return RecommendationsResponse(
+            polygon_summary=summary,
+            recommendations=rec_list,
+            caveats=custom_caveats,
+            assumptions_applied=assumptions_applied,
+            evidence_label=evidence_tag,
+            heat_conditions=heat_cond,
+            physical_features=phys_feat,
+            candidate_sites=cand_sites,
+            quantity_cost_rollup=cost_rollup,
+            evidence_gaps=ev_gaps,
+            rejected_candidates=rej_cands,
+            evidence_availability_panel=ev_panel,
+            cache_key=c_key,
+        )
+
     # Handle boundary or invalid data cases immediately
     if summary.status == "outside_study_area" or summary.inside_smc_fraction <= 0.0:
         caveats.append("The requested polygon lies entirely outside the Surat Municipal Corporation (SMC) study boundary. No interventions are recommended.")
-        return RecommendationsResponse(
-            polygon_summary=summary,
-            recommendations=[],
-            caveats=caveats,
-            assumptions_applied=assumptions_applied,
-            evidence_label="ASSUMPTION",
-        )
+        return _build_response([], caveats, "ASSUMPTION")
 
     if summary.status == "no_valid_observations" or summary.data_coverage_percentage == 0.0:
         caveats.append("No valid satellite observations exist for this polygon in the selected season. Recommendations cannot be reliably computed.")
-        return RecommendationsResponse(
-            polygon_summary=summary,
-            recommendations=[],
-            caveats=caveats,
-            assumptions_applied=assumptions_applied,
-            evidence_label="UNVERIFIED",
-        )
+        return _build_response([], caveats, "UNVERIFIED")
 
     # 1. Landuse Classification
     classifier = LanduseClassifier()
@@ -289,13 +458,7 @@ def generate_polygon_recommendations(
             "An on-site survey is required before mechanical recommendations can be approved."
         )
         caveats.append("No mechanical interventions are permitted on unclassified land parcels under Surat heat-action governance.")
-        return RecommendationsResponse(
-            polygon_summary=summary,
-            recommendations=[],
-            caveats=caveats,
-            assumptions_applied=assumptions_applied,
-            evidence_label="ASSUMPTION",
-        )
+        return _build_response([], caveats, "ASSUMPTION")
 
     # Effective baseline metrics with safe fallbacks
     mean_lst = summary.mean_lst_c if summary.mean_lst_c is not None else 38.0
@@ -370,18 +533,30 @@ def generate_polygon_recommendations(
     else:
         tree_priority = "LOW"
 
-    estimated_trees = max(10, min(800, int(cell_multiplier * 40)))
-    tree_cost_base, tree_cost_min, tree_cost_max, tree_cost_meta = estimate_intervention_cost(
-        InterventionType.TREE_CANOPY,
-        usable_area_m2=0.0,
-        tree_count=estimated_trees,
-    )
-    tree_cool_base, tree_cool_min, tree_cool_max, tree_cool_meta = estimate_cooling_effect(
-        InterventionType.TREE_CANOPY,
-        usable_area_m2=0.0,
-        tree_count=estimated_trees,
-        baseline_lst_c=mean_lst,
-    )
+    open_ground_ratio = (p_bare + p_grass) if (p_bare + p_grass) > 0 else max(0.08, 1.0 - (summary.built_density_component or 0.5))
+    plantable_area_m2 = polygon_area_m2 * open_ground_ratio
+    crown_m2_per_tree = 45.0  # Urban forestry standard crown spread (Azadirachta indica)
+    raw_tree_count = int(plantable_area_m2 / crown_m2_per_tree)
+
+    if tree_feasibility == FeasibilityStatus.REJECTED.value:
+        estimated_trees = 0
+        tree_cost_base, tree_cost_min, tree_cost_max = 0.0, 0.0, 0.0
+        tree_cool_base, tree_cool_min, tree_cool_max = 0.0, 0.0, 0.0
+        tree_cost_meta = {}
+        tree_cool_meta = {}
+    else:
+        estimated_trees = max(5, raw_tree_count)
+        tree_cost_base, tree_cost_min, tree_cost_max, tree_cost_meta = estimate_intervention_cost(
+            InterventionType.TREE_CANOPY,
+            usable_area_m2=0.0,
+            tree_count=estimated_trees,
+        )
+        tree_cool_base, tree_cool_min, tree_cool_max, tree_cool_meta = estimate_cooling_effect(
+            InterventionType.TREE_CANOPY,
+            usable_area_m2=0.0,
+            tree_count=estimated_trees,
+            baseline_lst_c=mean_lst,
+        )
 
     if tree_screening_status == "NOT_APPLICABLE":
         if "roof" in clf_res.typology:
@@ -510,16 +685,26 @@ def generate_polygon_recommendations(
     else:
         roof_priority = "LOW"
 
-    estimated_roof_m2 = max(200.0, min(40000.0, float(cell_multiplier * 1500.0)))
-    roof_cost_base, roof_cost_min, roof_cost_max, roof_cost_meta = estimate_intervention_cost(
-        InterventionType.COOL_ROOF,
-        usable_area_m2=estimated_roof_m2,
-    )
-    roof_cool_base, roof_cool_min, roof_cool_max, roof_cool_meta = estimate_cooling_effect(
-        InterventionType.COOL_ROOF,
-        usable_area_m2=estimated_roof_m2,
-        baseline_lst_c=mean_lst,
-    )
+    eff_built = p_built if p_built > 0 else (summary.built_density_component or 0.50)
+    eligible_roof_m2 = round(polygon_area_m2 * min(0.95, max(0.05, eff_built)) * 0.70, 1)
+
+    if roof_feasibility == FeasibilityStatus.REJECTED.value:
+        estimated_roof_m2 = 0.0
+        roof_cost_base, roof_cost_min, roof_cost_max = 0.0, 0.0, 0.0
+        roof_cool_base, roof_cool_min, roof_cool_max = 0.0, 0.0, 0.0
+        roof_cost_meta = {}
+        roof_cool_meta = {}
+    else:
+        estimated_roof_m2 = eligible_roof_m2
+        roof_cost_base, roof_cost_min, roof_cost_max, roof_cost_meta = estimate_intervention_cost(
+            InterventionType.COOL_ROOF,
+            usable_area_m2=estimated_roof_m2,
+        )
+        roof_cool_base, roof_cool_min, roof_cool_max, roof_cool_meta = estimate_cooling_effect(
+            InterventionType.COOL_ROOF,
+            usable_area_m2=estimated_roof_m2,
+            baseline_lst_c=mean_lst,
+        )
 
     if roof_screening_status == "NOT_APPLICABLE":
         roof_rationale = (
@@ -635,16 +820,25 @@ def generate_polygon_recommendations(
     else:
         pave_priority = "LOW"
 
-    estimated_pave_m2 = max(100.0, min(20000.0, float(cell_multiplier * 1000.0)))
-    pave_cost_base, pave_cost_min, pave_cost_max, pave_cost_meta = estimate_intervention_cost(
-        InterventionType.COOL_PAVEMENT,
-        usable_area_m2=estimated_pave_m2,
-    )
-    pave_cool_base, pave_cool_min, pave_cool_max, pave_cool_meta = estimate_cooling_effect(
-        InterventionType.COOL_PAVEMENT,
-        usable_area_m2=estimated_pave_m2,
-        baseline_lst_c=mean_lst,
-    )
+    eligible_pave_m2 = round(polygon_area_m2 * min(0.90, max(0.05, eff_built)) * 0.25, 1)
+
+    if pave_feasibility == FeasibilityStatus.REJECTED.value:
+        estimated_pave_m2 = 0.0
+        pave_cost_base, pave_cost_min, pave_cost_max = 0.0, 0.0, 0.0
+        pave_cool_base, pave_cool_min, pave_cool_max = 0.0, 0.0, 0.0
+        pave_cost_meta = {}
+        pave_cool_meta = {}
+    else:
+        estimated_pave_m2 = eligible_pave_m2
+        pave_cost_base, pave_cost_min, pave_cost_max, pave_cost_meta = estimate_intervention_cost(
+            InterventionType.COOL_PAVEMENT,
+            usable_area_m2=estimated_pave_m2,
+        )
+        pave_cool_base, pave_cool_min, pave_cool_max, pave_cool_meta = estimate_cooling_effect(
+            InterventionType.COOL_PAVEMENT,
+            usable_area_m2=estimated_pave_m2,
+            baseline_lst_c=mean_lst,
+        )
 
     if pave_screening_status == "NOT_APPLICABLE":
         if "roof" in clf_res.typology:
@@ -1184,9 +1378,122 @@ def generate_polygon_recommendations(
                     f"Water body conflict: polygon is {water_fraction * 100:.1f}% open water (>= {ASSUMPTION_WATER_HARD_REJECT_FRACTION * 100:.0f}%)."
                 )
 
+    # Reconcile costs & quantities: REJECTED or EXCLUDED items MUST carry 0 cost and 0 quantity
+    for r in recommendations:
+        if r.feasibility_status == FeasibilityStatus.REJECTED.value or r.screening_status in ("NOT_APPLICABLE", "EXCLUDED") or r.priority == "NOT_RECOMMENDED":
+            r.cost_range_inr.base = 0.0
+            r.cost_range_inr.min = 0.0
+            r.cost_range_inr.max = 0.0
+            r.cost_range_inr.formatted = "₹0.00 (Option rejected / Not applicable)"
+            r.quantity_basis.estimated_quantity = 0.0
+            r.direct_cost_inr = 0.0
+            r.capital_cost_inr = 0.0
+        else:
+            r.capital_cost_inr = round(r.cost_range_inr.base, 2)
+            r.direct_cost_inr = round(r.cost_range_inr.base / 1.3817, 2)
+
     # Sort recommendations by priority: HIGH -> MEDIUM -> LOW -> NOT_RECOMMENDED
     priority_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2, "NOT_RECOMMENDED": 3}
     recommendations.sort(key=lambda r: priority_order.get(r.priority, 99))
+
+    # Assemble 7 Core Sections for Spatial Intervention Reasoning
+    # Section 1: Heat Conditions
+    heat_cond = {
+        "mean_lst_c": summary.mean_lst_c,
+        "max_lst_c": summary.max_lst_c,
+        "min_lst_c": summary.min_lst_c,
+        "p90_lst_c": summary.p90_lst_c,
+        "mean_hpi": summary.mean_hpi,
+        "max_hpi": summary.max_hpi,
+        "chronic_hotspot_cells": summary.chronic_cell_count,
+        "chronic_hotspot_share": summary.chronic_cell_share,
+        "confidence_score": summary.confidence_score,
+        "confidence_tier": summary.confidence_tier,
+        "mean_ndvi": summary.mean_ndvi,
+        "mean_ndbi": summary.mean_ndbi,
+        "mean_ndwi": summary.mean_ndwi,
+    }
+
+    # Section 2: Physical Features & Opportunities
+    phys_feat = {
+        "polygon_area_m2": round(polygon_area_m2, 1),
+        "polygon_area_ha": round(polygon_area_m2 / 10000.0, 3),
+        "built_ratio": round(p_built, 3),
+        "bare_ratio": round(p_bare, 3),
+        "grass_ratio": round(p_grass, 3),
+        "trees_ratio": round(p_trees, 3),
+        "water_ratio": round(p_water, 3),
+        "landuse_typology": clf_res.typology,
+        "typology_title": clf_res.title,
+    }
+
+    # Section 3: Candidate Sites with Geometry
+    cand_sites = []
+    for r in recommendations:
+        if r.feasibility_status != FeasibilityStatus.REJECTED.value:
+            cand_sites.append({
+                "candidate_id": f"CAND_{r.type.upper()}_{clf_res.typology.upper()}",
+                "type": r.type,
+                "title": r.title,
+                "spatial_unit": r.spatial_unit,
+                "reasoning_state": r.reasoning_state,
+                "quantity": r.quantity_basis.estimated_quantity,
+                "unit": r.quantity_basis.unit,
+                "cost_base_inr": r.cost_range_inr.base,
+                "cooling_skin_expected_c": r.cooling_range_c.expected,
+                "bounding_geometry": geometry if geometry else None,
+            })
+
+    # Section 4: Quantity and Cost Roll-up
+    eligible_recs = [r for r in recommendations if r.feasibility_status != FeasibilityStatus.REJECTED.value]
+    tot_capital = sum(r.cost_range_inr.base for r in eligible_recs)
+    tot_direct = sum(r.direct_cost_inr for r in eligible_recs)
+    tot_maint = sum(r.cost_range_inr.base * 0.02 for r in eligible_recs)
+    tot_area_m2 = sum(r.quantity_basis.estimated_quantity for r in eligible_recs if "m²" in r.quantity_basis.unit)
+
+    cost_rollup = {
+        "total_capital_spend_inr": round(tot_capital, 2),
+        "total_capital_spend_formatted": format_inr(tot_capital),
+        "total_direct_cost_inr": round(tot_direct, 2),
+        "total_annual_maintenance_inr": round(tot_maint, 2),
+        "total_treated_area_m2": round(tot_area_m2, 1),
+        "total_treated_area_ha": round(tot_area_m2 / 10000.0, 3),
+        "eligible_options_count": len(eligible_recs),
+        "rejected_options_count": len(recommendations) - len(eligible_recs),
+    }
+
+    # Section 5: Evidence Gaps & Required Field Checks
+    ev_gaps = [
+        "Cadastral building footprints with structural load ratings (UNAVAILABLE) - On-site structural engineering survey required before cool/green roof tender.",
+        "Municipal road network with right-of-way and sidewalk widths (UNAVAILABLE) - Field survey required for tree planting setbacks.",
+        "Revenue parcel ownership tenure (UNAVAILABLE) - Municipal clearance required on private vs public plots.",
+        "High-resolution DEM and stormwater drainage network (UNAVAILABLE) - Stormwater retention interventions cannot be evaluated from satellite data alone.",
+    ]
+
+    # Section 6: Rejected Candidates with Rule IDs
+    rej_cands = []
+    for r in recommendations:
+        if r.feasibility_status == FeasibilityStatus.REJECTED.value or r.priority == "NOT_RECOMMENDED":
+            rej_cands.append({
+                "type": r.type,
+                "title": r.title,
+                "rule_id": r.rule_id,
+                "spatial_unit": r.spatial_unit,
+                "reasoning_state": r.reasoning_state,
+                "screening_status": r.screening_status,
+                "reasons": r.rejection_reasons or [r.screening_reason_code],
+            })
+
+    # Section 7: Evidence Availability Panel
+    ev_panel = evidence_registry.get_evidence_availability_panel(evidence_dict)
+
+    # Compute deterministic cache key
+    c_key = compute_evidence_cache_key(
+        geometry=geometry or {},
+        season=season,
+        year=year,
+        parameters={"typology": clf_res.typology},
+    )
 
     return RecommendationsResponse(
         polygon_summary=summary,
@@ -1194,4 +1501,12 @@ def generate_polygon_recommendations(
         caveats=caveats,
         assumptions_applied=assumptions_applied,
         evidence_label="MODELLED",
+        heat_conditions=heat_cond,
+        physical_features=phys_feat,
+        candidate_sites=cand_sites,
+        quantity_cost_rollup=cost_rollup,
+        evidence_gaps=ev_gaps,
+        rejected_candidates=rej_cands,
+        evidence_availability_panel=ev_panel,
+        cache_key=c_key,
     )

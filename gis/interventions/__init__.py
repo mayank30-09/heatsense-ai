@@ -82,6 +82,8 @@ class InterventionCandidate:
     water_need_description: str = ""
     maintenance_burden: str = ""
     construction_time: str = ""
+    prerequisites_status: str = "FEASIBLE_SUBJECT_TO_SURVEY"
+    survey_prerequisites: list[str] = field(default_factory=list)
     screening_status: str = "MODEL_ELIGIBLE"
     screening_reason_code: str = "NONE"
     site_suitability: str = "UNKNOWN - survey required"
@@ -97,6 +99,13 @@ class InterventionCandidate:
     unit_rate: float = 0.0
     unit_rate_unit: str = ""
     markups_description: str = "Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup"
+    landcover_assessment: dict[str, Any] | None = None
+    landcover_rule_fired: str = "NONE"
+    landcover_disclosure: str = "ASSUMPTION: UNCALIBRATED_HEURISTIC"
+    landcover_version: str = "v1.0"
+    landcover_top_class: str | None = None
+    landcover_confidence: float | None = None
+    landcover_entropy: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -144,4 +153,69 @@ class InterventionCandidate:
             "water_need_description": self.water_need_description,
             "maintenance_burden": self.maintenance_burden,
             "construction_time": self.construction_time,
+            "prerequisites_status": self.prerequisites_status,
+            "survey_prerequisites": self.survey_prerequisites,
+            "landcover_assessment": self.landcover_assessment,
+            "landcover_rule_fired": self.landcover_rule_fired,
+            "landcover_disclosure": self.landcover_disclosure,
+            "landcover_version": self.landcover_version,
+            "landcover_top_class": self.landcover_top_class,
+            "landcover_confidence": self.landcover_confidence,
+            "landcover_entropy": self.landcover_entropy,
+        }
+
+
+@dataclass
+class Package:
+    package_id: str
+    cluster_id: str
+    locality: str
+    intervention_type: InterventionType
+    cell_ids: list[str]
+    cell_count: int
+    cells: list[dict[str, Any]]
+    geographic_coverage_ha: float
+    treated_footprint_m2: float
+    estimated_cost_inr: float          # Capex
+    capex_breakdown: dict[str, float]
+    opex_3yr_inr: float                # Separate 3-year opex
+    expected_cooling_c: float          # Local skin cooling on treated footprint
+    delta_t_skin_c: float              # <= 0
+    delta_t_cell_c: float              # <= 0 (cell-diluted)
+    thermal_benefit_k_m2: float        # Conserved extensive benefit |delta_t_cell_c| * A_cell
+    indicative_diluted_cooling_c: float
+    chronic_hotspot_cells_count: int
+    mean_hpi: float
+    max_hpi: float
+    landcover_summary: dict[str, Any]
+    confidence_rating: str
+    unresolved_prerequisites: list[str]
+    feasibility_status: str = "FEASIBLE_SUBJECT_TO_SURVEY"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "package_id": self.package_id,
+            "cluster_id": self.cluster_id,
+            "locality": self.locality,
+            "intervention_type": self.intervention_type.value if hasattr(self.intervention_type, "value") else str(self.intervention_type),
+            "cell_ids": self.cell_ids,
+            "cell_count": self.cell_count,
+            "cells": self.cells,
+            "geographic_coverage_ha": round(self.geographic_coverage_ha, 2),
+            "treated_footprint_m2": round(self.treated_footprint_m2, 1),
+            "estimated_cost_inr": round(self.estimated_cost_inr, 2),
+            "capex_breakdown": self.capex_breakdown,
+            "opex_3yr_inr": round(self.opex_3yr_inr, 2),
+            "expected_cooling_c": round(self.expected_cooling_c, 3),
+            "delta_t_skin_c": round(self.delta_t_skin_c, 3),
+            "delta_t_cell_c": round(self.delta_t_cell_c, 3),
+            "thermal_benefit_k_m2": round(self.thermal_benefit_k_m2, 2),
+            "indicative_diluted_cooling_c": round(self.indicative_diluted_cooling_c, 3),
+            "chronic_hotspot_cells_count": self.chronic_hotspot_cells_count,
+            "mean_hpi": round(self.mean_hpi, 2),
+            "max_hpi": round(self.max_hpi, 2),
+            "landcover_summary": self.landcover_summary,
+            "confidence_rating": self.confidence_rating,
+            "unresolved_prerequisites": self.unresolved_prerequisites,
+            "feasibility_status": self.feasibility_status,
         }

@@ -24,7 +24,7 @@ export default function LatestSceneSidebar({
   scenesError,
   totalCells = 49747,
 }: LatestSceneSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== "undefined" && window.innerWidth < 1024);
   const [copied, setCopied] = useState(false);
   const [showOverpasses, setShowOverpasses] = useState(true);
   const sceneSelectId = useId();
@@ -56,7 +56,7 @@ export default function LatestSceneSidebar({
   // When collapsed, show compact toggle chip
   if (isCollapsed) {
     return (
-      <aside aria-label="Latest Scene Controls" className="pointer-events-none absolute top-14 sm:top-16 left-3 z-[1000]">
+      <aside aria-label="Latest Scene Controls" className="pointer-events-none absolute top-3 left-[56px] z-[900]">
         <button
           type="button"
           onClick={() => setIsCollapsed(false)}
@@ -74,7 +74,7 @@ export default function LatestSceneSidebar({
   return (
     <aside
       aria-label="Latest Scene Controls"
-      className="pointer-events-none absolute top-14 sm:top-16 left-3 z-[1000] flex flex-col w-[calc(100vw-24px)] max-w-sm sm:w-96 max-h-[calc(100vh-140px)] gap-2.5 overflow-y-auto pr-1 pb-4 scrollbar-thin"
+      className="pointer-events-none absolute top-3 left-[56px] z-[900] flex flex-col w-[calc(100vw-76px)] max-w-sm sm:w-96 max-h-[calc(100%-24px)] gap-2.5 overflow-y-auto pr-1 pb-4 scrollbar-thin"
     >
       {/* Sidebar Header & Collapse Toggle */}
       <div className="pointer-events-auto flex items-center justify-between rounded-xl border border-indigo-200 bg-white/95 px-3 py-2 shadow-xs backdrop-blur">
