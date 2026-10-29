@@ -4,7 +4,7 @@ import LayerControls from "../LayerControls";
 import HPILegend from "../HPILegend";
 
 describe("LayerControls Navigation & Mode Isolation", () => {
-  it("renders only season selector and thermal raster toggle in Area Analysis mode", () => {
+  it("renders baseline notice and thermal raster toggle in Area Analysis mode without season selector buttons", () => {
     const html = renderToStaticMarkup(
       <LayerControls
         isAreaAnalysis={true}
@@ -19,10 +19,12 @@ describe("LayerControls Navigation & Mode Isolation", () => {
       />
     );
     expect(html).toContain("Thermal Raster");
-    expect(html).toContain("☀️ Summer");
-    expect(html).toContain("❄️ Winter");
-    expect(html).toContain("🍂 Post-Monsoon");
-    expect(html).toContain("🌧️ Monsoon");
+    expect(html).toContain("Analysis Baseline: <strong>Summer 2026 (Authoritative HPI Composite)</strong>");
+    // Season selector buttons must NOT be present in Area Analysis mode per R2
+    expect(html).not.toContain("☀️ Summer");
+    expect(html).not.toContain("❄️ Winter");
+    expect(html).not.toContain("🍂 Post-Monsoon");
+    expect(html).not.toContain("🌧️ Monsoon");
 
     // Mode tablist and minHpi filter must be omitted in Area Analysis
     expect(html).not.toContain("Heat Priority Index (derived, 0-100)");

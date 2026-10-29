@@ -12,7 +12,15 @@ import { useAuth } from "../../context/AuthContext";
 import LoginPanel from "../auth/LoginPanel";
 
 interface ScenarioLabProps {
-  onSwitchToOptimization?: (budgetInr: number) => void;
+  onSwitchToOptimization?: (config: number | {
+    budgetInr: number;
+    algorithm?: "exact" | "nsga2" | "greedy";
+    strategy?: "hotspot_first" | "max_benefit" | "cost_effective";
+    targetTypes?: Record<InterventionType, boolean>;
+    scope?: string;
+    autoRun?: boolean;
+    source?: string;
+  }) => void;
   onSwitchToMap?: () => void;
   initialScenarios?: PlanningScenario[];
 }
@@ -292,7 +300,14 @@ export default function ScenarioLab({
             {onSwitchToOptimization && (
               <button
                 type="button"
-                onClick={() => onSwitchToOptimization(simBudget)}
+                onClick={() => onSwitchToOptimization({
+                        budgetInr: simBudget,
+                        algorithm: simFocus === "balanced" ? "nsga2" : "exact",
+                        strategy: simFocus === "hotspots" ? "hotspot_first" : simFocus === "green" ? "cost_effective" : "max_benefit",
+                        targetTypes: enabledTypes,
+                        autoRun: true,
+                        source: "Scenario Lab Custom Simulator",
+                      })}
                 className="flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-teal-500 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-slate-900"
               >
                 <span>Launch Optimizer ({formatINR(simBudget)})</span>
@@ -807,7 +822,14 @@ export default function ScenarioLab({
                   {onSwitchToOptimization && (
                     <button
                       type="button"
-                      onClick={() => onSwitchToOptimization(simBudget)}
+                      onClick={() => onSwitchToOptimization({
+                        budgetInr: simBudget,
+                        algorithm: simFocus === "balanced" ? "nsga2" : "exact",
+                        strategy: simFocus === "hotspots" ? "hotspot_first" : simFocus === "green" ? "cost_effective" : "max_benefit",
+                        targetTypes: enabledTypes,
+                        autoRun: true,
+                        source: "Scenario Lab Custom Simulator",
+                      })}
                       className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-500 transition-colors shadow-xs cursor-pointer"
                     >
                       Run Full Optimization →

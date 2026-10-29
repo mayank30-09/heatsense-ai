@@ -150,11 +150,11 @@ class CoolRoofRule(DeclarativeInterventionRule):
         ),
         "cooling_skin_delta": RuleParameter(
             name="cooling_skin_delta",
-            value=-2.2,
+            value=-8.59,
             unit="°C",
             param_type=RuleParameterType.SOURCED,
-            source_citation="Santamouris (2017) Solar Energy 144: 730-749",
-            notes="Local surface skin temperature drop under high SRI coatings (>104)",
+            source_citation="Linearized Albedo Energy Balance: Delta T_skin = (-0.45 * 870) / 45.6 = -8.59°C (Santamouris 2014; ASTM D7897 aged coating). Cell-diluted: -1.29°C to -2.20°C. 2m air temp is unmodeled.",
+            notes="Surface skin temperature reduction on treated high-reflectance coating. Ambient 2m air temperature is unmodeled.",
         ),
     }
 

@@ -271,9 +271,36 @@ def run_exact_knapsack_optimizer(
             locality_rollup=[],
         )
 
-    # Discretization: use ceil so sum(weights)*unit >= sum(actual_cost), strictly guaranteeing spend <= budget
-    unit = max(100.0, discretization_unit_inr)
+    # Discretization: use adaptive unit so W <= 1000, preventing exponential state space and memory spikes
+    adaptive_unit = max(25000.0, budget_inr / 1000.0)
+    unit = max(100.0, discretization_unit_inr, adaptive_unit)
     W = int(budget_inr / unit)
+
+    # Candidate pruning for exact DP: if candidate pool exceeds 400, pre-filter by strategy density
+    if len(eligible) > 400:
+        if strat == "hotspot_first":
+            eligible = sorted(
+                eligible,
+                key=lambda p: (
+                    p.chronic_hotspot_cells_count > 0,
+                    p.chronic_hotspot_cells_count / max(100.0, p.estimated_cost_inr),
+                    p.thermal_benefit_k_m2 / max(100.0, p.estimated_cost_inr),
+                ),
+                reverse=True,
+            )[:400]
+        elif strat == "max_benefit":
+            eligible = sorted(
+                eligible,
+                key=lambda p: p.thermal_benefit_k_m2 / max(100.0, p.estimated_cost_inr),
+                reverse=True,
+            )[:400]
+        else: # cost_effective
+            eligible = sorted(
+                eligible,
+                key=lambda p: (p.thermal_benefit_k_m2 / max(100.0, p.estimated_cost_inr)),
+                reverse=True,
+            )[:400]
+
     n = len(eligible)
     weights = [max(1, int(math.ceil(p.estimated_cost_inr / unit))) for p in eligible]
 

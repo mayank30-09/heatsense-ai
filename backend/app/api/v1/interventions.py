@@ -806,9 +806,51 @@ def optimize_interventions(
     for s in solutions:
         s.run_id = exec_run_id
 
-    # Common exact 10-point budget curve and locality rollup
-    exact_a = run_exact_knapsack_optimizer(packages, budget_inr=payload.budget_inr, strategy="hotspot_first")
-    budget_curve = exact_a.budget_curve
+    # Common budget curve and locality rollup
+    if algo in ("exact", "knapsack") and (payload.strategy or "hotspot_first") == "hotspot_first":
+        budget_curve = rec_sol.budget_curve
+    elif algo in ("greedy", "baseline_greedy"):
+        # Build 10-point budget curve from greedy cumulative packages
+        budget_curve = []
+        sorted_pkgs = sorted(
+            packages,
+            key=lambda p: (
+                p.chronic_hotspot_cells_count / max(100.0, p.estimated_cost_inr),
+                p.thermal_benefit_k_m2 / max(100.0, p.estimated_cost_inr),
+            ),
+            reverse=True,
+        )
+        from gis.interventions.cooling_effects import DEFAULT_SMC_DOMAIN_AREA_M2
+        for step in range(1, 11):
+            target_b = payload.budget_inr * (step / 10.0)
+            step_cost = 0.0
+            step_benefit = 0.0
+            step_cells = 0
+            step_hotspots = 0
+            for p in sorted_pkgs:
+                if step_cost + p.estimated_cost_inr <= target_b:
+                    step_cost += p.estimated_cost_inr
+                    step_benefit += p.thermal_benefit_k_m2
+                    step_cells += p.cell_count
+                    step_hotspots += p.chronic_hotspot_cells_count
+            budget_curve.append({
+                "step": step,
+                "target_budget_inr": round(target_b, 2),
+                "actual_spend_inr": round(step_cost, 2),
+                "thermal_benefit_k_m2": round(step_benefit, 1),
+                "cells_count": step_cells,
+                "chronic_hotspots_count": step_hotspots,
+                "citywide_cooling_c": round(step_benefit / DEFAULT_SMC_DOMAIN_AREA_M2, 4),
+            })
+    else:
+        exact_a = run_exact_knapsack_optimizer(
+            packages,
+            budget_inr=payload.budget_inr,
+            strategy="hotspot_first",
+            discretization_unit_inr=max(25000.0, payload.budget_inr / 1000.0),
+        )
+        budget_curve = exact_a.budget_curve
+
     locality_rollup = rec_sol.locality_rollup or compute_locality_rollup(rec_sol.selected_packages)
 
     sol_responses = [SolutionResponse(**s.to_dict()) for s in solutions]

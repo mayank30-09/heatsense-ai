@@ -158,7 +158,7 @@ describe("InterventionExplorer (Cluster-Level Redesign)", () => {
     const html = renderToStaticMarkup(<InterventionExplorer />);
 
     expect(html).toContain("Phase 1 Capital Outlay");
-    expect(html).toContain("Phase 1 Funded Units");
+    expect(html).toContain("Phase 1 Funded Packages");
     expect(html).toContain("Phase 1 Mean Cooling");
     expect(html).toContain("Hotspots Mitigated");
 

@@ -125,7 +125,7 @@ export default function LayerControls({
     </div>
   );
 
-  // In Area Analysis mode: render ONLY season selector and thermal-raster toggle
+  // In Area Analysis mode: render fixed single-period baseline notice and thermal-raster toggle
   if (isAreaAnalysis) {
     return (
       <div
@@ -133,11 +133,11 @@ export default function LayerControls({
         aria-label="Map Controls Toolbar"
       >
         <div className="flex flex-wrap items-center gap-2 md:gap-2.5 max-md:overflow-x-auto max-md:flex-nowrap max-md:scrollbar-none max-md:pb-1">
-          {seasonSelector && (
-            <div className="shrink-0">
-              {seasonSelector}
-            </div>
-          )}
+          <div className="flex items-center gap-2 rounded-lg bg-amber-50/80 border border-amber-200/80 px-2.5 py-1 text-[11px] text-amber-950 font-mono shadow-2xs shrink-0">
+            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+            <span>Analysis Baseline: <strong>Summer 2026 (Authoritative HPI Composite)</strong></span>
+            <span className="text-[10px] text-amber-800/80 italic hidden md:inline">· Multi-season comparisons available in Heat Map</span>
+          </div>
 
           <div className="ml-auto flex items-center gap-2 shrink-0">
             <button

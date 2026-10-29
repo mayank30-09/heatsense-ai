@@ -368,7 +368,29 @@ def generate_polygon_recommendations(
         tot_maint = sum(r.cost_range_inr.base * 0.02 for r in eligible_recs)
         tot_area_m2 = sum(r.quantity_basis.estimated_quantity for r in eligible_recs if "m²" in r.quantity_basis.unit)
 
+        phase1_fraction = 0.10
+        phase1_capital = round(tot_capital * phase1_fraction, 2)
+        phase1_area_m2 = round(tot_area_m2 * phase1_fraction, 1)
+
         cost_rollup = {
+            "phase1_headline": {
+                "title": "Phase 1 Municipal Pilot Implementation (Recommended)",
+                "fraction": "10% of eligible spatial footprint",
+                "capital_spend_inr": phase1_capital,
+                "capital_spend_formatted": format_inr(phase1_capital),
+                "treated_area_m2": phase1_area_m2,
+                "treated_area_ha": round(phase1_area_m2 / 10000.0, 3),
+                "description": "Recommended initial municipal pilot tranche for field validation before full deployment.",
+            },
+            "full_potential_upper_bound": {
+                "title": "Theoretical 100% Spatial Build-Out (Upper Bound)",
+                "fraction": "100% theoretical envelope",
+                "capital_spend_inr": round(tot_capital, 2),
+                "capital_spend_formatted": format_inr(tot_capital),
+                "treated_area_m2": round(tot_area_m2, 1),
+                "treated_area_ha": round(tot_area_m2 / 10000.0, 3),
+                "description": "Theoretical maximum ceiling assuming complete structural eligibility and full tenure clearance across all parcels.",
+            },
             "total_capital_spend_inr": round(tot_capital, 2),
             "total_capital_spend_formatted": format_inr(tot_capital),
             "total_direct_cost_inr": round(tot_direct, 2),

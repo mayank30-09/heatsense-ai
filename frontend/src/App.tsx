@@ -141,6 +141,7 @@ function AppContent() {
     return "Dashboard";
   });
   const [scenarioBudget, setScenarioBudget] = useState<number | undefined>(undefined);
+  const [scenarioConfig, setScenarioConfig] = useState<any>(undefined);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [showGlossary, setShowGlossary] = useState<boolean>(false);
@@ -404,8 +405,14 @@ function AppContent() {
 
                 <ScenarioLab
                   onSwitchToMap={() => setActiveView("Heat Map")}
-                  onSwitchToOptimization={(budget) => {
-                    setScenarioBudget(budget);
+                  onSwitchToOptimization={(cfg) => {
+                    if (typeof cfg === "number") {
+                      setScenarioConfig({ budgetInr: cfg, autoRun: true, source: "Scenario Lab" });
+                      setScenarioBudget(cfg);
+                    } else {
+                      setScenarioConfig(cfg);
+                      setScenarioBudget(cfg.budgetInr);
+                    }
                     setActiveView("Optimization");
                   }}
                 />
@@ -426,6 +433,7 @@ function AppContent() {
 
                 <Optimization
                   initialBudgetInr={scenarioBudget}
+                  initialConfig={scenarioConfig}
                   onSwitchToMap={() => setActiveView("Heat Map")}
                 />
               </>

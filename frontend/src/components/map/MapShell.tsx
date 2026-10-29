@@ -190,6 +190,7 @@ export function MapShell({
   ] = useState<string | null>(null);
 
   const [isAreasCollapsed, setIsAreasCollapsed] = useState(false);
+  const [fullReportArea, setFullReportArea] = useState<AnalysisArea | null>(null);
 
   const handleAreaCreated =
   useCallback(
@@ -468,12 +469,59 @@ const handleAreaRemoved =
                       season={season}
                       year={effectiveYear}
                       onUpdateArea={(areaId, updated) => handleAreaUpdated(areaId, updated, area.name)}
+                      onOpenFullReport={(selected) => setFullReportArea(selected)}
                     />
                   )
                 )}
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Dedicated Full-Width Spatial Reasoning Report Modal */}
+      {fullReportArea && (
+        <div className="absolute inset-0 z-[950] overflow-y-auto bg-slate-900/60 backdrop-blur-sm p-3 sm:p-6 flex justify-center animate-fade-in">
+          <div className="w-full max-w-5xl my-auto rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 shadow-2xl flex flex-col space-y-5 max-h-[92vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-[10px] font-bold text-teal-800 font-mono">
+                    DEDICATED SPATIAL REPORT
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-500">
+                    Planar EPSG:32643 · True Cell Area: 9,273 m² (0.93 ha)
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
+                  {fullReportArea.name}
+                </h2>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
+                  Baseline: Summer 2026 HPI composite · Area: {fullReportArea.result.area_km2?.toFixed(3)} km² · {fullReportArea.result.statistics?.mean_c?.toFixed(1) ?? "N/A"}°C Mean LST
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setFullReportArea(null)}
+                className="flex items-center gap-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-4 py-2 text-xs shadow-xs transition-colors cursor-pointer"
+              >
+                <span>← Back to Map (Preserve Selection)</span>
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="flex-1 min-h-0 overflow-y-auto pr-1 scrollbar-thin">
+              <AreaRecommendationsPanel
+                areaId={fullReportArea.id}
+                areaName={fullReportArea.name}
+                geometry={fullReportArea.result.geojson_geometry}
+                season="summer"
+                year={2026}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -486,11 +534,13 @@ function AnalysisAreaCard({
   season,
   year,
   onUpdateArea,
+  onOpenFullReport,
 }: {
   area: AnalysisArea;
   season?: string;
   year?: number;
   onUpdateArea?: (areaId: string, result: AnalysisResult) => void;
+  onOpenFullReport?: (area: AnalysisArea) => void;
 }) {
   const result = area.result;
   const [showRecommendations, setShowRecommendations] = useState(true);
@@ -815,19 +865,29 @@ function AnalysisAreaCard({
         </>
       )}
 
-      {/* Heat Interventions & Recommendations */}
+      {/* Heat Interventions & Full Report Trigger */}
       {result.geojson_geometry && (
-        <div className="mt-3 border-t border-slate-100 pt-3">
-          <div className="mb-2 flex items-center justify-between">
+        <div className="mt-3 border-t border-slate-100 pt-3 space-y-2">
+          {onOpenFullReport && (
+            <button
+              type="button"
+              onClick={() => onOpenFullReport(area)}
+              className="w-full rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold py-2.5 px-3 text-xs shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-400"
+            >
+              <span>📊 View Full Spatial Report →</span>
+            </button>
+          )}
+
+          <div className="flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-              Interventions
+              Inline Preview
             </span>
             <button
               type="button"
               onClick={() => setShowRecommendations((prev) => !prev)}
-              className="text-[11px] font-medium text-blue-600 hover:text-blue-800"
+              className="text-[11px] font-medium text-slate-500 hover:text-slate-700 cursor-pointer"
             >
-              {showRecommendations ? "Hide Recommendations" : "Show Recommendations"}
+              {showRecommendations ? "Hide Quick Preview" : "Show Quick Preview"}
             </button>
           </div>
 

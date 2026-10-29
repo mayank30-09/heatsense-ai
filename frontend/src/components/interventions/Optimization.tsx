@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type {
   InterventionType,
   OptimizationResultResponse,
@@ -21,6 +21,15 @@ import LoginPanel from "../auth/LoginPanel";
 
 interface OptimizationProps {
   initialBudgetInr?: number;
+  initialConfig?: {
+    budgetInr?: number;
+    algorithm?: "exact" | "nsga2" | "greedy";
+    strategy?: "hotspot_first" | "max_benefit" | "cost_effective";
+    targetTypes?: Record<InterventionType, boolean>;
+    scope?: string;
+    autoRun?: boolean;
+    source?: string;
+  };
   onSwitchToMap?: () => void;
   onSelectCandidateOnMap?: (candidateId: string) => void;
 }
@@ -44,6 +53,7 @@ const BUDGET_PRESETS = [
 
 export default function Optimization({
   initialBudgetInr = 25000000,
+  initialConfig,
   onSwitchToMap,
   onSelectCandidateOnMap,
 }: OptimizationProps) {
@@ -63,11 +73,12 @@ export default function Optimization({
   const [areasLoading, setAreasLoading] = useState<boolean>(true);
 
   // Configuration State
-  const [budget, setBudget] = useState<number>(initialBudgetInr);
-  const [algorithm, setAlgorithm] = useState<"exact" | "nsga2" | "greedy">("exact");
-  const [strategy, setStrategy] = useState<"hotspot_first" | "max_benefit" | "cost_effective">("hotspot_first");
+  const [budget, setBudget] = useState<number>(initialConfig?.budgetInr ?? initialBudgetInr);
+  const [algorithm, setAlgorithm] = useState<"exact" | "nsga2" | "greedy">(initialConfig?.algorithm ?? "exact");
+  const [strategy, setStrategy] = useState<"hotspot_first" | "max_benefit" | "cost_effective">(initialConfig?.strategy ?? "hotspot_first");
   const [generations, setGenerations] = useState<number>(20);
-  const [allowedTypes, setAllowedTypes] = useState<Record<InterventionType, boolean>>({
+  const [allowedTypes, setAllowedTypes] = useState<Record<InterventionType, boolean>>(
+    initialConfig?.targetTypes ?? {
     tree_canopy: true,
     cool_roof: true,
     cool_pavement: true,
@@ -132,6 +143,14 @@ export default function Optimization({
     if (cfg.target_types && cfg.target_types.length !== activeTypes.length) return true;
     return false;
   }, [result, budget, algorithm, generations, allowedTypes]);
+
+  const hasAutoRunRef = useRef(false);
+  useEffect(() => {
+    if (initialConfig?.autoRun && !hasAutoRunRef.current) {
+      hasAutoRunRef.current = true;
+      handleRunOptimization();
+    }
+  }, [initialConfig]);
 
   const handleRunOptimization = async () => {
     setRunning(true);
@@ -436,6 +455,20 @@ export default function Optimization({
           >
             Re-execute Optimization ({formatINR(budget)}) →
           </button>
+        </div>
+      )}
+
+      {initialConfig?.source && (
+        <div className="flex items-center justify-between rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-xs text-teal-900 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚡</span>
+            <span>
+              <strong>Running with settings from {initialConfig.source}:</strong> Budget {formatINR(budget)}, Strategy {strategy.replace("_", " ")}, Algorithm {algorithm.toUpperCase()}.
+            </span>
+          </div>
+          <span className="font-mono text-[10px] text-teal-700 font-bold bg-teal-100/70 px-2 py-0.5 rounded">
+            AUTO-CONFIGURED
+          </span>
         </div>
       )}
 

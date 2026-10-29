@@ -209,11 +209,11 @@ export default function CellInspector({
 
   return (
     <aside
-      className="pointer-events-auto absolute right-3 top-3 z-[900] w-[calc(100vw-24px)] sm:w-96 max-w-sm max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-200/90 bg-white/95 p-4 shadow-elevated backdrop-blur-md transition-all duration-200 scrollbar-thin"
+      className="pointer-events-auto absolute right-3 top-3 z-[900] w-[calc(100vw-24px)] sm:w-96 max-w-sm max-h-[calc(100vh-1.5rem)] sm:max-h-[88vh] flex flex-col rounded-2xl border border-slate-200/90 bg-white/95 shadow-elevated backdrop-blur-md transition-all duration-200 overflow-hidden"
       aria-label="Grid cell details"
     >
-      {/* Header with Pixel ID and Close Button */}
-      <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+      {/* Fixed Header with Pixel ID and Close Button */}
+      <div className="shrink-0 p-4 pb-3 border-b border-slate-100 flex items-start justify-between bg-white/50 backdrop-blur-xs">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500 font-mono">
@@ -228,8 +228,8 @@ export default function CellInspector({
           <h3 className="mt-0.5 text-lg font-bold text-slate-900 font-mono tracking-tight">
             {cell.pixel_id}
           </h3>
-          <p className="text-[11px] text-slate-500 font-mono">
-            100 m × 100 m (1 ha grid) · Row {cell.row_idx} · Col {cell.col_idx} · {cell.latitude.toFixed(5)}°N, {cell.longitude.toFixed(5)}°E
+          <p className="text-[10.5px] text-slate-500 font-mono leading-snug">
+            Nominal 100 m grid (true area: 9,273 m² / 0.927 ha) · Row {cell.row_idx} · Col {cell.col_idx} · {cell.latitude.toFixed(5)}°N, {cell.longitude.toFixed(5)}°E
           </p>
         </div>
 
@@ -244,6 +244,9 @@ export default function CellInspector({
           </svg>
         </button>
       </div>
+
+      {/* Scrollable Inspector Body */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 pt-3 space-y-3.5 scrollbar-thin">
 
       {/* Locality & Distance */}
       <div className="mt-2.5 flex items-center justify-between rounded-lg bg-slate-50 border border-slate-100 px-3 py-2 text-xs">
@@ -716,15 +719,43 @@ export default function CellInspector({
         )}
       </div>
 
-      {/* Methodological Context & Physical Distinctions */}
-      <div className="mt-3 border-t border-slate-100 pt-2 text-[10px] leading-tight text-slate-500 space-y-1">
-        <div>
-          <strong>Grid &amp; Resolution:</strong> 100 m analytical grid (10,000 m² / 1 ha). Source thermal data acquired by Landsat 8/9 TIRS at ~100 m native resolution (USGS resampled to 30 m).
+      {/* Field Survey Prerequisites Section */}
+      <div className="rounded-xl border border-amber-200/90 bg-amber-50/50 p-3 text-xs space-y-1.5 shadow-2xs">
+        <div className="flex items-center gap-1.5 font-bold text-amber-950 text-[11px] uppercase tracking-wider border-b border-amber-200/60 pb-1">
+          <span>📋</span>
+          <span>Pre-Implementation Field Verification</span>
         </div>
-        <div>
-          <strong>Temperature Distinction:</strong> Land Surface Temperature (LST) is surface temperature (skin), not air temperature. LST is radiant skin temperature (T<sub>skin</sub>) at ~10:30 local solar time (~11:00 IST), distinct from ambient 2 m air temperature (T<sub>air</sub>), indoor temperature, and HPI scores (0–100 composite index).
+        <ul className="text-[10px] text-amber-900 list-disc list-inside space-y-0.5 leading-snug">
+          <li><strong>Structural Slab Clearance:</strong> Dead/live load test required before roof retrofits.</li>
+          <li><strong>Ownership &amp; Legal Tenure:</strong> Unverified via satellite; municipal clearance required.</li>
+          <li><strong>Road &amp; Utility Setbacks:</strong> Underground pipes and cables must be surveyed before tree digging.</li>
+        </ul>
+      </div>
+
+      {/* Satellite Provenance & Sensor Data Section */}
+      <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs space-y-1.5 shadow-2xs">
+        <div className="flex items-center gap-1.5 font-bold text-slate-900 text-[11px] uppercase tracking-wider border-b border-slate-200/60 pb-1">
+          <span>🛰️</span>
+          <span>Sensor Calibration &amp; Evidence</span>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 text-[9.5px] font-mono text-slate-600">
+          <div>Thermal: Landsat 8/9 TIRS</div>
+          <div>LULC: Sentinel-2 10m</div>
+          <div>CRS: EPSG:32643 Planar</div>
+          <div>Cell Area: 9,273 m² (0.93 ha)</div>
         </div>
       </div>
-    </aside>
+
+      {/* Methodological Context & Physical Distinctions */}
+      <div className="border-t border-slate-100 pt-2 text-[10px] leading-tight text-slate-500 space-y-1.5">
+        <div>
+          <strong>Grid &amp; Resolution:</strong> Nominal 100 m regular grid (0.000898° ≈ 93.2 m × 99.5 m, true planar projected area: 9,273 m² / 0.927 ha in UTM 43N).
+        </div>
+        <div>
+          <strong>Temperature Distinction:</strong> Land Surface Temperature (LST) is radiant surface skin temperature (T<sub>skin</sub>) at ~10:30 local solar time, distinct from ambient 2 m air temperature (T<sub>air</sub>) and indoor temperature. Ambient 2m air cooling is unmodeled.
+        </div>
+      </div>
+    </div>
+  </aside>
   );
 }

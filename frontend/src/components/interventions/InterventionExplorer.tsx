@@ -23,7 +23,7 @@ interface InterventionExplorerProps {
   onSelectCandidateOnMap?: (candidate: InterventionCandidateItem) => void;
 }
 
-const TYPE_CONFIG: Record<
+const TYPE_CONFIG: Partial<Record<
   InterventionType,
   {
     label: string;
@@ -33,7 +33,7 @@ const TYPE_CONFIG: Record<
     albedoOrBiomass: string;
     needsRoofSurvey?: boolean;
   }
-> = {
+>> = {
   tree_canopy: {
     label: "Native Urban Forestry",
     icon: "🌳",
@@ -94,14 +94,6 @@ const TYPE_CONFIG: Record<
     albedoOrBiomass: "Soil Evaporative Cooling + Runoff Infiltration",
     needsRoofSurvey: false,
   },
-  rainwater_fed_pond: {
-    label: "Rainwater Retention Pond",
-    icon: "💧",
-    badgeClass: "bg-blue-50 text-blue-800 border-blue-300",
-    description: "Microclimatic water body providing localized evaporative breeze downwind.",
-    albedoOrBiomass: "Latent Heat of Vaporization (LE)",
-    needsRoofSurvey: false,
-  },
   shaded_parking_structure: {
     label: "Shaded Parking Structure",
     icon: "⛱️",
@@ -109,14 +101,6 @@ const TYPE_CONFIG: Record<
     description: "High-SRI tensile fabric canopy or solar PV shelter eliminating asphalt direct solar absorption.",
     albedoOrBiomass: "100% Direct Solar Interception (SRI ≥ 85)",
     needsRoofSurvey: false,
-  },
-  green_wall: {
-    label: "Modular Living Green Wall",
-    icon: "🧗",
-    badgeClass: "bg-teal-100 text-teal-900 border-teal-300",
-    description: "Vertical modular climbing facade trellis providing envelope shading and transpiration.",
-    albedoOrBiomass: "Vertical Facade Solar Shielding + Evapotranspiration",
-    needsRoofSurvey: true,
   },
   permeable_ground_cover: {
     label: "Permeable Ground Cover",
@@ -545,7 +529,7 @@ export default function InterventionExplorer({
             </h2>
             <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-300">
               Aggregates individual 100m analytical cells into contiguous, priority-ranked municipal cooling packages
-              across Surat’s 23 administrative localities. Evaluated via Queen-contiguity spatial expansion,
+              across Surat’s 23 spatial locality clusters (indexed to nearest OpenStreetMap place points in SMC domain). Evaluated via Queen-contiguity spatial expansion,
               area-weighted surface cooling (ΔT<sub>skin</sub>), and extensive municipal capital budgeting.
             </p>
           </div>
@@ -723,9 +707,12 @@ export default function InterventionExplorer({
         {/* Card 2: Implementation Packages */}
         <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              {budgetCap < 900000000000 ? "Phase 1 Funded Units" : "Total Clusters"}
-            </span>
+            <div className="flex items-center gap-1.5" title="A package is a group of contiguous cells in one locality receiving the same intervention, funded as one municipal project. The optimizer chooses whole packages rather than isolated cells.">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                {budgetCap < 900000000000 ? "Phase 1 Funded Packages" : "Total Packages"}
+              </span>
+              <span className="text-[11px] text-slate-400 cursor-help" aria-label="What is a package?">ℹ️</span>
+            </div>
             <span className="text-base">🧩</span>
           </div>
           <div className="mt-1 text-3xl font-extrabold text-teal-700 font-mono">
@@ -855,8 +842,9 @@ export default function InterventionExplorer({
             All Types
           </button>
 
-          {(Object.keys(TYPE_CONFIG) as InterventionType[]).map((itype) => {
+          {(Object.keys(TYPE_CONFIG) as (keyof typeof TYPE_CONFIG)[]).map((itype) => {
             const cfg = TYPE_CONFIG[itype];
+            if (!cfg) return null;
             const isSelected = selectedType === itype;
             const avail = typeAvailability?.[itype];
             let badgeText: string | null = null;
@@ -873,7 +861,11 @@ export default function InterventionExplorer({
                   badgeText = "Not assessable";
                 }
               } else {
-                badgeText = `${avail.candidate_packages_count} pkgs`;
+                if (avail.candidate_packages_count === 0) {
+                  badgeText = "0 (requires site data)";
+                } else {
+                  badgeText = `${avail.candidate_packages_count} pkgs`;
+                }
               }
             }
 
@@ -1036,14 +1028,19 @@ export default function InterventionExplorer({
           )}
 
           {!clustersLoading && !clustersError && clusters.length === 0 && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-              <span className="text-4xl">🏙️</span>
+            <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-xs">
+              <span className="text-4xl">📋</span>
               <h3 className="mt-3 text-base font-bold text-slate-800">
-                No Clusters Found for {selectedArea}
+                No Packages Found for {selectedArea}
               </h3>
-              <p className="mt-1 text-xs text-slate-500 max-w-md mx-auto">
-                No contiguous cells meeting the current filter criteria (HPI ≥ 35.0, type: {selectedType}) were found in this locality.
+              <p className="mt-2 text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
+                {selectedType !== "ALL" && typeAvailability?.[selectedType as InterventionType]?.reason
+                  ? `${typeAvailability[selectedType as InterventionType]?.reason} Data needed: ${typeAvailability[selectedType as InterventionType]?.data_needed || "Site boundary surveys"}.`
+                  : `No contiguous candidate packages meeting the spatial criteria (HPI ≥ 35.0) were found for the selected filters in ${selectedArea}.`}
               </p>
+              <div className="mt-3 max-w-md mx-auto rounded-lg bg-slate-50 border border-slate-200 p-2.5 text-[11px] text-slate-500 text-left">
+                💡 <strong>What is a package?</strong> A package is a group of contiguous cells in one locality receiving the same intervention, funded as one municipal project. The optimizer chooses whole packages rather than isolated cells.
+              </div>
               <button
                 type="button"
                 onClick={() => {
