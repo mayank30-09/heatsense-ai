@@ -101,7 +101,16 @@ export async function runInterventionOptimization(
     signal,
   });
   if (!response.ok) {
-    throw new Error(`Optimization failed: HTTP ${response.status}`);
+    let detail = `HTTP ${response.status}`;
+    try {
+      const errJson = await response.json();
+      if (errJson && errJson.detail) {
+        detail = typeof errJson.detail === "string" ? errJson.detail : JSON.stringify(errJson.detail);
+      }
+    } catch {
+      // ignore
+    }
+    throw new Error(`Optimization failed: ${detail}`);
   }
   return response.json() as Promise<OptimizationResultResponse>;
 }

@@ -209,34 +209,84 @@ def assign_cell_intervention(
     if p_crops >= 0.40:
         return None  # Agricultural land-use conflict; requires cadastral survey
 
-    # Canonical unconstrained assignment: deterministic best fit
-    if a_roof >= 200.0 and a_roof >= a_green and a_roof >= a_pave:
-        assigned_type = InterventionType.COOL_ROOF
-        treatable_area = a_roof
-        tree_cnt = 0
-        surface_desc = f"Rooftop (material unverified, {roof_tag}) ({a_roof:.0f} m²)"
-    elif a_green >= 250.0 and a_green >= a_roof:
-        assigned_type = InterventionType.TREE_CANOPY
-        treatable_area = a_green
-        tree_cnt = max(5, int(a_green // 45))
-        surface_desc = f"Open Ground ({a_green:.0f} m², {tree_cnt} trees)"
-    elif a_pave >= 250.0 and ndbi >= 0.05:
-        assigned_type = InterventionType.COOL_PAVEMENT
-        treatable_area = a_pave
-        tree_cnt = 0
-        surface_desc = f"Paved Hardstanding ({a_pave:.0f} m²)"
-    elif a_roof >= 200.0:
-        assigned_type = InterventionType.COOL_ROOF
-        treatable_area = a_roof
-        tree_cnt = 0
-        surface_desc = f"Rooftop (material unverified, {roof_tag}) ({a_roof:.0f} m²)"
-    elif a_green >= 150.0:
-        assigned_type = InterventionType.TREE_CANOPY
-        treatable_area = a_green
-        tree_cnt = max(5, int(a_green // 45))
-        surface_desc = f"Open Ground ({a_green:.0f} m², {tree_cnt} trees)"
+    # If a specific target_type is requested, evaluate suitability for that typology
+    if target_type:
+        if target_type == InterventionType.COOL_ROOF and a_roof >= 200.0:
+            assigned_type = InterventionType.COOL_ROOF
+            treatable_area = a_roof
+            tree_cnt = 0
+            surface_desc = f"Rooftop (material unverified, {roof_tag}) ({a_roof:.0f} m²)"
+        elif target_type == InterventionType.GREEN_ROOF and a_roof >= 200.0:
+            assigned_type = InterventionType.GREEN_ROOF
+            treatable_area = a_roof
+            tree_cnt = 0
+            surface_desc = f"Engineered RCC Roof (structural survey required) ({a_roof:.0f} m²)"
+        elif target_type == InterventionType.TREE_CANOPY and a_green >= 150.0:
+            assigned_type = InterventionType.TREE_CANOPY
+            treatable_area = a_green
+            tree_cnt = max(5, int(a_green // 45))
+            surface_desc = f"Open Ground ({a_green:.0f} m², {tree_cnt} trees)"
+        elif target_type == InterventionType.PUBLIC_PARK_NATIVE_TREES and a_green >= 400.0:
+            assigned_type = InterventionType.PUBLIC_PARK_NATIVE_TREES
+            treatable_area = a_green
+            tree_cnt = max(10, int(a_green // 40))
+            surface_desc = f"Public Open Parcel ({a_green:.0f} m², {tree_cnt} trees)"
+        elif target_type == InterventionType.DENSE_MIYAWAKI_PLANTATION and a_green >= 300.0:
+            assigned_type = InterventionType.DENSE_MIYAWAKI_PLANTATION
+            treatable_area = a_green
+            tree_cnt = max(20, int(a_green * 2))
+            surface_desc = f"Afforestation Buffer ({a_green:.0f} m², {tree_cnt} saplings)"
+        elif target_type == InterventionType.COOL_PAVEMENT and a_pave >= 150.0:
+            assigned_type = InterventionType.COOL_PAVEMENT
+            treatable_area = a_pave
+            tree_cnt = 0
+            surface_desc = f"Paved Hardstanding ({a_pave:.0f} m²)"
+        elif target_type == InterventionType.PERMEABLE_GROUND_COVER and (a_pave >= 150.0 or a_green >= 150.0):
+            assigned_type = InterventionType.PERMEABLE_GROUND_COVER
+            treatable_area = max(a_pave, a_green)
+            tree_cnt = 0
+            surface_desc = f"Permeable Ground Surface ({treatable_area:.0f} m²)"
+        elif target_type == InterventionType.BIOSWALE_RAIN_GARDEN and a_green >= 150.0:
+            assigned_type = InterventionType.BIOSWALE_RAIN_GARDEN
+            treatable_area = a_green
+            tree_cnt = 0
+            surface_desc = f"Drainage Corridor & Bioswale ({a_green:.0f} m²)"
+        elif target_type == InterventionType.SHADED_PARKING_STRUCTURE and a_pave >= 200.0:
+            assigned_type = InterventionType.SHADED_PARKING_STRUCTURE
+            treatable_area = a_pave
+            tree_cnt = 0
+            surface_desc = f"Parking & Transport Hardstand ({a_pave:.0f} m²)"
+        else:
+            return None  # Cell does not meet physical criteria for target_type
     else:
-        return None  # Insufficient treatable surface (<150 m²)
+        # Canonical unconstrained assignment: deterministic best fit
+        if a_roof >= 200.0 and a_roof >= a_green and a_roof >= a_pave:
+            assigned_type = InterventionType.COOL_ROOF
+            treatable_area = a_roof
+            tree_cnt = 0
+            surface_desc = f"Rooftop (material unverified, {roof_tag}) ({a_roof:.0f} m²)"
+        elif a_green >= 250.0 and a_green >= a_roof:
+            assigned_type = InterventionType.TREE_CANOPY
+            treatable_area = a_green
+            tree_cnt = max(5, int(a_green // 45))
+            surface_desc = f"Open Ground ({a_green:.0f} m², {tree_cnt} trees)"
+        elif a_pave >= 250.0 and ndbi >= 0.05:
+            assigned_type = InterventionType.COOL_PAVEMENT
+            treatable_area = a_pave
+            tree_cnt = 0
+            surface_desc = f"Paved Hardstanding ({a_pave:.0f} m²)"
+        elif a_roof >= 200.0:
+            assigned_type = InterventionType.COOL_ROOF
+            treatable_area = a_roof
+            tree_cnt = 0
+            surface_desc = f"Rooftop (material unverified, {roof_tag}) ({a_roof:.0f} m²)"
+        elif a_green >= 150.0:
+            assigned_type = InterventionType.TREE_CANOPY
+            treatable_area = a_green
+            tree_cnt = max(5, int(a_green // 45))
+            surface_desc = f"Open Ground ({a_green:.0f} m², {tree_cnt} trees)"
+        else:
+            return None  # Insufficient treatable surface (<150 m²)
 
     c_exp, c_min, c_max, _ = estimate_cooling_effect(
         assigned_type,
@@ -697,7 +747,7 @@ def generate_clusters_for_area(
             hpi=raw_hpi,
             lst_c=lst_val,
             is_chronic=is_chr,
-            target_type=None,  # Always unconstrained single canonical assignment
+            target_type=target_itype,
             dw_record=dw_rec,
         )
 
@@ -1176,18 +1226,30 @@ def get_all_packages_for_area(
     min_hpi: float = 35.0,
 ) -> list[Package]:
     """Retrieve all candidate packages in an area or citywide, filtered by target types."""
-    res = generate_clusters_for_area(
-        db=db,
-        area_name=area_name,
-        min_hpi=min_hpi,
-        limit=5000,
-        offset=0,
-    )
-    pkgs = res.get("_all_packages_internal", [])
     if target_types:
-        target_set = {t.lower() for t in target_types}
-        pkgs = [p for p in pkgs if (p.intervention_type.value if hasattr(p.intervention_type, 'value') else str(p.intervention_type)).lower() in target_set]
-    return pkgs
+        target_set = {t.lower() for t in target_types if t.lower() not in ("rainwater_fed_pond", "green_wall")}
+        all_pkgs: list[Package] = []
+        for itype_str in target_set:
+            res = generate_clusters_for_area(
+                db=db,
+                area_name=area_name,
+                intervention_type=itype_str,
+                min_hpi=min_hpi,
+                limit=5000,
+                offset=0,
+            )
+            pkgs = res.get("_all_packages_internal", [])
+            all_pkgs.extend(pkgs)
+        return all_pkgs
+    else:
+        res = generate_clusters_for_area(
+            db=db,
+            area_name=area_name,
+            min_hpi=min_hpi,
+            limit=5000,
+            offset=0,
+        )
+        return res.get("_all_packages_internal", [])
 
 
 def get_area_summary(

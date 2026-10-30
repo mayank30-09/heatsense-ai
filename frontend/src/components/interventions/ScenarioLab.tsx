@@ -14,7 +14,7 @@ import LoginPanel from "../auth/LoginPanel";
 interface ScenarioLabProps {
   onSwitchToOptimization?: (config: number | {
     budgetInr: number;
-    algorithm?: "exact" | "nsga2" | "greedy";
+    algorithm?: "exact" | "nsga2";
     strategy?: "hotspot_first" | "max_benefit" | "cost_effective";
     targetTypes?: Record<InterventionType, boolean>;
     scope?: string;
@@ -439,7 +439,16 @@ export default function ScenarioLab({
                 {onSwitchToOptimization && (
                   <button
                     type="button"
-                    onClick={() => onSwitchToOptimization(activeScenario.budget_inr)}
+                    onClick={() =>
+                      onSwitchToOptimization({
+                        budgetInr: activeScenario.budget_inr,
+                        algorithm: "exact",
+                        strategy: "hotspot_first",
+                        targetTypes: enabledTypes,
+                        autoRun: true,
+                        source: `Benchmark (${activeScenario.scenario_name})`,
+                      })
+                    }
                     className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-500 shadow-xs cursor-pointer"
                   >
                     Execute This Scenario In Optimizer →
@@ -590,7 +599,7 @@ export default function ScenarioLab({
                   Physical Diminishing Returns & Custom Simulator
                 </h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Accessing the live Stage D greedy knapsack diminishing returns curve and dynamic budget simulation requires <strong>Planner</strong> or <strong>Admin</strong> privileges. Reference UHAP benchmarks above remain open for public inspection. Please sign in below to unlock custom budget simulation.
+                  Accessing the live Stage D knapsack diminishing returns curve and dynamic budget simulation requires <strong>Planner</strong> or <strong>Admin</strong> privileges. Reference UHAP benchmarks above remain open for public inspection. Please sign in below to unlock custom budget simulation.
                 </p>
               </div>
               <LoginPanel
@@ -723,11 +732,11 @@ export default function ScenarioLab({
                 )}
               </div>
 
-              {/* Physical Outcome Card (Direct from Greedy Knapsack Backend Optimization) */}
+              {/* Physical Outcome Card (Direct from Knapsack Backend Optimization) */}
               <div className="flex flex-col justify-between rounded-2xl border border-teal-100 bg-white p-5 shadow-xs">
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-teal-900">
-                    Physical Output at {formatINR(simBudget)} (Greedy Knapsack Frontier)
+                    Physical Output at {formatINR(simBudget)} (Knapsack Solver Frontier)
                   </h4>
 
                   <div className="mt-4 grid grid-cols-2 gap-3">
@@ -846,7 +855,7 @@ export default function ScenarioLab({
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                    Physical Diminishing Returns Schedule (Computed Greedy Frontier)
+                    Physical Diminishing Returns Schedule (Computed Knapsack Frontier)
                   </h4>
                   <p className="mt-0.5 text-xs text-slate-500">
                     Evaluated across discrete municipal budget steps using verified Stage D knapsack solver

@@ -147,6 +147,16 @@ export interface OptimizationResultResponse {
   budget_curve?: BudgetCurvePoint[];
   locality_rollup?: LocalityRollupItem[];
   strategy_comparison?: StrategyComparison;
+  candidate_count?: number;
+  eligible_count?: number;
+  selected_packages?: PackageItem[];
+  spend_inr?: number;
+  utilization_pct?: number;
+  hotspot_cells_covered?: number;
+  benefit_k_m2?: number;
+  runtime_ms?: number;
+  status?: string;
+  reason?: string;
   config?: OptimizationConfig;
 }
 

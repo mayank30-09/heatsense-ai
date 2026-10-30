@@ -25,6 +25,7 @@ Exposes:
 
 
 import uuid
+import time
 
 import json
 import math
@@ -422,6 +423,17 @@ class OptimizationResultResponse(BaseModel):
     locality_rollup: list[dict[str, Any]] = Field(default_factory=list)
     strategy_comparison: dict[str, Any] = Field(default_factory=dict)
     config: dict[str, Any] = Field(default_factory=dict, description="Active execution configuration")
+    # Canonical additive contract fields:
+    candidate_count: int = Field(default=0, description="Total candidate packages considered before filtering")
+    eligible_count: int = Field(default=0, description="Candidate packages eligible within budget and type filters")
+    selected_packages: list[dict[str, Any]] = Field(default_factory=list, description="Municipal packages selected by recommended solution")
+    spend_inr: float = Field(default=0.0, description="Total expenditure in INR")
+    utilization_pct: float = Field(default=0.0, description="Budget utilization percentage against specified cap")
+    hotspot_cells_covered: int = Field(default=0, description="Count of chronic heat priority hotspot cells mitigated")
+    benefit_k_m2: float = Field(default=0.0, description="Extensive thermal benefit in K·m²")
+    runtime_ms: float = Field(default=0.0, description="Optimization execution runtime in milliseconds")
+    status: str = Field(default="OK", description="Optimization status: OK, NO_CANDIDATES, INFEASIBLE, TIMEOUT, ERROR")
+    reason: str = Field(default="", description="Human-readable explanation of execution status or reason for 0 packages")
 
 
 class DiminishingReturnsRequest(BaseModel):
@@ -732,49 +744,92 @@ def optimize_interventions(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_planner_or_admin),
 ):
-    """Execute municipal package optimization (Exact Integer DP, Greedy Knapsack, or NSGA-II Pareto)."""
+    """Execute municipal package optimization (Exact Integer DP or NSGA-II Pareto)."""
+    start_t = time.perf_counter()
     algo = payload.algorithm.lower().replace("-", "_")
-    supported_algos = ("greedy", "baseline_greedy", "nsga2", "nsga_ii", "pareto", "exact", "knapsack", "integer_dp", "hotspot_first", "max_benefit", "cost_effective")
+    if algo in ("greedy", "baseline_greedy"):
+        raise HTTPException(
+            status_code=400,
+            detail="Algorithm 'greedy' has been deprecated in favor of 'exact' (Exact Integer DP 0/1 Knapsack) and 'nsga2' (NSGA-II Multi-Objective Pareto). Please select 'exact' or 'nsga2'.",
+        )
+    supported_algos = ("nsga2", "nsga_ii", "pareto", "exact", "knapsack", "integer_dp", "hotspot_first", "max_benefit", "cost_effective")
     if algo not in supported_algos:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported optimization algorithm '{payload.algorithm}'. Supported algorithms: 'greedy', 'nsga2', 'exact'.",
+            detail=f"Unsupported optimization algorithm '{payload.algorithm}'. Supported algorithms: 'exact', 'nsga2'.",
         )
     scope = payload.scope or "all"
+    exec_run_id = f"RUN_OPT_{uuid.uuid4().hex[:8].upper()}"
 
     # 1. Fetch candidate packages for scope
-    packages = get_all_packages_for_area(db, area_name=scope)
+    packages = get_all_packages_for_area(db, area_name=scope, target_types=payload.target_types)
 
-    # 2. Filter by target_types if specified
-    if payload.target_types:
-        allowed = set(payload.target_types)
-        packages = [
-            p for p in packages
-            if (p.intervention_type.value if hasattr(p.intervention_type, "value") else str(p.intervention_type)) in allowed
-        ]
+    candidate_total_count = len(packages)
+    eligible_count = sum(1 for p in packages if p.estimated_cost_inr <= payload.budget_inr)
+
+    config_echo = {
+        "run_id": exec_run_id,
+        "budget_inr": payload.budget_inr,
+        "algorithm": payload.algorithm,
+        "strategy": payload.strategy,
+        "scope": scope,
+        "max_candidates": candidate_total_count,
+        "generations": payload.generations if "nsga" in algo else None,
+        "target_types": payload.target_types or ["all"],
+        "random_seed": 42,
+    }
 
     if not packages:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No qualifying candidate packages found for scope '{scope}' with selected intervention types.",
+        runtime_ms = round((time.perf_counter() - start_t) * 1000.0, 1)
+        return OptimizationResultResponse(
+            run_id=exec_run_id,
+            algorithm=payload.algorithm.upper(),
+            budget_inr=payload.budget_inr,
+            solutions_count=0,
+            solutions=[],
+            recommended_solution=None,
+            candidate_count=0,
+            eligible_count=0,
+            selected_packages=[],
+            spend_inr=0.0,
+            utilization_pct=0.0,
+            hotspot_cells_covered=0,
+            benefit_k_m2=0.0,
+            runtime_ms=runtime_ms,
+            status="NO_CANDIDATES",
+            reason=f"No qualifying candidate packages found for scope '{scope}' with selected intervention types.",
+            config=config_echo,
+        )
+
+    # 2. Check if cheapest package exceeds budget ceiling (No silent zeros)
+    cheapest_pkg_cost = min(p.estimated_cost_inr for p in packages)
+    if eligible_count == 0:
+        runtime_ms = round((time.perf_counter() - start_t) * 1000.0, 1)
+        return OptimizationResultResponse(
+            run_id=exec_run_id,
+            algorithm=payload.algorithm.upper(),
+            budget_inr=payload.budget_inr,
+            solutions_count=0,
+            solutions=[],
+            recommended_solution=None,
+            candidate_count=candidate_total_count,
+            eligible_count=0,
+            selected_packages=[],
+            spend_inr=0.0,
+            utilization_pct=0.0,
+            hotspot_cells_covered=0,
+            benefit_k_m2=0.0,
+            runtime_ms=runtime_ms,
+            status="CHEAPEST_EXCEEDS_BUDGET",
+            reason=f"Cheapest available package (₹{cheapest_pkg_cost:,.2f}) exceeds the specified budget limit (₹{payload.budget_inr:,.2f}). Increase budget to at least ₹{cheapest_pkg_cost:,.2f} to deploy interventions.",
+            config=config_echo,
         )
 
     # 3. Strategy comparison
     strat_comp = compare_strategies(packages, budget_inr=payload.budget_inr)
 
     # 4. Execute optimization algorithm
-    exec_run_id = f"RUN_OPT_{uuid.uuid4().hex[:8].upper()}"
-
-    if algo in ("greedy", "baseline_greedy"):
-        sol = run_baseline_greedy_optimizer(
-            candidates=packages,
-            budget_inr=payload.budget_inr,
-            enforce_cell_exclusivity=True,
-        )
-        sol.strategy_comparison = strat_comp
-        solutions = [sol]
-        rec_sol = sol
-    elif algo in ("nsga2", "nsga_ii", "pareto"):
+    if algo in ("nsga2", "nsga_ii", "pareto"):
         solutions = run_nsga2_optimizer(
             candidates=packages,
             budget_inr=payload.budget_inr,
@@ -788,7 +843,7 @@ def optimize_interventions(
         for s in solutions:
             s.strategy_comparison = strat_comp
         rec_sol = solutions[0]
-    elif algo in ("exact", "knapsack", "integer_dp", "hotspot_first", "max_benefit", "cost_effective"):
+    else:
         sol = run_exact_knapsack_optimizer(
             packages=packages,
             budget_inr=payload.budget_inr,
@@ -797,51 +852,13 @@ def optimize_interventions(
         sol.strategy_comparison = strat_comp
         solutions = [sol]
         rec_sol = sol
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported optimization algorithm '{payload.algorithm}'. Supported algorithms: 'greedy', 'nsga2', 'exact'.",
-        )
 
     for s in solutions:
         s.run_id = exec_run_id
 
-    # Common budget curve and locality rollup
+    # Budget curve and locality rollup from exact knapsack solution
     if algo in ("exact", "knapsack") and (payload.strategy or "hotspot_first") == "hotspot_first":
         budget_curve = rec_sol.budget_curve
-    elif algo in ("greedy", "baseline_greedy"):
-        # Build 10-point budget curve from greedy cumulative packages
-        budget_curve = []
-        sorted_pkgs = sorted(
-            packages,
-            key=lambda p: (
-                p.chronic_hotspot_cells_count / max(100.0, p.estimated_cost_inr),
-                p.thermal_benefit_k_m2 / max(100.0, p.estimated_cost_inr),
-            ),
-            reverse=True,
-        )
-        from gis.interventions.cooling_effects import DEFAULT_SMC_DOMAIN_AREA_M2
-        for step in range(1, 11):
-            target_b = payload.budget_inr * (step / 10.0)
-            step_cost = 0.0
-            step_benefit = 0.0
-            step_cells = 0
-            step_hotspots = 0
-            for p in sorted_pkgs:
-                if step_cost + p.estimated_cost_inr <= target_b:
-                    step_cost += p.estimated_cost_inr
-                    step_benefit += p.thermal_benefit_k_m2
-                    step_cells += p.cell_count
-                    step_hotspots += p.chronic_hotspot_cells_count
-            budget_curve.append({
-                "step": step,
-                "target_budget_inr": round(target_b, 2),
-                "actual_spend_inr": round(step_cost, 2),
-                "thermal_benefit_k_m2": round(step_benefit, 1),
-                "cells_count": step_cells,
-                "chronic_hotspots_count": step_hotspots,
-                "citywide_cooling_c": round(step_benefit / DEFAULT_SMC_DOMAIN_AREA_M2, 4),
-            })
     else:
         exact_a = run_exact_knapsack_optimizer(
             packages,
@@ -855,6 +872,15 @@ def optimize_interventions(
 
     sol_responses = [SolutionResponse(**s.to_dict()) for s in solutions]
     rec_sol_response = SolutionResponse(**rec_sol.to_dict()) if rec_sol else sol_responses[0]
+    runtime_ms = round((time.perf_counter() - start_t) * 1000.0, 1)
+
+    pkgs_dicts = [p.to_dict() if hasattr(p, "to_dict") else p for p in rec_sol.selected_packages]
+    status_str = "OK" if rec_sol.packages_count > 0 else "NO_CANDIDATES"
+    reason_str = (
+        f"Optimal municipal package portfolio selected: {rec_sol.packages_count} packages ({rec_sol.cells_count} cells) delivering {rec_sol.portfolio_thermal_benefit_c_m2:,.1f} K·m² thermal benefit with {rec_sol.budget_utilized_percent:.1f}% budget utilization."
+        if rec_sol.packages_count > 0
+        else "No packages could be scheduled within the budget constraint."
+    )
 
     return OptimizationResultResponse(
         run_id=exec_run_id,
@@ -866,17 +892,17 @@ def optimize_interventions(
         budget_curve=budget_curve,
         locality_rollup=locality_rollup,
         strategy_comparison=strat_comp,
-        config={
-            "run_id": exec_run_id,
-            "budget_inr": payload.budget_inr,
-            "algorithm": payload.algorithm,
-            "strategy": payload.strategy,
-            "scope": scope,
-            "max_candidates": len(packages),
-            "generations": payload.generations if "nsga" in algo else None,
-            "target_types": payload.target_types or ["all"],
-            "random_seed": 42,
-        },
+        candidate_count=candidate_total_count,
+        eligible_count=eligible_count,
+        selected_packages=pkgs_dicts,
+        spend_inr=round(rec_sol.total_cost_inr, 2),
+        utilization_pct=round(rec_sol.budget_utilized_percent, 2),
+        hotspot_cells_covered=rec_sol.chronic_hotspots_count,
+        benefit_k_m2=round(rec_sol.portfolio_thermal_benefit_c_m2, 2),
+        runtime_ms=runtime_ms,
+        status=status_str,
+        reason=reason_str,
+        config=config_echo,
     )
 
 

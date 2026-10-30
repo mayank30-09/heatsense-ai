@@ -302,6 +302,7 @@ def run_exact_knapsack_optimizer(
             )[:400]
 
     n = len(eligible)
+    # Ceiling discretization ensures discrete weight strictly upper-bounds continuous cost
     weights = [max(1, int(math.ceil(p.estimated_cost_inr / unit))) for p in eligible]
 
     if strat == "hotspot_first":
@@ -348,6 +349,11 @@ def run_exact_knapsack_optimizer(
                 sub_indices.append(i)
                 curr -= weights[i]
         sub_pkgs = [eligible[i] for i in sub_indices]
+        # Re-verify true cost strictly against step target budget
+        if sum(p.estimated_cost_inr for p in sub_pkgs) > target_budget:
+            sub_pkgs.sort(key=lambda p: p.thermal_benefit_k_m2 / max(1.0, p.estimated_cost_inr), reverse=True)
+            while sub_pkgs and sum(p.estimated_cost_inr for p in sub_pkgs) > target_budget:
+                sub_pkgs.pop()
         spend = sum(p.estimated_cost_inr for p in sub_pkgs)
         benefit = sum(p.thermal_benefit_k_m2 for p in sub_pkgs)
         chronic = sum(p.chronic_hotspot_cells_count for p in sub_pkgs)
@@ -374,6 +380,12 @@ def run_exact_knapsack_optimizer(
             curr -= weights[i]
 
     selected_pkgs = [eligible[i] for i in final_indices]
+    # Re-verify true cost strictly against budget cap
+    if sum(p.estimated_cost_inr for p in selected_pkgs) > budget_inr:
+        selected_pkgs.sort(key=lambda p: p.thermal_benefit_k_m2 / max(1.0, p.estimated_cost_inr), reverse=True)
+        while selected_pkgs and sum(p.estimated_cost_inr for p in selected_pkgs) > budget_inr:
+            selected_pkgs.pop()
+
     tot_cost = sum(p.estimated_cost_inr for p in selected_pkgs)
     tot_benefit = sum(p.thermal_benefit_k_m2 for p in selected_pkgs)
     tot_treated_area = sum(p.treated_footprint_m2 for p in selected_pkgs)
@@ -761,15 +773,21 @@ def run_nsga2_optimizer(
                         break
             return fixed
 
-        # Seed 1: greedy baseline
-        greedy_sol = run_baseline_greedy_optimizer(candidates, budget_inr=budget_inr, domain_area_m2=domain_area_m2)
-        greedy_chrom = np.zeros(m, dtype=int)
-        for p in greedy_sol.selected_packages:
+        # Seed initial population with Exact DP solutions (Strategy A and Strategy B) + random feasible sets
+        exact_sol_a = run_exact_knapsack_optimizer(candidates, budget_inr=budget_inr, strategy="hotspot_first", domain_area_m2=domain_area_m2)
+        exact_chrom_a = np.zeros(m, dtype=int)
+        for p in exact_sol_a.selected_packages:
             if p in candidates:
-                greedy_chrom[candidates.index(p)] = 1
+                exact_chrom_a[candidates.index(p)] = 1
 
-        population = [greedy_chrom]
-        for _ in range(population_size - 1):
+        exact_sol_b = run_exact_knapsack_optimizer(candidates, budget_inr=budget_inr, strategy="max_benefit", domain_area_m2=domain_area_m2)
+        exact_chrom_b = np.zeros(m, dtype=int)
+        for p in exact_sol_b.selected_packages:
+            if p in candidates:
+                exact_chrom_b[candidates.index(p)] = 1
+
+        population = [exact_chrom_a, exact_chrom_b]
+        for _ in range(population_size - len(population)):
             raw = np.random.binomial(1, min(0.25, 10.0 / max(1, m)), size=m)
             population.append(repair_package_chrom(raw))
         population = np.array(population)

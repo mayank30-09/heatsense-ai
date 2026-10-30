@@ -75,8 +75,8 @@ def test_candidate_detail_endpoint():
     assert resp_bad.status_code == 400
 
 
-def test_optimize_endpoint_greedy():
-    """Verify greedy knapsack optimizer via API complies with budget constraint."""
+def test_optimize_endpoint_greedy_deprecated_rejection():
+    """Verify greedy knapsack optimizer is rejected with HTTP 400 and migration guidance."""
     budget = 10000000.0  # 1 Crore INR
     payload = {
         "budget_inr": budget,
@@ -84,16 +84,27 @@ def test_optimize_endpoint_greedy():
         "max_candidates": 30,
     }
     resp = client.post("/api/v1/interventions/optimize", json=payload)
+    assert resp.status_code == 400
+    assert "deprecated in favor of 'exact'" in resp.json()["detail"]
+
+
+def test_optimize_endpoint_exact():
+    """Verify Exact DP 0/1 Knapsack optimizer via API complies with budget constraint."""
+    budget = 10000000.0  # 1 Crore INR
+    payload = {
+        "budget_inr": budget,
+        "algorithm": "exact",
+        "max_candidates": 30,
+    }
+    resp = client.post("/api/v1/interventions/optimize", json=payload)
     assert resp.status_code == 200
     res = resp.json()
-
-    assert res["algorithm"] == "GREEDY"
-    assert res["solutions_count"] == 1
-    sol = res["solutions"][0]
+    assert res["algorithm"] == "EXACT"
+    assert res["solutions_count"] >= 1
+    assert "recommended_solution" in res
+    sol = res["recommended_solution"]
     assert sol["is_feasible"] is True
     assert sol["total_cost_inr"] <= budget
-    assert sol["interventions_count"] > 0
-    assert sol["total_expected_cooling_c"] > 0
 
 
 def test_optimize_endpoint_nsga2():
@@ -146,7 +157,7 @@ def test_optimize_endpoint_auth_and_dev_token_removal():
     try:
         payload = {
             "budget_inr": 1000000.0,
-            "algorithm": "greedy",
+            "algorithm": "exact",
             "max_candidates": 10,
         }
         # 2. No token -> 401 Unauthorized
@@ -181,7 +192,7 @@ def test_optimize_endpoint_auth_and_dev_token_removal():
             headers={"Authorization": f"Bearer {pln_token}"},
         )
         assert resp_pln.status_code == 200
-        assert resp_pln.json()["algorithm"] == "GREEDY"
+        assert resp_pln.json()["algorithm"] == "EXACT"
     finally:
         planner = DEV_USERS_DB["planner_officer"]
         app.dependency_overrides[require_planner_or_admin] = lambda: User(**planner.model_dump())

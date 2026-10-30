@@ -389,12 +389,12 @@ export default function AreaRecommendationsPanel({
                 </div>
               </div>
 
-              {/* Section 2: Physical Features & Opportunities */}
+              {/* Section 2: Physical Features & Land Cover Opportunities */}
               <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2">
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 font-bold text-slate-800">
                   <span className="flex items-center gap-1.5">
                     <span>📐</span>
-                    <span>2. Physical Features &amp; Surface Opportunities</span>
+                    <span>2. Physical Features &amp; Land Cover Composition</span>
                   </span>
                   <span className="text-[10px] text-slate-600 font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200">
                     {data.physical_features?.polygon_area_ha ?? (data.polygon_summary.area_km2 * 100).toFixed(1)} ha
@@ -418,6 +418,43 @@ export default function AreaRecommendationsPanel({
                     <span className="font-semibold text-slate-800">
                       {data.physical_features?.typology_title || typologyTitle}
                     </span>
+                  </div>
+                </div>
+
+                {/* Land Cover & Satellite Spectral Composition Bar */}
+                <div className="mt-2 pt-2 border-t border-slate-200/70 space-y-1.5">
+                  <div className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                    Area-Weighted Land Cover Composition (Dynamic World &amp; Satellite Indices)
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5 text-[10px] font-mono">
+                    <div className="bg-white p-1.5 rounded border border-slate-200">
+                      <span className="text-slate-400 block text-[9px]">Mean NDVI</span>
+                      <strong className="text-emerald-700">
+                        {data.polygon_summary.mean_ndvi !== null && data.polygon_summary.mean_ndvi !== undefined
+                          ? data.polygon_summary.mean_ndvi.toFixed(2)
+                          : "N/A"}
+                      </strong>
+                    </div>
+                    <div className="bg-white p-1.5 rounded border border-slate-200">
+                      <span className="text-slate-400 block text-[9px]">Mean NDBI</span>
+                      <strong className="text-amber-700">
+                        {data.polygon_summary.mean_ndbi !== null && data.polygon_summary.mean_ndbi !== undefined
+                          ? data.polygon_summary.mean_ndbi.toFixed(2)
+                          : "N/A"}
+                      </strong>
+                    </div>
+                    <div className="bg-white p-1.5 rounded border border-slate-200">
+                      <span className="text-slate-400 block text-[9px]">Mean NDWI</span>
+                      <strong className="text-sky-700">
+                        {data.polygon_summary.mean_ndwi !== null && data.polygon_summary.mean_ndwi !== undefined
+                          ? data.polygon_summary.mean_ndwi.toFixed(2)
+                          : "N/A"}
+                      </strong>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[9.5px] text-slate-500">
+                    <span>Water Fraction: {(data.polygon_summary.water_fraction * 100).toFixed(1)}%</span>
+                    <span>Veg Deficit: {((data.polygon_summary.vegetation_deficit_component ?? 0) * 100).toFixed(1)}%</span>
                   </div>
                 </div>
               </div>
@@ -507,7 +544,7 @@ export default function AreaRecommendationsPanel({
                 </ul>
               </div>
 
-              {/* Section 6: Excluded / Rejected Candidates with Rule IDs */}
+              {/* Section 6: Excluded Alternatives & Failed Constraints */}
               <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 space-y-2">
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5 font-bold text-slate-800">
                   <span className="flex items-center gap-1.5">
@@ -515,25 +552,48 @@ export default function AreaRecommendationsPanel({
                     <span>6. Excluded Alternatives &amp; Failed Constraints</span>
                   </span>
                 </div>
-                {(!data.rejected_candidates || data.rejected_candidates.length === 0) ? (
-                  <div className="text-[11px] text-slate-500 italic">No candidates rejected.</div>
-                ) : (
-                  <div className="space-y-1.5">
-                    {data.rejected_candidates.map((rc, idx) => (
-                      <div key={idx} className="rounded bg-white p-2 border border-slate-200 text-[11px] space-y-0.5">
-                        <div className="flex items-center justify-between">
-                          <strong className="text-slate-900">{rc.title}</strong>
-                          <span className="font-mono text-[9px] bg-slate-100 px-1 py-0.5 rounded text-slate-600 border border-slate-200">
-                            {rc.rule_id}
-                          </span>
-                        </div>
-                        <div className="text-rose-800 text-[10px]">
-                          Reason: {rc.reasons.join("; ")}
-                        </div>
+
+                <div className="space-y-1.5">
+                  {/* Dynamic rejected candidates from backend */}
+                  {(data.rejected_candidates ?? []).map((rc, idx) => (
+                    <div key={idx} className="rounded bg-white p-2 border border-slate-200 text-[11px] space-y-0.5">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-slate-900">{rc.title}</strong>
+                        <span className="font-mono text-[9px] bg-slate-100 px-1 py-0.5 rounded text-slate-600 border border-slate-200">
+                          {rc.rule_id}
+                        </span>
                       </div>
-                    ))}
+                      <div className="text-rose-800 text-[10px]">
+                        Reason: {rc.reasons.join("; ")}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Explicit Non-Assessable Typologies (Kept Removed from active catalog) */}
+                  <div className="rounded bg-white p-2 border border-slate-200 text-[11px] space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <strong className="text-slate-900">🌊 Rainwater-Fed Retention Pond</strong>
+                      <span className="font-mono text-[9px] bg-slate-100 px-1 py-0.5 rounded text-slate-600 border border-slate-200 font-bold">
+                        NON_ASSESSABLE
+                      </span>
+                    </div>
+                    <div className="text-slate-600 text-[10px]">
+                      Reason: Requires high-resolution LiDAR / DEM surface elevation hydrological catchment modeling. Kept removed from active solver.
+                    </div>
                   </div>
-                )}
+
+                  <div className="rounded bg-white p-2 border border-slate-200 text-[11px] space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <strong className="text-slate-900">🧗 Modular Vertical Living Wall</strong>
+                      <span className="font-mono text-[9px] bg-slate-100 px-1 py-0.5 rounded text-slate-600 border border-slate-200 font-bold">
+                        NON_ASSESSABLE
+                      </span>
+                    </div>
+                    <div className="text-slate-600 text-[10px]">
+                      Reason: Requires 3D building height, wall aspect and facade structural load inventory. Kept removed from active solver.
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Section 7: Evidence Availability Panel */}
@@ -593,17 +653,125 @@ export default function AreaRecommendationsPanel({
 
           {/* Assumptions Tab */}
           {activeTab === "assumptions" && (
-            <div className="rounded bg-slate-50 p-2.5 text-[10.5px] border border-slate-200 space-y-1.5 text-slate-700">
-              <div className="font-semibold text-slate-800">
-                Operational Cutoffs (Explicitly ASSUMED):
+            <div className="space-y-3">
+              <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                    <span>🔬</span>
+                    <span>Transparent Assumptions &amp; Sensitivity Register</span>
+                  </div>
+                  <span className="text-[9.5px] font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
+                    No Fabricated Data
+                  </span>
+                </div>
+                <p className="text-[10.5px] text-slate-500 leading-snug">
+                  Every parameter in HeatSense AI is either directly measured from satellite rasters, derived by explicit thermodynamic formula, or recorded below as a calibrated engineering assumption with stated sensitivity and required ground-truth replacement dataset.
+                </p>
+
+                <div className="overflow-x-auto mt-2">
+                  <table className="w-full text-left text-[10px] border-collapse">
+                    <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="p-1.5">Parameter</th>
+                        <th className="p-1.5">Category</th>
+                        <th className="p-1.5">Baseline &amp; Sensitivity</th>
+                        <th className="p-1.5">Ground-Truth Replacement Dataset</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {[
+                        {
+                          name: "Chronic Heat Severity Threshold",
+                          category: "Derived",
+                          val: "HPI ≥ 50.0 / Top 10% LST",
+                          sens: "Low: 45.0 | Base: 50.0 | High: 55.0",
+                          replacement: "SMC Automatic Weather Station (AWS) sensor mesh",
+                        },
+                        {
+                          name: "Rooftop Cool Coating Albedo (Δα)",
+                          category: "Sourced",
+                          val: "+0.45 (aged coating albedo 0.65)",
+                          sens: "Low: +0.35 | Base: +0.45 | High: +0.55",
+                          replacement: "Field surface spectrometer reflectance survey",
+                        },
+                        {
+                          name: "Tree Crown Area & Transpiration",
+                          category: "Sourced",
+                          val: "25 m² crown / sapling",
+                          sens: "Low: 15 m² | Base: 25 m² | High: 35 m²",
+                          replacement: "High-resolution drone LiDAR tree canopy audit",
+                        },
+                        {
+                          name: "Sapling Mortality Buffer",
+                          category: "Assumption",
+                          val: "15% mortality replacement",
+                          sens: "Low: 10% | Base: 15% | High: 25%",
+                          replacement: "SMC municipal nursery 3-year survival logs",
+                        },
+                        {
+                          name: "Permeable Paver Porosity & Albedo",
+                          category: "Sourced",
+                          val: "Δα = +0.20, Void ratio = 18%",
+                          sens: "Low: +0.15 | Base: +0.20 | High: +0.25",
+                          replacement: "Civil lab core permeability & albedo test certificates",
+                        },
+                        {
+                          name: "Integer DP Discretization Unit",
+                          category: "Derived",
+                          val: "₹5,000 per knapsack weight unit",
+                          sens: "Low: ₹2,500 | Base: ₹5,000 | High: ₹10,000",
+                          replacement: "Exact fractional LP / continuous ceiling bounds",
+                        },
+                        {
+                          name: "Rooftop RCC Structural Suitability",
+                          category: "Assumption",
+                          val: "60% of built footprint suitable",
+                          sens: "Low: 40% | Base: 60% | High: 80%",
+                          replacement: "Cadastral structural load & tenure register",
+                        },
+                      ].map((item, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-1.5 font-semibold text-slate-800">{item.name}</td>
+                          <td className="p-1.5">
+                            <span
+                              className={`rounded px-1.5 py-0.2 text-[9px] font-bold font-mono ${
+                                item.category === "Data"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : item.category === "Sourced"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : item.category === "Derived"
+                                  ? "bg-indigo-100 text-indigo-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {item.category}
+                            </span>
+                          </td>
+                          <td className="p-1.5 text-slate-600">
+                            <div><strong>{item.val}</strong></div>
+                            <div className="text-[9px] text-slate-400 font-mono">{item.sens}</div>
+                          </td>
+                          <td className="p-1.5 text-slate-500">{item.replacement}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <ul className="list-disc pl-4 space-y-1">
-                {data.assumptions_applied.map((a, i) => (
-                  <li key={i}>{a}</li>
-                ))}
-              </ul>
-              <div className="mt-2 text-[9.5px] text-slate-500 border-t border-slate-200 pt-1.5">
-                Note: Municipal planner review required before capital allocation.
+
+              {/* Dynamic Operational Cutoffs from API */}
+              <div className="rounded-lg bg-slate-50 p-2.5 text-[10.5px] border border-slate-200 space-y-1.5 text-slate-700">
+                <div className="font-semibold text-slate-800">
+                  Polygon-Specific Calibrated Cutoffs (Reported by Engine):
+                </div>
+                <ul className="list-disc pl-4 space-y-1">
+                  {data.assumptions_applied.map((a, i) => (
+                    <li key={i}>{a}</li>
+                  ))}
+                </ul>
+                <div className="mt-2 text-[9.5px] text-slate-500 border-t border-slate-200 pt-1.5">
+                  Pre-tender engineering survey required prior to municipal procurement.
+                </div>
               </div>
             </div>
           )}

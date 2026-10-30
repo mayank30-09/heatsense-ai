@@ -90,7 +90,7 @@ describe("ScenarioLab Authentication & Diminishing Returns Protection", () => {
     expect(html).toContain("Stage D Diminishing Returns");
     expect(html).toContain("Physical Diminishing Returns &amp; Custom Simulator");
     expect(html).toContain(
-      "Accessing the live Stage D greedy knapsack diminishing returns curve and dynamic budget simulation requires"
+      "Accessing the live Stage D knapsack diminishing returns curve and dynamic budget simulation requires"
     );
     expect(html).toContain("Planner");
     expect(html).toContain("Admin");

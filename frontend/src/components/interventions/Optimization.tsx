@@ -23,7 +23,7 @@ interface OptimizationProps {
   initialBudgetInr?: number;
   initialConfig?: {
     budgetInr?: number;
-    algorithm?: "exact" | "nsga2" | "greedy";
+    algorithm?: "exact" | "nsga2";
     strategy?: "hotspot_first" | "max_benefit" | "cost_effective";
     targetTypes?: Record<InterventionType, boolean>;
     scope?: string;
@@ -74,7 +74,9 @@ export default function Optimization({
 
   // Configuration State
   const [budget, setBudget] = useState<number>(initialConfig?.budgetInr ?? initialBudgetInr);
-  const [algorithm, setAlgorithm] = useState<"exact" | "nsga2" | "greedy">(initialConfig?.algorithm ?? "exact");
+  const [algorithm, setAlgorithm] = useState<"exact" | "nsga2">(
+    initialConfig?.algorithm === "nsga2" ? "nsga2" : "exact"
+  );
   const [strategy, setStrategy] = useState<"hotspot_first" | "max_benefit" | "cost_effective">(initialConfig?.strategy ?? "hotspot_first");
   const [generations, setGenerations] = useState<number>(20);
   const [allowedTypes, setAllowedTypes] = useState<Record<InterventionType, boolean>>(
@@ -145,14 +147,31 @@ export default function Optimization({
   }, [result, budget, algorithm, generations, allowedTypes]);
 
   const hasAutoRunRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
-    if (initialConfig?.autoRun && !hasAutoRunRef.current) {
+    if (initialConfig?.autoRun && !hasAutoRunRef.current && token) {
       hasAutoRunRef.current = true;
       handleRunOptimization();
     }
-  }, [initialConfig]);
+  }, [initialConfig, token]);
+
+  const handleCancelOptimization = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setRunning(false);
+      setError("Optimization execution cancelled by user.");
+    }
+  };
 
   const handleRunOptimization = async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     setRunning(true);
     setError(null);
     const startTime = performance.now();
@@ -175,12 +194,16 @@ export default function Optimization({
         clearSession("Authentication required to run optimization.");
         return;
       }
-      const res = await runInterventionOptimization(payload, token);
+      const res = await runInterventionOptimization(payload, token, abortController.signal);
       const endTime = performance.now();
       setExecutionDurationMs(Math.round(endTime - startTime));
       setResult(res);
       setSelectedSolutionIdx(0);
     } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("Optimization execution cancelled by user.");
+        return;
+      }
       const errMsg =
         err instanceof Error
           ? err.message
@@ -192,6 +215,7 @@ export default function Optimization({
       }
     } finally {
       setRunning(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -368,6 +392,17 @@ export default function Optimization({
               </button>
             )}
 
+            {running && (
+              <button
+                type="button"
+                onClick={handleCancelOptimization}
+                className="flex items-center gap-1.5 rounded-xl border border-rose-500/50 bg-rose-600/20 px-3.5 py-2 text-xs font-bold text-rose-200 hover:bg-rose-600/30 transition-all cursor-pointer"
+              >
+                <span>✕</span>
+                <span>Cancel</span>
+              </button>
+            )}
+
             <button
               type="button"
               disabled={running}
@@ -463,7 +498,7 @@ export default function Optimization({
           <div className="flex items-center gap-2">
             <span className="text-base">⚡</span>
             <span>
-              <strong>Running with settings from {initialConfig.source}:</strong> Budget {formatINR(budget)}, Strategy {strategy.replace("_", " ")}, Algorithm {algorithm.toUpperCase()}.
+              <strong>Configured from Scenario Lab (Scenario: {initialConfig.source}):</strong> Budget {formatINR(budget)}, Strategy {strategy.replace("_", " ")}, Algorithm {algorithm.toUpperCase()}.
             </span>
           </div>
           <span className="font-mono text-[10px] text-teal-700 font-bold bg-teal-100/70 px-2 py-0.5 rounded">
@@ -555,49 +590,40 @@ export default function Optimization({
             </h3>
 
             {/* Algorithm Selector */}
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setAlgorithm("exact")}
-                className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                   algorithm === "exact"
                     ? "border-teal-600 bg-teal-50/50 shadow-xs ring-1 ring-teal-500"
                     : "border-slate-200 bg-white hover:bg-slate-50"
                 }`}
               >
-                <div className="text-xs font-bold text-slate-900">🎯 Exact DP</div>
-                <div className="text-[9.5px] text-slate-500 mt-0.5 leading-tight">
-                  Integer 0/1 knapsack (Provably optimal)
+                <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
+                  <span>🎯 Exact DP Knapsack</span>
+                  <span className="text-[9px] bg-teal-100 text-teal-800 font-bold px-1.5 py-0.5 rounded font-mono">Optimal</span>
+                </div>
+                <div className="text-[9.5px] text-slate-500 mt-1 leading-tight">
+                  Integer 0/1 knapsack via dynamic programming; provably optimal under budget ceiling.
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setAlgorithm("nsga2")}
-                className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                   algorithm === "nsga2"
                     ? "border-teal-600 bg-teal-50/50 shadow-xs ring-1 ring-teal-500"
                     : "border-slate-200 bg-white hover:bg-slate-50"
                 }`}
               >
-                <div className="text-xs font-bold text-slate-900">🧬 NSGA-II</div>
-                <div className="text-[9.5px] text-slate-500 mt-0.5 leading-tight">
-                  Multi-objective Pareto frontier
+                <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
+                  <span>🧬 NSGA-II Genetic</span>
+                  <span className="text-[9px] bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono">Pareto</span>
                 </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAlgorithm("greedy")}
-                className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
-                  algorithm === "greedy"
-                    ? "border-teal-600 bg-teal-50/50 shadow-xs ring-1 ring-teal-500"
-                    : "border-slate-200 bg-white hover:bg-slate-50"
-                }`}
-              >
-                <div className="text-xs font-bold text-slate-900">⚡ Greedy Knapsack</div>
-                <div className="text-[9.5px] text-slate-500 mt-0.5 leading-tight">
-                  Cost-effectiveness ratio ranking
+                <div className="text-[9.5px] text-slate-500 mt-1 leading-tight">
+                  Multi-objective Pareto frontier trading off cost, thermal benefit (K·m²), and hotspot coverage.
                 </div>
               </button>
             </div>
@@ -689,41 +715,79 @@ export default function Optimization({
         {/* Col 3: Allowed Typologies */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              3. Eligible Typologies &amp; Prerequisites
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                3. Eligible Typologies &amp; Prerequisites
+              </h3>
+              <span className="text-[10px] font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
+                9 Active In Catalog
+              </span>
+            </div>
 
-            <div className="mt-3 flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
+            <div className="mt-3 flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
               {[
-                {
-                  key: "tree_canopy",
-                  label: "🌳 Native Urban Forestry",
-                  desc: "Neem, Peepal, Gulmohar crown shading & latent flux (15% mortality buffer)",
-                },
                 {
                   key: "cool_roof",
                   label: "⚪ High-Albedo Cool Roof",
-                  desc: "Aged coating (Δα = +0.45) on RCC roofs (structural survey required)",
+                  status: "Eligible",
+                  surface: "RCC roofs / concrete decks",
+                  prereq: "Structural survey, aged coating (Δα = +0.45)",
+                },
+                {
+                  key: "tree_canopy",
+                  label: "🌳 Native Urban Forestry",
+                  status: "Eligible",
+                  surface: "Open ground, roadside verges",
+                  prereq: "Soil depth ≥ 1.0m, unpaved buffer, 15% mortality buffer",
                 },
                 {
                   key: "cool_pavement",
                   label: "🧱 Permeable Cool Pavers",
-                  desc: "High-albedo porous interlocking pavers for pedestrian plazas & parking",
+                  status: "Eligible",
+                  surface: "Pedestrian plazas, light parking",
+                  prereq: "Permeable sub-base, high solar reflectance",
                 },
                 {
                   key: "green_roof",
                   label: "🌿 Extensive Green Roof",
-                  desc: "Sedum vegetative buffer (verified load-bearing RCC only)",
+                  status: "Provisional",
+                  surface: "Load-bearing RCC flat roofs",
+                  prereq: "RCC dead load survey (≥ 150 kg/m²), drainage membrane",
                 },
                 {
                   key: "public_park_native_trees",
                   label: "🏞️ Public Park & Trees",
-                  desc: "Recreational native park clusters on open ground",
+                  status: "Eligible",
+                  surface: "Municipal open spaces / parks",
+                  prereq: "Native species, water tanker access, ground plot ≥ 400 m²",
                 },
                 {
                   key: "dense_miyawaki_plantation",
                   label: "🌲 Miyawaki Forest",
-                  desc: "Ultra-dense native afforestation (3-4 saplings/m²)",
+                  status: "Eligible",
+                  surface: "Contiguous urban plots",
+                  prereq: "Ultra-dense planting (3-4 saplings/m²), organic soil prep",
+                },
+                {
+                  key: "bioswale_rain_garden",
+                  label: "💧 Bioswale & Rain Garden",
+                  status: "Eligible",
+                  surface: "Stormwater runoff corridors",
+                  prereq: "Natural drainage swale, engineered bioretention soil",
+                },
+                {
+                  key: "shaded_parking_structure",
+                  label: "🅿️ Shaded Parking Canopy",
+                  status: "Eligible",
+                  surface: "Commercial & municipal parking",
+                  prereq: "Solar / high-reflectance overhead shade canopy",
+                },
+                {
+                  key: "permeable_ground_cover",
+                  label: "🟩 Permeable Ground Cover",
+                  status: "Eligible",
+                  surface: "Unpaved vacant lots & medians",
+                  prereq: "Gravel / porous turf pavers, erosion control",
                 },
               ].map((item) => {
                 const isChecked = allowedTypes[item.key as InterventionType];
@@ -733,7 +797,7 @@ export default function Optimization({
                     className={`flex items-start gap-2.5 rounded-lg border p-2 transition-all cursor-pointer ${
                       isChecked
                         ? "border-teal-300 bg-teal-50/30"
-                        : "border-slate-200 bg-white hover:bg-slate-50"
+                        : "border-slate-200 bg-white hover:bg-slate-50 opacity-60"
                     }`}
                   >
                     <input
@@ -747,21 +811,105 @@ export default function Optimization({
                       }
                       className="mt-0.5 accent-teal-600 rounded cursor-pointer"
                     />
-                    <div>
-                      <div className="text-xs font-bold text-slate-900">{item.label}</div>
-                      <div className="text-[10px] text-slate-500 leading-tight">{item.desc}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-xs font-bold text-slate-900 truncate">{item.label}</span>
+                        <span
+                          className={`text-[9px] font-bold px-1.5 py-0.2 rounded font-mono ${
+                            item.status === "Eligible"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                        <strong className="text-slate-600">Req:</strong> {item.surface} · {item.prereq}
+                      </div>
                     </div>
                   </label>
                 );
               })}
+
+              {/* Explicitly Non-Assessable Typologies (Kept Removed) */}
+              <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Non-Assessable Typologies (Excluded from Active Solver)
+                </span>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-[10px] text-slate-500">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-700">🌊 Rainwater-Fed Retention Pond</span>
+                    <span className="font-mono text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">
+                      Not assessable
+                    </span>
+                  </div>
+                  <div className="text-[9.5px] text-slate-400 mt-0.5">
+                    Requires high-resolution LiDAR / DEM surface elevation hydrological catchment modeling. Kept removed.
+                  </div>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-[10px] text-slate-500">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-700">🧗 Modular Green Living Wall</span>
+                    <span className="font-mono text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">
+                      Not assessable
+                    </span>
+                  </div>
+                  <div className="text-[9.5px] text-slate-400 mt-0.5">
+                    Requires 3D building height, wall aspect &amp; facade structural load inventory. Kept removed.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="mt-3 pt-2 border-t border-slate-100 text-[10px] text-slate-400">
-            Ponds marked <em>not assessable (requires DEM)</em>; Green walls marked <em>add-on only (requires facade heights)</em>.
+          <div className="mt-3 pt-2 border-t border-slate-100 text-[10px] text-slate-400 flex justify-between items-center">
+            <span>Pre-tender structural survey required for all rooftop interventions.</span>
+            <span className="font-mono text-teal-700 font-semibold">
+              {(Object.keys(allowedTypes) as InterventionType[]).filter((t) => allowedTypes[t]).length} selected
+            </span>
           </div>
         </div>
       </div>
+
+      {/* Specific Informative Banners for Empty / Over-Budget Outcomes */}
+      {result && result.status === "CHEAPEST_EXCEEDS_BUDGET" && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-900 shadow-xs">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <h4 className="text-sm font-bold text-amber-950">
+                Budget Ceiling Exceeded by Minimum Package Unit
+              </h4>
+              <p className="mt-1 text-xs text-amber-800 leading-relaxed">
+                {result.reason || "The allocated budget cap is smaller than the lowest-cost implementation package available in the selected scope."}
+              </p>
+              <div className="mt-2 text-xs font-semibold text-amber-900">
+                Recommendation: Increase budget limit to at least ₹15 Lakh, or expand scope to include localities with lower-cost per-cell deployments.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {result && result.status === "NO_CANDIDATES" && (
+        <div className="rounded-xl border border-blue-300 bg-blue-50 p-5 text-blue-900 shadow-xs">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">ℹ️</span>
+            <div>
+              <h4 className="text-sm font-bold text-blue-950">
+                No Eligible Candidate Packages Found
+              </h4>
+              <p className="mt-1 text-xs text-blue-800 leading-relaxed">
+                {result.reason || "No packages matched the selected scope and intervention typology filters."}
+              </p>
+              <div className="mt-2 text-xs font-semibold text-blue-900">
+                Recommendation: Select additional intervention typologies or set scope to &ldquo;All Areas&rdquo;.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error Callout */}
       {error && (

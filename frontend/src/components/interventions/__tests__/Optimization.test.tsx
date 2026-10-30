@@ -108,7 +108,7 @@ describe("Optimization Component Audit & Verification", () => {
 
     // 3. Check algorithm controls
     expect(html).toContain("NSGA-II");
-    expect(html).toContain("Greedy Knapsack");
+    expect(html).toContain("Exact DP Knapsack");
 
     // 4. Check Terminology button
     expect(html).toContain("Terminology &amp; Units");

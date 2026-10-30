@@ -1193,91 +1193,20 @@ def generate_polygon_recommendations(
             )
         )
 
-    if "rainwater_fed_pond" in allowed_set:
-        pond_m2 = max(300.0, float(cell_multiplier * 1200.0))
-        pond_cost_b, pond_cost_min, pond_cost_max, pond_cost_meta = estimate_intervention_cost(
-            InterventionType.RAINWATER_FED_POND, usable_area_m2=pond_m2
-        )
-        pond_cool_b, pond_cool_min, pond_cool_max, pond_cool_meta = estimate_cooling_effect(
-            InterventionType.RAINWATER_FED_POND, usable_area_m2=pond_m2, baseline_lst_c=mean_lst
-        )
-        # Check water source requirement: strict rejection if no verified water source
-        has_water_src = summary.has_documented_water_source
-        pond_feas = "FEASIBLE" if has_water_src else "REJECTED"
-        pond_prio = "MEDIUM" if has_water_src else "NOT_RECOMMENDED"
-        pond_scr_stat = "MODEL_ELIGIBLE" if has_water_src else "EXCLUDED"
-        pond_scr_code = "ELIGIBLE" if has_water_src else "UNVERIFIED_WATER_SOURCE"
-        pond_rej = [] if has_water_src else [
-            "UNVERIFIED_WATER_SOURCE: Rainwater-fed retention ponds require a documented stormwater catchment (>= 5x pond area) or treated municipal effluent source to prevent drying and mosquito vector breeding."
-        ]
-        if has_water_src:
-            pond_rationale = (
-                f"Screening status: Model-eligible (survey required). Microclimatic evaporative cooling water body producing downwind cooling breezes. "
-                "Required pre-implementation checks: verified catchment basin (>= 5x pond area) or treated STP feed, soil percolation, and vector control protocol."
-            )
-        else:
-            pond_rationale = (
-                "Retention pond is excluded pending catchment hydrology verification: requires a documented stormwater catchment (>= 5x pond area) "
-                "or treated municipal effluent source to prevent drying and mosquito vector breeding. "
-                "Screening status: Excluded (unverified water source)."
-            )
-
-        recommendations.append(
-            RecommendationItem(
-                type="RAINWATER_FED_POND",
-                title="Rainwater-Fed Retention Pond",
-                priority=pond_prio,
-                rationale=pond_rationale,
-                quantity_basis=QuantityBasis(
-                    estimated_quantity=pond_m2,
-                    unit="m² water surface",
-                    basis_description=f"Modeled at 1,200 m² retention pond surface across {cell_multiplier} cell(s).",
-                    missing_data_survey_note="Stormwater catchment inflow validation: " + MISSING_DATA_NOTE,
-                ),
-                cost_range_inr=CostRangeINR(
-                    base=pond_cost_b, min=pond_cost_min, max=pond_cost_max,
-                    formatted=f"{format_inr(pond_cost_min)} – {format_inr(pond_cost_max)} (base: {format_inr(pond_cost_b)})",
-                    maintenance_horizon="Clay bentonite liner and annual pre-monsoon desilting",
-                ),
-                cooling_range_c=CoolingRangeC(
-                    expected=round(pond_cool_b, 2), min=round(pond_cool_min, 2), max=round(pond_cool_max, 2),
-                    formatted=f"-{pond_cool_min:.2f}°C to -{pond_cool_max:.2f}°C (expected: -{pond_cool_b:.2f}°C)",
-                    model_source=pond_cool_meta.get("model", "Theeuwes et al. 2013"),
-                ),
-                feasibility_status=pond_feas,
-                rejection_reasons=pond_rej,
-                feasibility_notes=["Requires verified catchment basin (>= 5x pond area) or treated STP feed."],
-                maintenance_note=pond_cool_meta.get("maintenance_burden", "Annual silt clearing and aerator servicing"),
-                evidence_label="MODELLED",
-                missing_data_survey_requirements=["Catchment hydrology and soil permeability: " + MISSING_DATA_NOTE],
-                landuse_typology=clf_res.typology,
-                allowed_interventions=clf_res.allowed_interventions,
-                selection_rationale="Evaporative air temperature cooling up to 100m downwind.",
-                rejected_alternatives=rejected_alts,
-                water_need_description=pond_cool_meta.get("water_need", "Continuous freshwater inflow needed"),
-                maintenance_burden=pond_cool_meta.get("maintenance_burden", "Moderate-High (weed/algae and silt control)"),
-                construction_time=pond_cool_meta.get("construction_time", "3-6 months excavation and lining"),
-                whole_life_cost_3yr_inr=pond_cost_meta.get("whole_life_cost_3yr_inr", pond_cost_b),
-                whole_life_cost_per_c_m2=pond_cost_meta.get("whole_life_cost_per_c_m2", 0.0),
-                air_cooling_c=pond_cool_meta.get("air_cooling_c", 0.80),
-                needs_site_survey=False,
-                screening_status=pond_scr_stat,
-                screening_reason_code=pond_scr_code,
-                site_suitability="UNKNOWN - survey required",
-                ownership_legal="UNVERIFIED",
-                engineering_clearance="NOT ASSESSED",
-                procurement_status="NOT STARTED",
-                benefit_evidence="MODELLED",
-                data_confidence="HIGH" if summary.confidence_tier == "HIGH" else "MEDIUM",
-                cooling_metric="modelled surface (skin) temperature reduction on treated area",
-                cell_scope_note="Modelled surface skin temperature reduction on treated area, not ambient air temperature.",
-                price_date_note="indicative, not a tender price",
-                schedule_alignment_note="rates not verified against CPWD/SMC schedule",
-                unit_rate=1100.0,
-                unit_rate_unit="INR per m²",
-                markups_description="Includes 18% GST, 12% contingency, 6% design & supervision, and scaled site setup",
-            )
-        )
+    # Rainwater-Fed Retention Pond and Modular Green Wall are explicitly non-assessable
+    # with current remote sensing data and are kept removed from active recommendations.
+    if "rainwater_fed_pond" in allowed_set or "water_adjacent" in clf_res.typology:
+        rejected_alts.append({
+            "type": "rainwater_fed_pond",
+            "title": "Rainwater-Fed Retention Pond",
+            "rejection_reason": "Non-assessable with current data: Requires high-resolution LiDAR / DEM surface elevation hydrological catchment modeling. Kept removed from active solver.",
+        })
+    if "green_wall" in allowed_set:
+        rejected_alts.append({
+            "type": "green_wall",
+            "title": "Modular Vertical Living Wall",
+            "rejection_reason": "Non-assessable with current data: Requires 3D building height, wall aspect and facade structural load inventory. Kept removed from active solver.",
+        })
 
     if "shaded_parking_structure" in allowed_set:
         shade_m2 = max(150.0, float(cell_multiplier * 800.0))
