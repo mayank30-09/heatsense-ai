@@ -70,3 +70,15 @@ export async function fetchPipelineStatus(
 
   return response.json() as Promise<PipelineStatus>;
 }
+
+
+export async function triggerPipelineCheck(): Promise<PipelineStatus> {
+  const url = `${API_BASE_URL}/scenes/check`;
+  const response = await fetch(url, { method: "POST", credentials: "omit" });
+
+  if (!response.ok) {
+    throw new Error(`Failed to trigger pipeline check: ${response.status}`);
+  }
+
+  return response.json() as Promise<PipelineStatus>;
+}

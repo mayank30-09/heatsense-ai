@@ -192,3 +192,26 @@ def test_api_endpoint_pipeline_status_with_as_of(test_client: TestClient):
     oct22 = next((o for o in data["recent_overpasses"] if o["date"] == "2026-10-22"), None)
     assert oct22 is not None
     assert oct22["status"] == "OVERDUE"
+
+
+def test_api_endpoint_scenes_check_on_demand(test_client: TestClient, db_session: Session):
+    """Verify POST /api/v1/scenes/check triggers discovery and logs to stage_c_discovery_runs."""
+    resp = test_client.post("/api/v1/scenes/check")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert "pipeline_status" in data
+    assert "last_checked" in data
+    assert "last_checked_ist" in data
+    assert "IST" in data["last_checked_ist"]
+    assert "recent_overpasses" in data
+
+    # Verify that a discovery run was logged in stage_c_discovery_runs
+    from backend.app.db.models.stage_c import StageCDiscoveryRun
+    latest_run = (
+        db_session.query(StageCDiscoveryRun)
+        .order_by(StageCDiscoveryRun.run_at.desc())
+        .first()
+    )
+    assert latest_run is not None
+    assert latest_run.trigger_type in ("ON_DEMAND", "SCHEDULED", "MANUAL", "ADMIN")

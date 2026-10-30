@@ -23,7 +23,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from backend.app.config import get_settings
-from backend.app.db.models.stage_c import StageCSceneRegistry
+from backend.app.db.models.stage_c import StageCDiscoveryRun, StageCSceneRegistry
 from backend.app.db.session import SessionLocal
 from gis.gee.latest_scene import create_synthetic_scene_array
 from gis.gee.nrt_pipeline import (
@@ -48,6 +48,7 @@ def run_discovery(
     target_date: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
+    trigger_type: str = "MANUAL",
 ) -> list[dict]:
     """Execute scene discovery and ingestion."""
     settings = get_settings()
@@ -80,9 +81,24 @@ def run_discovery(
             )
             results.append(res)
             logger.info("Mock scene processed: %s", json.dumps(res, default=str))
+            if not dry_run:
+                try:
+                    run_record = StageCDiscoveryRun(
+                        run_at=datetime.now(timezone.utc),
+                        status="SUCCESS",
+                        trigger_type=trigger_type,
+                        scenes_found=1,
+                        scenes_ingested=len(results),
+                        details="Mock synthetic scene processed successfully",
+                    )
+                    session.add(run_record)
+                    session.commit()
+                except Exception as db_exc:
+                    logger.warning("Failed to record discovery run in DB: %s", db_exc)
             return results
 
         # Live GEE Discovery
+        candidate_count = 0
         try:
             from gis.gee.landsat_lst import initialize_earth_engine
             from gis.gee.latest_scene import discover_gee_scenes, fetch_gee_scene_arrays, get_last_ingested_watermark
@@ -94,7 +110,8 @@ def run_discovery(
                 end_date=end_date,
                 watermark_dt=watermark if not start_date else None,
             )
-            logger.info("Discovered %d candidate GEE scenes", len(candidate_scenes))
+            candidate_count = len(candidate_scenes)
+            logger.info("Discovered %d candidate GEE scenes", candidate_count)
 
             for sc in candidate_scenes:
                 scene_id = sc["scene_id"]
@@ -118,9 +135,44 @@ def run_discovery(
                     dry_run=dry_run,
                 )
                 results.append(res)
+
+            if not dry_run:
+                try:
+                    status_str = "SUCCESS" if candidate_count > 0 else "NO_NEW_SCENES"
+                    detail_str = (
+                        f"GEE query succeeded. {candidate_count} candidate scene(s) found; "
+                        f"{len(results)} new scene(s) ingested."
+                    )
+                    run_record = StageCDiscoveryRun(
+                        run_at=datetime.now(timezone.utc),
+                        status=status_str,
+                        trigger_type=trigger_type,
+                        scenes_found=candidate_count,
+                        scenes_ingested=len(results),
+                        details=detail_str[:512],
+                    )
+                    session.add(run_record)
+                    session.commit()
+                except Exception as db_exc:
+                    logger.warning("Failed to record discovery run in DB: %s", db_exc)
+
         except Exception as exc:
             logger.warning("Earth Engine live discovery could not be reached: %s", exc)
             logger.info("For automated local tests, use --mock flag.")
+            if not dry_run:
+                try:
+                    run_record = StageCDiscoveryRun(
+                        run_at=datetime.now(timezone.utc),
+                        status="ERROR",
+                        trigger_type=trigger_type,
+                        scenes_found=0,
+                        scenes_ingested=0,
+                        details=f"GEE discovery error: {exc}"[:512],
+                    )
+                    session.add(run_record)
+                    session.commit()
+                except Exception as db_exc:
+                    logger.warning("Failed to record discovery run in DB: %s", db_exc)
 
         return results
     finally:

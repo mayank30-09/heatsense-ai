@@ -19,6 +19,7 @@ import type {
 import {
   fetchPipelineStatus,
   fetchScenes,
+  triggerPipelineCheck,
   type PipelineStatus,
   type SceneItem,
 } from "../../services/scenesApi";
@@ -73,7 +74,22 @@ export function MapShell({
   const [scenesLoading, setScenesLoading] = useState(false);
   const [scenesError, setScenesError] = useState<string | null>(null);
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus | null>(null);
+  const [isCheckingPipeline, setIsCheckingPipeline] = useState<boolean>(false);
   const [recentDayThreshold] = useState<number>(30);
+
+  const handleTriggerCheck = useCallback(async () => {
+    try {
+      setIsCheckingPipeline(true);
+      const updatedStatus = await triggerPipelineCheck();
+      setPipelineStatus(updatedStatus);
+      const updatedScenes = await fetchScenes();
+      setScenes(updatedScenes);
+    } catch (err) {
+      console.error("Failed to check pipeline status:", err);
+    } finally {
+      setIsCheckingPipeline(false);
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -384,6 +400,8 @@ const handleAreaRemoved =
           pipelineStatus={pipelineStatus}
           scenesLoading={scenesLoading}
           scenesError={scenesError}
+          onTriggerCheck={handleTriggerCheck}
+          isChecking={isCheckingPipeline}
         />
       )}
 

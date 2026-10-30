@@ -11,6 +11,8 @@ interface LatestSceneSidebarProps {
   scenesLoading?: boolean;
   scenesError?: string | null;
   totalCells?: number;
+  onTriggerCheck?: () => void;
+  isChecking?: boolean;
 }
 
 export default function LatestSceneSidebar({
@@ -23,6 +25,8 @@ export default function LatestSceneSidebar({
   scenesLoading = false,
   scenesError,
   totalCells = 49747,
+  onTriggerCheck,
+  isChecking = false,
 }: LatestSceneSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== "undefined" && window.innerWidth < 1024);
   const [copied, setCopied] = useState(false);
@@ -195,11 +199,26 @@ export default function LatestSceneSidebar({
               </div>
 
               {pipelineStatus && (
-                <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100 text-slate-500">
-                  <span>Catalog ledger:</span>
-                  <span className="font-semibold text-slate-700">
-                    {pipelineStatus.processed_count} processed · {pipelineStatus.rejected_count} rejected
-                  </span>
+                <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-slate-100 text-slate-500">
+                  <div>
+                    <span>Catalog ledger: </span>
+                    <span className="font-semibold text-slate-700">
+                      {pipelineStatus.processed_count} processed · {pipelineStatus.rejected_count} rejected
+                    </span>
+                  </div>
+                  {onTriggerCheck && (
+                    <button
+                      type="button"
+                      onClick={onTriggerCheck}
+                      disabled={isChecking}
+                      aria-label="Check upstream Landsat overpass now"
+                      className="flex items-center gap-1 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 text-[10.5px] font-bold text-indigo-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Run live Earth Engine scene discovery check now"
+                    >
+                      <span className={isChecking ? "inline-block animate-spin" : ""}>🔄</span>
+                      <span>{isChecking ? "Checking..." : "Check Now"}</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>

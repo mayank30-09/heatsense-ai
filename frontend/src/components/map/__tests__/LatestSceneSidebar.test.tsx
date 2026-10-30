@@ -192,4 +192,36 @@ describe("LatestSceneSidebar Component", () => {
 
     expect(html).toContain("Oct 22 (Landsat 8): no scene found / overdue in GEE (&gt; 3 days)");
   });
+
+
+  it("renders Check Now button and reflects checking state when provided", () => {
+    const htmlNormal = renderToStaticMarkup(
+      <LatestSceneSidebar
+        scenes={mockScenes}
+        selectedSceneId="LC09_L2SP_148045_20261014_02_T1"
+        onSelectScene={vi.fn()}
+        showRasterTile={true}
+        onToggleRasterTile={vi.fn()}
+        pipelineStatus={mockPipelineStatus}
+        onTriggerCheck={vi.fn()}
+        isChecking={false}
+      />
+    );
+    expect(htmlNormal).toContain("Check Now");
+    expect(htmlNormal).toContain('aria-label="Check upstream Landsat overpass now"');
+
+    const htmlChecking = renderToStaticMarkup(
+      <LatestSceneSidebar
+        scenes={mockScenes}
+        selectedSceneId="LC09_L2SP_148045_20261014_02_T1"
+        onSelectScene={vi.fn()}
+        showRasterTile={true}
+        onToggleRasterTile={vi.fn()}
+        pipelineStatus={mockPipelineStatus}
+        onTriggerCheck={vi.fn()}
+        isChecking={true}
+      />
+    );
+    expect(htmlChecking).toContain("Checking...");
+  });
 });

@@ -10,7 +10,7 @@ and idempotently ingests per-pixel observations into PostGIS (stage_c_scene_obse
 from __future__ import annotations
 
 import argparse
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import json
 import logging
 from pathlib import Path
@@ -552,7 +552,14 @@ def discover_gee_scenes(
     else:
         start_str = "2026-01-01"
 
-    end_str = end_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if end_date:
+        try:
+            parsed_end = date.fromisoformat(end_date.strip())
+            end_str = (parsed_end + timedelta(days=1)).strftime("%Y-%m-%d")
+        except Exception:
+            end_str = end_date
+    else:
+        end_str = (datetime.now(timezone.utc).date() + timedelta(days=1)).strftime("%Y-%m-%d")
 
     l8 = (
         ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")

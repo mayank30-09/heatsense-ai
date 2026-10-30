@@ -12,11 +12,15 @@ from pydantic import BaseModel, Field
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
+import logging
 from backend.app.db.models.stage_c import (
+    StageCDiscoveryRun,
     StageCProvisionalHotspot,
     StageCScene,
     StageCSceneRegistry,
 )
+
+logger = logging.getLogger("heatsense.scenes")
 from backend.app.db.session import get_db
 
 router = APIRouter(
@@ -316,17 +320,31 @@ def calculate_pipeline_status(
                 )
 
     # 6. Derive dynamic pipeline status
-    all_updated = [
-        info["updated_at"]
-        for info in known_scenes.values()
-        if info.get("updated_at") is not None
-    ]
-    if all_updated:
-        last_check_dt = max(all_updated)
-        if last_check_dt.tzinfo is None:
-            last_check_dt = last_check_dt.replace(tzinfo=timezone.utc)
-    else:
-        last_check_dt = now_utc - timedelta(hours=3)
+    last_check_dt: datetime | None = None
+    try:
+        run_query = db.query(StageCDiscoveryRun)
+        if as_of is not None:
+            run_query = run_query.filter(StageCDiscoveryRun.run_at <= as_of)
+        latest_run = run_query.order_by(desc(StageCDiscoveryRun.run_at)).first()
+        if latest_run and latest_run.run_at:
+            last_check_dt = latest_run.run_at
+            if last_check_dt.tzinfo is None:
+                last_check_dt = last_check_dt.replace(tzinfo=timezone.utc)
+    except Exception as exc:
+        logger.warning("Could not query stage_c_discovery_runs: %s", exc)
+
+    if last_check_dt is None:
+        all_updated = [
+            info["updated_at"]
+            for info in known_scenes.values()
+            if info.get("updated_at") is not None
+        ]
+        if all_updated:
+            last_check_dt = max(all_updated)
+            if last_check_dt.tzinfo is None:
+                last_check_dt = last_check_dt.replace(tzinfo=timezone.utc)
+        else:
+            last_check_dt = now_utc - timedelta(hours=3)
 
     if last_check_dt > now_utc:
         last_check_dt = now_utc
@@ -340,7 +358,7 @@ def calculate_pipeline_status(
         pipeline_status = "DELAYED"
         status_detail = (
             f"Overdue overpass detected: {', '.join(overdue_details)} passed > 3 days ago "
-            f"with no Level-2 product published in GEE catalog."
+            f"with no Level-2 product published in GEE catalog (USGS reported upstream data availability interruption starting Oct 20; standard L8 turnaround is 4–11 days)."
         )
     elif time_since_check > timedelta(hours=24):
         pipeline_status = "DELAYED"
@@ -399,6 +417,42 @@ def get_pipeline_status(
 ) -> PipelineStatusResponse:
     """Retrieve operational status for the near-real-time scene ingestion pipeline."""
     return calculate_pipeline_status(db=db, as_of=as_of)
+
+
+@router.post(
+    "/check",
+    response_model=PipelineStatusResponse,
+    summary="Trigger on-demand NRT Landsat discovery and status refresh",
+    description="Runs live Earth Engine scene discovery over Surat (WRS 148/45) and returns refreshed pipeline status.",
+)
+def trigger_pipeline_check(
+    db: Session = Depends(get_db),
+) -> PipelineStatusResponse:
+    """Trigger an on-demand check for new Landsat scenes and refresh pipeline status."""
+    from scripts.discover_nrt_scenes import run_discovery
+
+    # Debounce: if a run occurred in the last 15 seconds, return current status without re-hammering GEE
+    try:
+        latest_run = (
+            db.query(StageCDiscoveryRun)
+            .order_by(desc(StageCDiscoveryRun.run_at))
+            .first()
+        )
+        now_utc = datetime.now(timezone.utc)
+        if latest_run and latest_run.run_at:
+            run_at = latest_run.run_at if latest_run.run_at.tzinfo else latest_run.run_at.replace(tzinfo=timezone.utc)
+            if (now_utc - run_at).total_seconds() < 15:
+                return calculate_pipeline_status(db=db)
+    except Exception as exc:
+        logger.warning("Error checking latest run debounce: %s", exc)
+
+    # Run discovery with trigger_type="ON_DEMAND"
+    try:
+        run_discovery(trigger_type="ON_DEMAND")
+    except Exception as exc:
+        logger.error("On-demand discovery failed: %s", exc)
+
+    return calculate_pipeline_status(db=db)
 
 
 @router.get(

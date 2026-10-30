@@ -53,6 +53,7 @@ def check_nrt_scenes(
         target_date=payload.target_date,
         start_date=payload.start_date,
         end_date=payload.end_date,
+        trigger_type="ADMIN",
     )
     return {
         "status": "success",
