@@ -48,3 +48,22 @@ backups/
 .chrome-temp-profile/
 scratch_user_prompt.txt
 
+# College submission templates & evaluation files (contain local student data)
+docs/submission/
+
+# Logs and test coverage
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+.coverage
+htmlcov/
+
+# Local binary backups and editor artifacts
+*.dump
+*.bak
+*.swp
+*.swo
+
+
